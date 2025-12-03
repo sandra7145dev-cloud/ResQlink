@@ -1,0 +1,16 @@
+# Django basics
+*.log
+*.pot
+*.pyc
+__pycache__/
+
+# Virtual Environment (Very Important!)
+venv/
+env/
+.venv/
+
+# Environment variables (Database passwords)
+.env
+
+# Media folder (User uploads)
+media/
