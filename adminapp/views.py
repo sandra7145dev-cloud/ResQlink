@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from .models import tbl_location
-from .models import tbl_panchayat
+from .models import tbl_subcategory, tbl_ward, tbl_panchayat, tbl_category
+
 # Create your views here.
 def adminhome(request):
     return render(request, 'admin/index.html')
@@ -36,33 +36,32 @@ def deletepanchayat(request, pid):
     panchayat.delete()
     return viewpanchayat(request)
     
-def location_reg(request):
-    return render(request, 'admin/location_reg.html')
-
-def locreg(request):
+def ward_reg(request):
+    panchayats = tbl_panchayat.objects.all()
     if request.method == 'POST':
-        locname = request.POST.get('locname')
-        loc_obj = tbl_location()
-        loc_obj.LocationName = locname
-        loc_obj.save()
-        return render(request, 'admin/location_reg.html')
-    
-def viewlocation(request):
-    locations = tbl_location.objects.all()
-    return render(request, 'admin/viewlocation.html', {'locations': locations})
+        wardname = request.POST.get('wardname')
+        panchayatid = request.POST.get('panchayatid')
+        ward_obj = tbl_ward()
+        ward_obj.WardName = wardname
+        ward_obj.panchayatID = tbl_panchayat.objects.get(PanchayatID=panchayatid)
+        ward_obj.save()
+    return render(request, 'admin/ward_reg.html', {'panchayats': panchayats})
 
-def editlocation(request, lid):
-    location = tbl_location.objects.get(LocationID=lid)
+def category_reg(request):
     if request.method == 'POST':
-        locname = request.POST.get('locname')
-        location.LocationName = locname
-        location.save()
-        return viewlocation(request)
-    else:
-        location = tbl_location.objects.get(LocationID=lid)
-        return render(request, 'admin/editlocation.html', {'location': location})
-        
-def deletelocation(request, lid):
-    location = tbl_location.objects.get(LocationID=lid)
-    location.delete()
-    return viewlocation(request)
+        catname = request.POST.get('catname')
+        cat_obj = tbl_category()
+        cat_obj.CategoryName = catname
+        cat_obj.save()
+    return render(request, 'admin/category_reg.html')
+
+def subcategory_reg(request):
+    categories = tbl_category.objects.all()
+    if request.method == 'POST':
+        subcatname = request.POST.get('subcatname')
+        categoryid = request.POST.get('categoryid')
+        subcat_obj = tbl_subcategory()
+        subcat_obj.SubCategoryname = subcatname
+        subcat_obj.categoryID = tbl_category.objects.get(CategoryID=categoryid)
+        subcat_obj.save()
+    return render(request, 'admin/subcategory_reg.html', {'categories': categories})

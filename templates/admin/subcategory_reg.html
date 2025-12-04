@@ -5,14 +5,24 @@
 <!-- ============================================================== -->
 <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
     <div class="card">
-        <h5 class="card-header">Horizontal Form</h5>
+        <h5 class="card-header">SUBCATEGORY REGISTRATION</h5>
         <div class="card-body">
-            <form action="{% url 'editlocation' lid=location.LocationID %}" method="post">
+            <form action="{% url 'subcatreg' %}" method="post">
                 {% csrf_token %}
                 <div class="form-group row">
-                    <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right">Location Name</label>
+                    <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right">Subcategory</label>
+                     <div class="col-9 col-lg-10">
+                        <select name="categoryid" class="form-control">
+                            <option value="">--Select Category--</option>
+                            {% for c in categories %}
+                            <option value="{{ c.CategoryID }}">{{ c.CategoryName }}</option>
+                            {% endfor %}
+                        </select>
+                        <br><br>
+                    </div>
+                    <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right"> Name</label>
                     <div class="col-9 col-lg-10">
-                        <input id="inputEmail2" type="text" name="locname" value="{{ location.LocationName }}" placeholder="Location Name"
+                        <input id="inputEmail2" type="text" name="subcatname" placeholder="Subcategory Name"
                             class="form-control">
                     </div>
                 </div>

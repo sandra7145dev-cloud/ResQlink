@@ -5,14 +5,14 @@
 <!-- ============================================================== -->
 <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
     <div class="card">
-        <h5 class="card-header">LOCATION REGISTRATION</h5>
+        <h5 class="card-header">CATEGORY REGISTRATION</h5>
         <div class="card-body">
-            <form action="{% url 'locreg' %}" method="post">
+            <form action="{% url 'catreg' %}" method="post">
                 {% csrf_token %}
                 <div class="form-group row">
-                    <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right">Location Name</label>
+                    <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right"> Name</label>
                     <div class="col-9 col-lg-10">
-                        <input id="inputEmail2" type="text" name="locname" placeholder="Location Name"
+                        <input id="inputEmail2" type="text" name="catname" placeholder="Category Name"
                             class="form-control">
                     </div>
                 </div>

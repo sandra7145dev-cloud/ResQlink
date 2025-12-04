@@ -7,9 +7,7 @@ urlpatterns = [
     path('viewpanchayat/', views.viewpanchayat, name='viewpanchayat'),
     path('editpanchayat/<int:pid>/', views.editpanchayat, name='editpanchayat'),
     path('deletepanchayat/<int:pid>/', views.deletepanchayat, name='deletepanchayat'),
-    path('location_reg/', views.location_reg, name='location_reg'),
-    path('locreg/', views.locreg, name='locreg'),
-    path('viewlocation/', views.viewlocation, name='viewlocation'),
-    path('editlocation/<int:lid>/', views.editlocation, name='editlocation'),
-    path('deletelocation/<int:lid>/', views.deletelocation, name='deletelocation'),
+    path('ward_reg/', views.ward_reg, name='wardreg'),
+    path('category_reg/',views.category_reg, name='catreg'),
+    path('subcategory_reg/',views.subcategory_reg, name='subcatreg'),
 ]

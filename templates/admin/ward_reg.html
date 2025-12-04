@@ -10,6 +10,16 @@
             <form action="{% url 'wardreg' %}" method="post">
                 {% csrf_token %}
                 <div class="form-group row">
+                    <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right">Panchayat</label>
+                     <div class="col-9 col-lg-10">
+                        <select name="panchayatid" class="form-control">
+                            <option value="">--Select Panchayat--</option>
+                            {% for p in panchayats %}
+                            <option value="{{ p.PanchayatID }}">{{ p.PanchayatName }}</option>
+                            {% endfor %}
+                        </select>
+                        <br><br>
+                    </div>
                     <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right"> Name</label>
                     <div class="col-9 col-lg-10">
                         <input id="inputEmail2" type="text" name="wardname" placeholder="Ward Name"
