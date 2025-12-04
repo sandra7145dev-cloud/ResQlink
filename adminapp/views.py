@@ -15,6 +15,27 @@ def panchayat_reg(request):
         pan_obj.save()
     return render(request, 'admin/panchayat_reg.html')
 
+def viewpanchayat(request):
+    panchayats = tbl_panchayat.objects.all()
+    return render(request, 'admin/viewpanchayat.html', {'panchayats': panchayats})
+
+def editpanchayat(request, pid):
+    panchayat = tbl_panchayat.objects.get(PanchayatID=pid)
+    if request.method == 'POST':
+        panname = request.POST.get('panname')
+        panchayat.PanchayatName = panname
+        panchayat.save()
+        panchayats = tbl_panchayat.objects.all()
+        return render(request, 'admin/viewpanchayat.html', {'panchayats': panchayats})
+    else:
+        panchayat = tbl_panchayat.objects.get(PanchayatID=pid)
+        return render(request, 'admin/editpanchayat.html', {'panchayat': panchayat})
+    
+def deletepanchayat(request, pid):
+    panchayat = tbl_panchayat.objects.get(PanchayatID=pid)
+    panchayat.delete()
+    return viewpanchayat(request)
+    
 def location_reg(request):
     return render(request, 'admin/location_reg.html')
 
