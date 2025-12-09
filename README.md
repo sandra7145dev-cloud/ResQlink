@@ -64,4 +64,3 @@
     ```
 
 ---
-*Based on the ResQLink SRS Documentation.*
