@@ -55,6 +55,27 @@ def category_reg(request):
         cat_obj.save()
     return render(request, 'admin/category_reg.html')
 
+def viewcategory(request):
+    categories = tbl_category.objects.all()
+    return render(request, 'admin/viewcategory.html', {'categories': categories})
+
+def editcategory(request, cid):
+    category = tbl_category.objects.get(CategoryID=cid)
+    if request.method == 'POST':
+        catname = request.POST.get('catname')
+        category.CategoryName = catname
+        category.save()
+        categories = tbl_category.objects.all()
+        return render(request, 'admin/viewcategory.html', {'categories': categories})
+    else:
+        category = tbl_category.objects.get(CategoryID=cid)
+        return render(request, 'admin/editcategory.html', {'category': category})
+    
+def deletecategory(request, cid):
+    category = tbl_category.objects.get(CategoryID=cid)
+    category.delete()
+    return viewcategory(request)
+
 def subcategory_reg(request):
     categories = tbl_category.objects.all()
     if request.method == 'POST':
