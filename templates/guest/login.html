@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | ResQ Disaster Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0f4c75; /* Deep Professional Blue */
+            --accent-color: #3282b8;  /* Lighter Blue */
+            --alert-color: #e94560;   /* Urgent Red */
+            --bg-color: #f0f2f5;
+            --text-color: #333;
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            border-top: 5px solid var(--primary-color);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header i {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 2.3rem;
+            cursor: pointer;
+            color: #888;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 0.9rem;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        .btn-login:hover {
+            background-color: var(--accent-color);
+        }
+
+        .btn-login:active {
+            transform: scale(0.98);
+        }
+
+        .links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .links a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        .public-access {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .public-access a {
+            color: var(--alert-color);
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 480px) {
+            .login-container {
+                box-shadow: none;
+                background: transparent;
+                border: none;
+            }
+            body {
+                background: var(--white);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="header">
+            <i class="fas fa-hand-holding-medical"></i> 
+            <h1>ResQ System</h1>
+            <p>Disaster Resource Management</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">UserName</label>
+                <input type="text" id="username" placeholder="volunteer" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+                <i class="fas fa-eye password-toggle" id="togglePassword"></i>
+            </div>
+
+            <button type="submit" class="btn-login">Secure Login</button>
+
+            <div class="links">
+                <a href="#">Forgot Password?</a>
+            </div>
+        </form>
+
+        <div class="public-access">
+            <p>Not a responder?</p>
+            <a href="#">View Public Shelter Maps &rarr;</a>
+        </div>
+    </div>
+
+    <script>
+        // Password Visibility Toggle
+        const togglePassword = document.querySelector('#togglePassword');
+        const password = document.querySelector('#password');
+
+        togglePassword.addEventListener('click', function (e) {
+            // toggle the type attribute
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            // toggle the eye slash icon
+            this.classList.toggle('fa-eye-slash');
+        });
+
+        // Simulating Login (Remove this for production)
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.querySelector('.btn-login');
+            const originalText = btn.innerText;
+            
+            btn.innerText = 'Authenticating...';
+            btn.style.opacity = '0.7';
+            
+            setTimeout(() => {
+                alert('Login form submitted! Backend integration required.');
+                btn.innerText = originalText;
+                btn.style.opacity = '1';
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

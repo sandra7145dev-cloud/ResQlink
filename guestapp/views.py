@@ -4,3 +4,6 @@ from django.http import HttpResponse
 
 def guesthome(request):
     return render(request, 'guest/index.html')
+
+def login(request):
+    return render(request, 'guest/login.html')
