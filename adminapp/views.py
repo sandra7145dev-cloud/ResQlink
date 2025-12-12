@@ -1,6 +1,7 @@
 from django.shortcuts import render
-from django.http import HttpResponse
-from .models import tbl_subcategory, tbl_category,tbl_taluk,tbl_localbody_type
+from django.http import HttpResponse, JsonResponse
+from .models import tbl_subcategory, tbl_category, tbl_taluk, tbl_localbody_type, tbl_localbody,  tbl_ward
+from django.views.decorators.http import require_http_methods
 
 # Create your views here.
 def adminhome(request):
@@ -66,6 +67,19 @@ def deletelocalbodytype(request, id):
     localbodytype.delete()
     return viewlocalbodytype(request)
 
+def localbody(request):
+    taluks = tbl_taluk.objects.all()
+    localbodies = tbl_localbody_type.objects.all()
+    if request.method == 'POST':
+        localbodyname = request.POST.get('localbodyname')
+        localbodyid = request.POST.get('localbodyid')
+        localbody_obj = tbl_localbody()
+        localbody_obj.LocalbodyName = localbodyname
+        localbody_obj.TypeID = tbl_localbody_type.objects.get(TypeID=localbodyid)
+        localbody_obj.TalukId = tbl_taluk.objects.get(TalukID=request.POST.get('talukid'))
+        localbody_obj.save()
+    return render(request, 'admin/localbody_reg.html', {'taluks': taluks, 'localbodies': localbodies})
+
 def ward_reg(request):
     panchayats = tbl_panchayat.objects.all()
     if request.method == 'POST':
@@ -116,3 +130,72 @@ def subcategory_reg(request):
         subcat_obj.categoryID = tbl_category.objects.get(CategoryID=categoryid)
         subcat_obj.save()
     return render(request, 'admin/subcategory_reg.html', {'categories': categories})
+
+# LocalBody Views
+def viewlocalbody(request):
+    taluks = tbl_taluk.objects.all()
+    localbody_types = tbl_localbody_type.objects.all()
+    localbodies = tbl_localbody.objects.all()
+    return render(request, 'admin/localbodyview.html', {
+        'taluks': taluks, 
+        'localbody_types': localbody_types,
+        'localbodies': localbodies
+    })
+
+@require_http_methods(["GET"])
+def filter_localbody(request):
+    taluk_id = request.GET.get('taluk_id', '')
+    type_id = request.GET.get('type_id', '')
+    
+    localbodies = tbl_localbody.objects.all()
+    
+    if taluk_id:
+        localbodies = localbodies.filter(TalukId=taluk_id)
+    if type_id:
+        localbodies = localbodies.filter(TypeID=type_id)
+    
+    data = []
+    for lb in localbodies:
+        data.append({
+            'LocalbodyID': lb.LocalbodyID,
+            'LocalbodyName': lb.LocalbodyName,
+            'TypeName': lb.TypeID.TypeName,
+            'TalukName': lb.TalukId.TalukName
+        })
+    
+    return JsonResponse(data, safe=False)
+
+def editlocalbody(request, id):
+    taluks = tbl_taluk.objects.all()
+    localbody_types = tbl_localbody_type.objects.all()
+    localbody = tbl_localbody.objects.get(LocalbodyID=id)
+    
+    if request.method == 'POST':
+        localbodyname = request.POST.get('localbodyname')
+        talukid = request.POST.get('talukid')
+        typeid = request.POST.get('localbodyid')
+        
+        localbody.LocalbodyName = localbodyname
+        localbody.TalukId = tbl_taluk.objects.get(TalukID=talukid)
+        localbody.TypeID = tbl_localbody_type.objects.get(TypeID=typeid)
+        localbody.save()
+        
+        taluks = tbl_taluk.objects.all()
+        localbody_types = tbl_localbody_type.objects.all()
+        localbodies = tbl_localbody.objects.all()
+        return render(request, 'admin/localbodyview.html', {
+            'taluks': taluks, 
+            'localbody_types': localbody_types,
+            'localbodies': localbodies
+        })
+    else:
+        return render(request, 'admin/editlocalbody.html', {
+            'localbody': localbody,
+            'taluks': taluks,
+            'localbody_types': localbody_types
+        })
+
+def deletelocalbody(request, id):
+    localbody = tbl_localbody.objects.get(LocalbodyID=id)
+    localbody.delete()
+    return viewlocalbody(request)
