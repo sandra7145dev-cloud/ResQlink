@@ -2,14 +2,26 @@ from django.db import models
 
 # Create your models here.
 #Table For Panchayat
-class tbl_panchayat(models.Model):
-    PanchayatID=models.AutoField(primary_key=True)
-    PanchayatName=models.CharField(max_length=100)
+
+class tbl_taluk(models.Model):
+    TalukID=models.AutoField(primary_key=True)
+    TalukName=models.CharField(max_length=100)
+
+class tbl_localbody_type(models.Model):
+    TypeID=models.AutoField(primary_key=True)
+    TypeName=models.CharField(max_length=100)
+
+class tbl_localbody(models.Model):
+    LocalbodyID=models.AutoField(primary_key=True)
+    LocalbodyName=models.CharField(max_length=100)
+    TypeID=models.ForeignKey(tbl_localbody_type, on_delete=models.CASCADE)
+    TalukId=models.ForeignKey(tbl_taluk, on_delete=models.CASCADE)
 
 class tbl_ward(models.Model):
-    WardID=models.AutoField(primary_key=True)
-    WardName=models.CharField(max_length=100)
-    panchayatID=models.ForeignKey(tbl_panchayat, on_delete=models.CASCADE)
+    WardID = models.AutoField(primary_key=True)
+    WardNumber = models.CharField(max_length=10)
+    LocalbodyID = models.ForeignKey(tbl_localbody, on_delete=models.CASCADE)
+
 
 class tbl_category(models.Model):
     CategoryID = models.AutoField(primary_key=True)

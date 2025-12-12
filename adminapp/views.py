@@ -1,40 +1,41 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from .models import tbl_subcategory, tbl_ward, tbl_panchayat, tbl_category
+from .models import tbl_subcategory, tbl_category,tbl_taluk
 
 # Create your views here.
 def adminhome(request):
     return render(request, 'admin/index.html')
 
-#Panchayat registration
-def panchayat_reg(request):
+#Taluk registration
+def taluk_reg(request):
     if request.method == 'POST':
-        panname = request.POST.get('panname')
-        pan_obj = tbl_panchayat()
-        pan_obj.PanchayatName = panname
-        pan_obj.save()
-    return render(request, 'admin/panchayat_reg.html')
+        talukname = request.POST.get('talukname')
+        taluk_obj = tbl_taluk()
+        taluk_obj.TalukName = talukname
+        taluk_obj.save()
+    return render(request, 'admin/taluk_reg.html')
 
-def viewpanchayat(request):
-    panchayats = tbl_panchayat.objects.all()
-    return render(request, 'admin/viewpanchayat.html', {'panchayats': panchayats})
 
-def editpanchayat(request, pid):
-    panchayat = tbl_panchayat.objects.get(PanchayatID=pid)
+def viewtaluk(request):
+    taluks = tbl_taluk.objects.all()
+    return render(request, 'admin/viewtaluk.html', {'taluks': taluks})
+
+def edittaluk(request, tid):
+    taluk = tbl_taluk.objects.get(TalukID=tid)
     if request.method == 'POST':
-        panname = request.POST.get('panname')
-        panchayat.PanchayatName = panname
-        panchayat.save()
-        panchayats = tbl_panchayat.objects.all()
-        return render(request, 'admin/viewpanchayat.html', {'panchayats': panchayats})
+        talukname = request.POST.get('talukname')
+        taluk.TalukName = talukname
+        taluk.save()
+        taluks = tbl_taluk.objects.all()
+        return render(request, 'admin/viewtaluk.html', {'taluks': taluks})
     else:
-        panchayat = tbl_panchayat.objects.get(PanchayatID=pid)
-        return render(request, 'admin/editpanchayat.html', {'panchayat': panchayat})
+        taluk = tbl_taluk.objects.get(TalukID=tid)
+        return render(request, 'admin/edittaluk.html', {'taluk': taluk})
     
-def deletepanchayat(request, pid):
-    panchayat = tbl_panchayat.objects.get(PanchayatID=pid)
-    panchayat.delete()
-    return viewpanchayat(request)
+def deletetaluk(request, tid):
+    taluk = tbl_taluk.objects.get(TalukID=tid)
+    taluk.delete()
+    return viewtaluk(request)
     
 def ward_reg(request):
     panchayats = tbl_panchayat.objects.all()

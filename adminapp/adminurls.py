@@ -3,10 +3,10 @@ from . import views
 
 urlpatterns = [
     path('adminhome/', views.adminhome, name='adminhome'),
-    path('panchayat_reg/', views.panchayat_reg, name='panreg'),
-    path('viewpanchayat/', views.viewpanchayat, name='viewpanchayat'),
-    path('editpanchayat/<int:pid>/', views.editpanchayat, name='editpanchayat'),
-    path('deletepanchayat/<int:pid>/', views.deletepanchayat, name='deletepanchayat'),
+    path('taluk_reg/', views.taluk_reg, name='talukreg'),
+    path('viewtaluk/', views.viewtaluk, name='viewtaluk'),
+    path('edittaluk/<int:tid>/', views.edittaluk, name='edittaluk'),
+    path('deletetaluk/<int:tid>/', views.deletetaluk, name='deletetaluk'),
     path('ward_reg/', views.ward_reg, name='wardreg'),
     path('category_reg/',views.category_reg, name='catreg'),
     path('viewcategory/',views.viewcategory, name='viewcategory'),

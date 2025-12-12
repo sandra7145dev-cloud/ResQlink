@@ -5,14 +5,14 @@
 <!-- ============================================================== -->
 <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
     <div class="card">
-        <h5 class="card-header">Horizontal Form</h5>
+        <h5 class="card-header">TALUK REGISTRATION</h5>
         <div class="card-body">
-            <form action="{% url 'editpanchayat' pid=panchayat.PanchayatID %}" method="post">
+            <form action="{% url 'talukreg' %}" method="post">
                 {% csrf_token %}
                 <div class="form-group row">
-                    <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right">Panchayat Name</label>
+                    <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right"> Taluk Name</label>
                     <div class="col-9 col-lg-10">
-                        <input id="inputEmail2" type="text" name="panname" value="{{ panchayat.PanchayatName }}" placeholder="Panchayat Name"
+                        <input id="inputEmail2" type="text" name="talukname" placeholder="Taluk Name"
                             class="form-control">
                     </div>
                 </div>
