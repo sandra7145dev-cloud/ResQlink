@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from .models import tbl_subcategory, tbl_category,tbl_taluk
+from .models import tbl_subcategory, tbl_category,tbl_taluk,tbl_localbody_type
 
 # Create your views here.
 def adminhome(request):
@@ -36,7 +36,36 @@ def deletetaluk(request, tid):
     taluk = tbl_taluk.objects.get(TalukID=tid)
     taluk.delete()
     return viewtaluk(request)
+
+def localbodytype(request):
+    if request.method == 'POST':
+        localbodytypename = request.POST.get('localbodytypename')
+        localbodytype_obj = tbl_localbody_type()
+        localbodytype_obj.TypeName = localbodytypename
+        localbodytype_obj.save()
+    return render(request, 'admin/localbodytype_reg.html')
     
+def viewlocalbodytype(request):
+    localbodytypes = tbl_localbody_type.objects.all()
+    return render(request, 'admin/localbodytypeview.html', {'localbodytypes': localbodytypes})
+
+def editlocalbodytype(request, id):
+    localbodytype= tbl_localbody_type.objects.get(TypeID=id)
+    if request.method == 'POST':
+        localbodytypename = request.POST.get('localbodytypename')
+        localbodytype.TypeName = localbodytypename
+        localbodytype.save()
+        localbodytypes = tbl_localbody_type.objects.all()
+        return render(request, 'admin/localbodytypeview.html', {'localbodytypes': localbodytypes})
+    else:
+        localbodytype= tbl_localbody_type.objects.get(TypeID=id)
+        return render(request, 'admin/editlocalbodytype.html', {'localbodytype': localbodytype})
+
+def deletelocalbodytype(request, id):
+    localbodytype = tbl_localbody_type.objects.get(TypeID=id)
+    localbodytype.delete()
+    return viewlocalbodytype(request)
+
 def ward_reg(request):
     panchayats = tbl_panchayat.objects.all()
     if request.method == 'POST':

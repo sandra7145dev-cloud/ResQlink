@@ -1,0 +1,69 @@
+{% load static %}
+{% include 'admin/header.html' %}
+                <!-- ============================================================== -->
+                <!-- pageheader  -->
+                <!-- ============================================================== -->
+                <div class="row">
+                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                        <div class="page-header">
+                            <h2 class="pageheader-title">Local Body Type Management</h2>
+                            <div class="page-breadcrumb">
+                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ============================================================== -->
+                <!-- end pageheader  -->
+                <!-- ============================================================== -->
+                <div class="row">
+                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                                <div class="card">
+                                    <h5 class="card-header">Local Body Type</h5>
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead class="bg-light">
+                                                    <tr class="border-0">
+                                                        <th class="border-0">#</th>
+                                                        <th class="border-0">Local Body Type</th>
+                                                        <th class="border-0">Actions</th>
+                        
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <!-- locations is from the viewlocation function key value in view.py -->
+                                                    {% for t in localbodytypes %}
+                                                    <tr>
+                                                        <td>{{ forloop.counter }}</td>
+                                                        <td>{{t.TypeName}}</td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                            <a href="{% url 'editlocalbodytype' id=t.TypeID %}">
+                                                             <button type="button" class="btn btn-success btn-sm btn-icon-text">
+                                                             Edit
+                                                            <a href="{% url 'deletelocalbodytype' id=t.TypeID %}" onclick="return confirm('Are you sure you want to delete this local body type?');">
+                                                             <button type="button" class="btn btn-danger btn-sm btn-icon-text">
+                                                             Delete
+                                                            <i class="typcn typcn-delete-outline btn-icon-append"></i>                          
+                                                            </button>
+                                                            </a>
+                                                 </div>
+                                                         </td>
+                                                         </tr>
+                                                        {% endfor %}
+                                                       
+                                                       
+                                                        
+                                                       
+                                                        </tbody>
+                                                      </table>
+                                        </div>
+                                    </div>
+                                </div>
+                    </div>
+                </div>
+                <!-- ============================================================== -->
+                <!-- end district table  -->
+                <!-- ============================================================== -->
+{% include 'admin/footer.html' %}
