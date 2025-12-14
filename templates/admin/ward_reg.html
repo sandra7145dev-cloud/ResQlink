@@ -3,36 +3,47 @@
 <!-- ============================================================== -->
 <!-- horizontal form -->
 <!-- ============================================================== -->
-<div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
+<div class="col-xl-8 col-lg-8 col-md-12 col-sm-12 col-12">
     <div class="card">
         <h5 class="card-header">WARD REGISTRATION</h5>
         <div class="card-body">
             <form action="{% url 'wardreg' %}" method="post">
                 {% csrf_token %}
+
                 <div class="form-group row">
-                    <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right">Panchayat</label>
-                     <div class="col-9 col-lg-10">
-                        <select name="panchayatid" class="form-control">
-                            <option value="">--Select Panchayat--</option>
-                            {% for p in panchayats %}
-                            <option value="{{ p.PanchayatID }}">{{ p.PanchayatName }}</option>
+                    <label class="col-3 col-lg-3 col-form-label text-right">Taluk</label>
+                    <div class="col-9 col-lg-9">
+                        <select id="taluk_select" name="talukid" class="form-control" required>
+                            <option value="">-- Select Taluk --</option>
+                            {% for t in taluks %}
+                            <option value="{{ t.TalukID }}">{{ t.TalukName }}</option>
                             {% endfor %}
                         </select>
-                        <br><br>
-                    </div>
-                    <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right"> Name</label>
-                    <div class="col-9 col-lg-10">
-                        <input id="inputEmail2" type="text" name="wardname" placeholder="Ward Name"
-                            class="form-control">
                     </div>
                 </div>
 
-                <div class="row pt-2 pt-sm-5 mt-1">
+                <div class="form-group row">
+                    <label class="col-3 col-lg-3 col-form-label text-right">Local Body</label>
+                    <div class="col-9 col-lg-9">
+                        <select id="localbody_select" name="localbodyid" class="form-control" required>
+                            <option value="">-- Select Local Body --</option>
+                        </select>
+                    </div>
+                </div>
 
+                <div class="form-group row">
+                    <label class="col-3 col-lg-3 col-form-label text-right">Ward Number</label>
+                    <div class="col-9 col-lg-9">
+                        <input type="text" id="wardnumber" name="wardnumber" placeholder="Enter Ward Number"
+                            class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="row pt-2 pt-sm-4 mt-1">
                     <div class="col-sm-6 pl-0">
                         <p class="text-right">
                             <button type="submit" class="btn btn-space btn-primary">Submit</button>
-                            <button class="btn btn-space btn-secondary">Cancel</button>
+                            <a href="/adminapp/adminhome/" class="btn btn-space btn-secondary">Cancel</a>
                         </p>
                     </div>
                 </div>
@@ -40,6 +51,30 @@
         </div>
     </div>
 </div>
+<script>
+// When taluk changes, load local bodies for that taluk
+document.getElementById('taluk_select').addEventListener('change', function() {
+    const talukId = this.value;
+    const localbodySelect = document.getElementById('localbody_select');
+    localbodySelect.innerHTML = '<option value="">-- Select Local Body --</option>';
+
+    if (!talukId) {
+        return;
+    }
+
+    fetch(`{% url 'localbodies_by_taluk' %}?taluk_id=${talukId}`)
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(lb => {
+                const opt = document.createElement('option');
+                opt.value = lb.LocalbodyID;
+                opt.textContent = lb.LocalbodyName;
+                localbodySelect.appendChild(opt);
+            });
+        })
+        .catch(err => console.error('Error loading local bodies:', err));
+});
+</script>
 <!-- ============================================================== -->
 <!-- end horizontal form -->
 {% include 'admin/footer.html' %}

@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from .models import tbl_subcategory, tbl_category, tbl_taluk, tbl_localbody_type, tbl_localbody,  tbl_ward
 from django.views.decorators.http import require_http_methods
@@ -81,15 +81,98 @@ def localbody(request):
     return render(request, 'admin/localbody_reg.html', {'taluks': taluks, 'localbodies': localbodies})
 
 def ward_reg(request):
-    panchayats = tbl_panchayat.objects.all()
+    taluks = tbl_taluk.objects.all()
+    localbodies = tbl_localbody.objects.none()  # filled via JS after taluk select
     if request.method == 'POST':
-        wardname = request.POST.get('wardname')
-        panchayatid = request.POST.get('panchayatid')
+        ward_number = request.POST.get('wardnumber')
+        localbody_id = request.POST.get('localbodyid')
         ward_obj = tbl_ward()
-        ward_obj.WardName = wardname
-        ward_obj.panchayatID = tbl_panchayat.objects.get(PanchayatID=panchayatid)
+        ward_obj.WardNumber = ward_number
+        ward_obj.LocalbodyID = tbl_localbody.objects.get(LocalbodyID=localbody_id)
         ward_obj.save()
-    return render(request, 'admin/ward_reg.html', {'panchayats': panchayats})
+    return render(request, 'admin/ward_reg.html', {
+        'taluks': taluks,
+        'localbodies': localbodies
+    })
+
+
+def viewward(request):
+    taluks = tbl_taluk.objects.all()
+    wards = tbl_ward.objects.select_related('LocalbodyID', 'LocalbodyID__TalukId')
+    return render(request, 'admin/ward_view.html', {
+        'taluks': taluks,
+        'wards': wards,
+        'localbodies': tbl_localbody.objects.none(),  # populated via JS when taluk is chosen
+    })
+
+
+@require_http_methods(["GET"])
+def filter_ward(request):
+    taluk_id = request.GET.get('taluk_id', '')
+    localbody_id = request.GET.get('localbody_id', '')
+
+    wards = tbl_ward.objects.select_related('LocalbodyID', 'LocalbodyID__TalukId')
+
+    if taluk_id:
+        wards = wards.filter(LocalbodyID__TalukId=taluk_id)
+    if localbody_id:
+        wards = wards.filter(LocalbodyID=localbody_id)
+
+    data = [
+        {
+            'WardID': w.WardID,
+            'WardNumber': w.WardNumber,
+            'LocalbodyID': w.LocalbodyID.LocalbodyID,
+            'LocalbodyName': w.LocalbodyID.LocalbodyName,
+            'TalukName': w.LocalbodyID.TalukId.TalukName,
+        }
+        for w in wards
+    ]
+
+    return JsonResponse(data, safe=False)
+
+
+@require_http_methods(["GET"])
+def localbodies_by_taluk(request):
+    taluk_id = request.GET.get('taluk_id')
+    if not taluk_id:
+        return JsonResponse([], safe=False)
+
+    localbodies = tbl_localbody.objects.filter(TalukId=taluk_id)
+    data = [
+        {
+            'LocalbodyID': lb.LocalbodyID,
+            'LocalbodyName': lb.LocalbodyName,
+        }
+        for lb in localbodies
+    ]
+    return JsonResponse(data, safe=False)
+
+def editward(request, wid):
+    taluks = tbl_taluk.objects.all()
+    ward = tbl_ward.objects.select_related('LocalbodyID', 'LocalbodyID__TalukId').get(WardID=wid)
+
+    if request.method == 'POST':
+        ward_number = request.POST.get('wardnumber')
+        localbody_id = request.POST.get('localbodyid')
+
+        ward.WardNumber = ward_number
+        ward.LocalbodyID = tbl_localbody.objects.get(LocalbodyID=localbody_id)
+        ward.save()
+        return redirect('viewward')
+
+    # GET: preload localbodies filtered by ward's taluk for convenience
+    localbodies = tbl_localbody.objects.filter(TalukId=ward.LocalbodyID.TalukId_id)
+    return render(request, 'admin/waed_edit.html', {
+        'ward': ward,
+        'taluks': taluks,
+        'localbodies': localbodies,
+    })
+    
+def deleteward(request, wid):
+    ward = tbl_ward.objects.get(WardID=wid)
+    ward.delete()
+    return redirect('viewward')
 
 def category_reg(request):
     if request.method == 'POST':
@@ -130,6 +213,59 @@ def subcategory_reg(request):
         subcat_obj.categoryID = tbl_category.objects.get(CategoryID=categoryid)
         subcat_obj.save()
     return render(request, 'admin/subcategory_reg.html', {'categories': categories})
+
+def viewsubcategory(request):
+    categories = tbl_category.objects.all()
+    subcategories = tbl_subcategory.objects.select_related('categoryID').all()
+    return render(request, 'admin/subcategory_view.html', {
+        'categories': categories,
+        'subcategories': subcategories
+    })
+
+@require_http_methods(["GET"])
+def filter_subcategory(request):
+    category_id = request.GET.get('category_id', '')
+    subcategories = tbl_subcategory.objects.select_related('categoryID').all()
+    if category_id:
+        subcategories = subcategories.filter(categoryID=category_id)
+    data = []
+    for sc in subcategories:
+        data.append({
+            'SubCategoryID': sc.subCategoryId,
+            'SubCategoryName': sc.SubCategoryname,
+            'CategoryID': {
+                'CategoryID': sc.categoryID.CategoryID,
+                'CategoryName': sc.categoryID.CategoryName
+            }
+        })
+    return JsonResponse(data, safe=False)
+
+def editsubcategory(request, sid):
+    categories = tbl_category.objects.all()
+    subcategory = tbl_subcategory.objects.select_related('categoryID').get(subCategoryId=sid)
+    if request.method == 'POST':
+        subcatname = request.POST.get('subcategoryname')
+        categoryid = request.POST.get('categoryid')
+        subcategory.SubCategoryname = subcatname
+        subcategory.categoryID = tbl_category.objects.get(CategoryID=categoryid)
+        subcategory.save()
+        categories = tbl_category.objects.all()
+        subcategories = tbl_subcategory.objects.select_related('categoryID').all()
+        return render(request, 'admin/subcategory_view.html', {
+            'categories': categories,
+            'subcategories': subcategories
+        })
+    else:
+        subcategory = tbl_subcategory.objects.select_related('categoryID').get(subCategoryId=sid)
+        return render(request, 'admin/editsubcategory.html', {
+            'subcategory': subcategory,
+            'categories': categories
+        })
+    
+def deletesubcategory(request, sid):
+    subcategory = tbl_subcategory.objects.get(subCategoryId=sid)
+    subcategory.delete()
+    return viewsubcategory(request)
 
 # LocalBody Views
 def viewlocalbody(request):

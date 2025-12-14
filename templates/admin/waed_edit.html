@@ -1,0 +1,66 @@
+{% load static %}
+{% include 'admin/header.html' %}
+                <!-- ============================================================== -->
+                <!-- pageheader  -->
+                <!-- ============================================================== -->
+                <div class="row">
+                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                        <div class="page-header">
+                            <h2 class="pageheader-title">Edit Ward</h2>
+                            <div class="page-breadcrumb">
+                                <nav aria-label="breadcrumb">
+                                    <ol class="breadcrumb">
+                                        <li class="breadcrumb-item"><a href="/adminapp/adminhome/" class="breadcrumb-btn">Dashboard</a></li>
+                                        <li class="breadcrumb-item"><a href="/adminapp/viewward/" class="breadcrumb-btn">Ward</a></li>
+                                        <li class="breadcrumb-item active" aria-current="page">Edit Ward</li>
+                                    </ol>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ============================================================== -->
+                <!-- end pageheader  -->
+                <!-- ============================================================== -->
+                <div class="row">
+                    <div class="col-lg-6 mx-auto">
+                        <div class="card">
+                            <h5 class="card-header">Edit Ward</h5>
+                            <div class="card-body">
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <label for="wardnumber">Ward Number *</label>
+                                        <input type="text" class="form-control" id="wardnumber" name="wardnumber" value="{{ ward.WardNumber }}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="talukid">Taluk *</label>
+                                        <select class="form-control" id="talukid" name="talukid" required>
+                                            <option value="">-- Select Taluk --</option>
+                                            {% for t in taluks %}
+                                            <option value="{{ t.TalukID }}" {% if t.TalukID == localbody.TalukId.TalukID %}selected{% endif %}>{{ t.TalukName }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="localbodyid">Local Body *</label>
+                                        <select class="form-control" id="localbodyid" name="localbodyid" required>
+                                            <option value="">-- Select Local Body --</option>
+                                            {% for lb in localbodies %}
+                                            <option value="{{ lb.LocalbodyID }}" {% if lb.LocalbodyID == ward.LocalbodyID.LocalbodyID %}selected{% endif %}>{{ lb.LocalbodyName }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="submit" class="btn btn-primary">Update</button>
+                                        <a href="/adminapp/viewlocalbody/" class="btn btn-secondary">Cancel</a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ============================================================== -->
+                <!-- end form  -->
+                <!-- ============================================================== -->
+{% include 'admin/footer.html' %}
