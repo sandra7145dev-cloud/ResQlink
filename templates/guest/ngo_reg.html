@@ -25,12 +25,12 @@
             </div>
             <div class="col-lg-9">
                 <div style="background: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.08);">
-                    <form class="form-contact contact_form" action="{% url 'ngo_reg' %}" method="post">
+                    <form class="form-contact contact_form" action="{% url 'ngo_reg' %}" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         
                         <!-- Organization Details Section -->
                         <div class="section-heading mb-4">
-                            <h4 style="color: #f5385d; border-left: 4px solid #f5385d; padding-left: 15px; margin-bottom: 20px;">
+                            <h4 style="color: #6cec8a; border-left: 4px solid #6cec8a; padding-left: 15px; margin-bottom: 20px;">
                                 <i class="fa fa-building"></i> Organization Details
                             </h4>
                         </div>
@@ -51,24 +51,40 @@
                             </div>
                         </div>
 
+                        <!-- Proof Certificate Section -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">
+                                        <i class="fa fa-file-certificate"></i> Proof Certificate (NGO Registration Document)
+                                    </label>
+                                    <input class="form-control" name="proof_document" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required
+                                           style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                    <small class="text-muted d-block mt-2">
+                                        <i class="fa fa-info-circle"></i> Upload your NGO registration certificate or proof document (PDF, JPG, PNG, DOC, DOCX). Max size: 5MB
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Contact Information Section -->
                         <div class="section-heading mb-4 mt-4">
-                            <h4 style="color: #f5385d; border-left: 4px solid #f5385d; padding-left: 15px; margin-bottom: 20px;">
+                            <h4 style="color: #000000; border-left: 4px solid #000000; padding-left: 15px; margin-bottom: 20px;">
                                 <i class="fa fa-user"></i> Contact Information
                             </h4>
                         </div>
                         <div class="row">
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Contact Person</label>
-                                    <input class="form-control" name="contact_person" type="text" placeholder="Primary contact name" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Phone Number</label>
+                                    <input class="form-control" name="phone" type="tel" placeholder="+91 XXXXX XXXXX" required
                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Phone Number</label>
-                                    <input class="form-control" name="phone" type="tel" placeholder="+91 XXXXX XXXXX" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Phone Number (other)</label>
+                                    <input class="form-control" name="phone_other" type="tel" placeholder="+91 XXXXX XXXXX" required
                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
                                 </div>
                             </div>
@@ -83,7 +99,7 @@
 
                         <!-- Location Details Section -->
                         <div class="section-heading mb-4 mt-4">
-                            <h4 style="color: #f5385d; border-left: 4px solid #f5385d; padding-left: 15px; margin-bottom: 20px;">
+                            <h4 style="color: #000000; border-left: 4px solid #000000; padding-left: 15px; margin-bottom: 20px;">
                                 <i class="fa fa-map-marker"></i> Location Details
                             </h4>
                         </div>
@@ -97,58 +113,61 @@
                             </div>
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Place</label>
-                                    <select class="form-control" name="place" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Taluk</label>
+                                    <select class="form-control" name="taluk" required
                                             style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
                                         <option value="">-- Select Place --</option>
-                                        <option value="Thodupuzha">Thodupuzha</option>
-                                        <option value="Munnar">Munnar</option>
-                                        <option value="Kattappana">Kattappana</option>
-                                        <option value="Adimaly">Adimaly</option>
-                                        <option value="Nedumkandam">Nedumkandam</option>
-                                        <option value="Kumily">Kumily</option>
-                                        <option value="Painavu">Painavu</option>
-                                        <option value="Udumbanchola">Udumbanchola</option>
-                                        <option value="Devikulam">Devikulam</option>
-                                        <option value="Peerumedu">Peerumedu</option>
-                                        <option value="Vandiperiyar">Vandiperiyar</option>
-                                        <option value="Cheruthoni">Cheruthoni</option>
-                                        <option value="Mariyapuram">Mariyapuram</option>
-                                        <option value="Rajakumari">Rajakumari</option>
-                                        <option value="Santhanpara">Santhanpara</option>
+                                        {% for t in taluks %}
+                                        <option value="{{ t.TalukID }}">{{ t.TalukName }}</option>
+                                        {% endfor %}
                                     </select>
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Pincode</label>
-                                    <input class="form-control" name="pincode" type="text" placeholder="6-digit pincode" required
-                                           style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Local body</label>
+                                    <select class="form-control" name="localbody" required
+                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                        <option value="">-- Select Local Body --</option>
+                                        {% for lb in localbodies %}
+                                        <option value="{{ lb.LocalbodyID }}">{{ lb.LocalbodyName }}</option>
+                                        {% endfor %}
+                                    </select>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Services Section -->
+                        <!-- Volunteers Section -->
                         <div class="section-heading mb-4 mt-4">
-                            <h4 style="color: #f5385d; border-left: 4px solid #f5385d; padding-left: 15px; margin-bottom: 20px;">
-                                <i class="fa fa-heart"></i> Services & Capabilities
+                            <h4 style="color: #000000; border-left: 4px solid #000000; padding-left: 15px; margin-bottom: 20px;">
+                                <i class="fa fa-users"></i> Volunteers
                             </h4>
                         </div>
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Services Offered</label>
-                                    <textarea class="form-control w-100" name="services" rows="4" 
-                                              placeholder="Describe the services you provide (e.g., Medical Aid, Emergency Shelter, Food Distribution, Rescue Operations, Psychological Support)" required
-                                              style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;"></textarea>
-                                    <small class="text-muted">Help us understand how your NGO can contribute during disasters</small>
+                                    <div style="display: flex; align-items: center; gap: 20px;">
+                                        <label style="font-weight: 600; color: #555; margin-bottom: 0;">Does your NGO have volunteers?</label>
+                                        <div style="display: flex; gap: 30px;">
+                                            <div>
+                                                <input type="radio" name="has_volunteers" value="Yes" id="vol_yes" 
+                                                       style="margin-right: 8px;">
+                                                <label for="vol_yes" style="margin-bottom: 0; font-weight: normal; color: #666;">Yes</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" name="has_volunteers" value="No" id="vol_no" checked
+                                                       style="margin-right: 8px;">
+                                                <label for="vol_no" style="margin-bottom: 0; font-weight: normal; color: #666;">No</label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Account Credentials Section -->
                         <div class="section-heading mb-4 mt-4">
-                            <h4 style="color: #f5385d; border-left: 4px solid #f5385d; padding-left: 15px; margin-bottom: 20px;">
+                            <h4 style="color: #000000; border-left: 4px solid #000000; padding-left: 15px; margin-bottom: 20px;">
                                 <i class="fa fa-lock"></i> Account Credentials
                             </h4>
                         </div>
@@ -172,7 +191,7 @@
                         <div class="form-group mt-4 text-center">
                             <button type="submit" class="button button-contactForm boxed-btn" 
                                     style="padding: 15px 60px; font-size: 16px; font-weight: 600; border-radius: 50px; 
-                                           background: linear-gradient(135deg, #f5385d 0%, #ff6b6b 100%); border: none;
+                                           background: linear-gradient(135deg, #000000 0%, #333333 100%); border: none;
                                            box-shadow: 0 4px 15px rgba(245, 56, 93, 0.3); transition: all 0.3s;">
                                 <i class="fa fa-check-circle"></i> Register Your NGO
                             </button>
@@ -180,7 +199,7 @@
                     </form>
                     <div class="text-center mt-4" style="padding-top: 20px; border-top: 2px solid #f0f0f0;">
                         <p style="font-size: 15px; color: #666;">
-                            Already registered? <a href="{% url 'login' %}" style="color: #f5385d; font-weight: 600; text-decoration: none;">
+                            Already registered? <a href="{% url 'login' %}" style="color: #00000; font-weight: 600; text-decoration: none;">
                                 <i class="fa fa-sign-in"></i> Login here
                             </a>
                         </p>
