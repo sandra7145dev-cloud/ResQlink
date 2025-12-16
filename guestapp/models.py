@@ -23,3 +23,18 @@ class tbl_ngo_reg(models.Model):
     Email = models.CharField(max_length=100)    
     ProofDocument = models.FileField(upload_to='ngo_proofs/')
     hasVolunteers = models.CharField(max_length=10)  # 'Yes' or 'No'
+
+# Volunteer Registration Table
+class tbl_volunteer_reg(models.Model):
+    VolunteerId = models.AutoField(primary_key=True)
+    LoginId = models.ForeignKey(tbl_login, on_delete=models.CASCADE)
+    Name = models.CharField(max_length=200)
+    DateofBirth = models.DateField()
+    age = models.IntegerField()
+    ContactNumber1 = models.CharField(max_length=15)
+    Email = models.CharField(max_length=100)
+    TalukID = models.ForeignKey('adminapp.tbl_taluk', on_delete=models.CASCADE)
+    LocalbodyID = models.ForeignKey('adminapp.tbl_localbody', on_delete=models.CASCADE)
+    Address = models.CharField(max_length=300)
+    skills = models.CharField(max_length=300)
+    availability_status = models.CharField(max_length=100)
