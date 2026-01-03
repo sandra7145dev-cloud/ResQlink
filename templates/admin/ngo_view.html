@@ -1,0 +1,177 @@
+{% load static %}
+{% include 'admin/header.html' %}
+
+					<!-- ============================================================== -->
+					<!-- pageheader  -->
+					<!-- ============================================================== -->
+					<div class="row">
+						<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+							<div class="page-header">
+								<h2 class="pageheader-title">NGO Approval Queue</h2>
+								<p class="pageheader-text">Review newly submitted NGOs and approve or reject them directly from this list.</p>
+								<div class="page-breadcrumb">
+									<nav aria-label="breadcrumb">
+										<ol class="breadcrumb">
+											<li class="breadcrumb-item"><a href="/admin" class="breadcrumb-link">Dashboard</a></li>
+											<li class="breadcrumb-item active" aria-current="page">NGO Approvals</li>
+										</ol>
+									</nav>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- ============================================================== -->
+					<!-- end pageheader  -->
+					<!-- ============================================================== -->
+
+					<div class="row mb-4">
+						<div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12">
+							<div class="card border-3 border-top border-top-primary h-100">
+								<div class="card-body">
+									<h5 class="text-muted">Pending NGOs</h5>
+									<div class="metric-value d-inline-block">
+										<h1 class="mb-1">{{ pending_count|default:"0" }}</h1>
+									</div>
+									<div class="metric-label d-inline-block float-right text-warning font-weight-bold">
+										<span class="icon-circle-small icon-box-xs text-warning bg-warning-light"><i class="fa fa-fw fa-clock"></i></span><span class="ml-1">Awaiting review</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12">
+							<div class="card border-3 border-top border-top-success h-100">
+								<div class="card-body">
+									<h5 class="text-muted">Approved this week</h5>
+									<div class="metric-value d-inline-block">
+										<h1 class="mb-1">{{ approved_count|default:"0" }}</h1>
+									</div>
+									<div class="metric-label d-inline-block float-right text-success font-weight-bold">
+										<span class="icon-circle-small icon-box-xs text-success bg-success-light"><i class="fa fa-fw fa-check"></i></span><span class="ml-1">Cleared</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-xl-4 col-lg-4 col-md-12 col-sm-12 col-12">
+							<div class="card border-3 border-top border-top-danger h-100">
+								<div class="card-body">
+									<h5 class="text-muted">Rejected this week</h5>
+									<div class="metric-value d-inline-block">
+										<h1 class="mb-1">{{ rejected_count|default:"0" }}</h1>
+									</div>
+									<div class="metric-label d-inline-block float-right text-danger font-weight-bold">
+										<span class="icon-circle-small icon-box-xs text-danger bg-danger-light"><i class="fa fa-fw fa-times"></i></span><span class="ml-1">Declined</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-12">
+							<div class="card">
+								<div class="card-header d-flex align-items-center">
+									<div>
+										<h5 class="mb-0">NGO Registration Requests</h5>
+										<small class="text-muted">Use the action buttons to approve or reject each submission.</small>
+									</div>
+									<form class="form-inline ml-auto" method="get">
+										<div class="input-group input-group-sm">
+											<div class="input-group-prepend">
+												<span class="input-group-text bg-white"><i class="fa fa-search"></i></span>
+											</div>
+											<input type="search" class="form-control" name="q" placeholder="Search NGO name or email" value="{{ request.GET.q|default:'' }}">
+										</div>
+									</form>
+								</div>
+								<div class="card-body">
+									{% for ngo in ngos %}
+									<div class="card mb-3 border">
+										<div class="card-body">
+											<div class="row align-items-center">
+												<div class="col-lg-3 col-md-4 mb-3 mb-md-0">
+													<div class="d-flex align-items-center">
+														<div class="mr-3">
+															<span class="avatar-lg rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 24px;">
+																{{ ngo.NGOname|default:"?"|first }}
+															</span>
+														</div>
+														<div>
+															<h5 class="mb-1 font-weight-bold">{{ ngo.NGOname }}</h5>
+															<small class="text-muted">Reg: {{ ngo.RegNumber|default:"N/A" }}</small>
+														</div>
+													</div>
+												</div>
+												<div class="col-lg-6 col-md-5">
+													<div class="row">
+														<div class="col-sm-6 mb-2">
+															<div class="d-flex align-items-start">
+																<i class="fas fa-envelope text-primary mr-2 mt-1"></i>
+																<div>
+																	<small class="text-muted d-block">Email</small>
+																	<span class="font-14">{{ ngo.Email|default:"-" }}</span>
+																</div>
+															</div>
+														</div>
+														<div class="col-sm-6 mb-2">
+															<div class="d-flex align-items-start">
+																<i class="fas fa-phone text-primary mr-2 mt-1"></i>
+																<div>
+																	<small class="text-muted d-block">Phone</small>
+																	<span class="font-14">{{ ngo.ContactNumber1|default:"-" }}</span>
+																</div>
+															</div>
+														</div>
+														<div class="col-sm-6 mb-2">
+															<div class="d-flex align-items-start">
+																<i class="fas fa-map-marker-alt text-primary mr-2 mt-1"></i>
+																<div>
+																	<small class="text-muted d-block">Location</small>
+																	<span class="font-14">{{ ngo.LocalbodyID.LocalbodyName|default:"" }}, {{ ngo.TalukID.TalukName|default:"" }}</span>
+																</div>
+															</div>
+														</div>
+														<div class="col-sm-6 mb-2">
+															<div class="d-flex align-items-start">
+																<i class="fas fa-file-alt text-primary mr-2 mt-1"></i>
+																<div>
+																	<small class="text-muted d-block">Document</small>
+																	{% if ngo.ProofDocument %}
+																		<a href="{{ ngo.ProofDocument.url }}" class="btn btn-outline-primary btn-xs" target="_blank">View Proof</a>
+																	{% else %}
+																		<span class="text-muted">No file</span>
+																	{% endif %}
+																</div>
+															</div>
+														</div>
+													</div>
+												</div>
+												<div class="col-lg-3 col-md-3 text-center">
+													<div class="mb-2">
+														<span class="badge badge-pill {% if ngo.LoginID.Status == 'Approved' %}badge-success{% elif ngo.LoginID.Status == 'Rejected' %}badge-danger{% else %}badge-warning{% endif %} px-3 py-2">
+															{{ ngo.LoginID.Status|default:"Pending"|title }}
+														</span>
+													</div>
+													<div class="btn-group-vertical w-100 mt-2">
+														<a href="{% url 'approve_ngo' ngo.NGOID %}" class="btn btn-success btn-sm mb-2">
+															<i class="fa fa-check mr-1"></i>Approve
+														</a>
+														<a href="{% url 'reject_ngo' ngo.NGOID %}" class="btn btn-danger btn-sm">
+															<i class="fa fa-times mr-1"></i>Reject
+														</a>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									{% empty %}
+									<div class="text-center text-muted py-5">
+										<i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+										<p class="lead">No NGOs awaiting review right now.</p>
+									</div>
+									{% endfor %}
+								</div>
+							</div>
+						</div>
+					</div>
+
+{% include 'admin/footer.html' %}

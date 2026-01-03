@@ -22,4 +22,6 @@ urlpatterns = [
     path('adminapp/', include('adminapp.adminurls')),
     path('guestapp/', include('guestapp.guesturls')),
     path('NGOapp/', include('NGOapp.ngourls')),
+    path('volunteerapp/', include('volunteerapp.volunteerurls')),
+    
 ]

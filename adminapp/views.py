@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
-from .models import tbl_subcategory, tbl_category, tbl_taluk, tbl_localbody_type, tbl_localbody,  tbl_ward
+
+from guestapp.models import tbl_login, tbl_ngo_reg, tbl_volunteer_reg
+from .models import tbl_subcategory, tbl_category, tbl_taluk, tbl_localbody_type, tbl_localbody,  tbl_ward 
 from django.views.decorators.http import require_http_methods
 
 # Create your views here.
@@ -335,3 +337,89 @@ def deletelocalbody(request, id):
     localbody = tbl_localbody.objects.get(LocalbodyID=id)
     localbody.delete()
     return viewlocalbody(request)
+
+def viewngo(request):
+    pending_count =  tbl_login.objects.filter(Role='NGO' , Status='Pending').count()
+    approved_count = tbl_login.objects.filter(Role='NGO', Status='Approved').count()
+    rejected_count = tbl_login.objects.filter(Role = 'NGO', Status='Rejected').count()
+    
+    # Fetch all NGO registrations with related data
+    ngos = tbl_ngo_reg.objects.select_related('LoginID', 'TalukID', 'LocalbodyID').all()
+    
+    return render(request, 'admin/ngo_view.html', {
+        'pending_count': pending_count,
+        'approved_count': approved_count,
+        'rejected_count': rejected_count,
+        'ngos': ngos,
+        
+    })  
+
+def approve_ngo(request, ngoid):
+    try:
+        ngo = tbl_ngo_reg.objects.select_related('LoginID').get(NGOID=ngoid)
+    except tbl_ngo_reg.DoesNotExist:
+        return redirect('viewngo')
+
+    # Update login status to Approved
+    login = ngo.LoginID
+    login.Status = 'Approved'
+    login.save()
+    return redirect('viewngo')
+
+
+def reject_ngo(request, ngoid):
+    try:
+        ngo = tbl_ngo_reg.objects.select_related('LoginID').get(NGOID=ngoid)
+    except tbl_ngo_reg.DoesNotExist:
+        return redirect('viewngo')
+
+    # Update login status to Rejected
+    login = ngo.LoginID
+    login.Status = 'Rejected'
+    login.save()
+    return redirect('viewngo')
+
+def viewvolunteer(request):
+    pending_count =  tbl_login.objects.filter(Role='volunteer' , Status='Pending').count()
+    approved_count = tbl_login.objects.filter(Role='volunteer', Status='Approved').count()
+    rejected_count = tbl_login.objects.filter(Role ='volunteer', Status='Rejected').count()
+    
+    # Fetch all Volunteer registrations with related data - handle missing LoginId gracefully
+    try:
+        volunteers = tbl_volunteer_reg.objects.select_related('LoginId', 'TalukID', 'LocalbodyID').all()
+    except:
+        # Fallback if select_related fails
+        volunteers = tbl_volunteer_reg.objects.all()
+    
+    return render(request, 'admin/volunteer_view.html', {
+        'pending_count': pending_count,
+        'approved_count': approved_count,
+        'rejected_count': rejected_count,
+        'volunteers': volunteers,
+        
+    })
+
+def approve_vol(request, volid):
+    try:
+        volunteer = tbl_volunteer_reg.objects.select_related('LoginId').get(VolunteerId=volid)
+    except tbl_volunteer_reg.DoesNotExist:
+        return redirect('viewvolunteer')
+    
+    # Update login status to Approved
+    login = volunteer.LoginId
+    login.Status = 'Approved'
+    login.save()
+    return redirect('viewvolunteer')
+
+
+def reject_vol(request, volid):
+    try:
+        volunteer = tbl_volunteer_reg.objects.select_related('LoginId').get(VolunteerId=volid)
+    except tbl_volunteer_reg.DoesNotExist:
+        return redirect('viewvolunteer')
+
+    # Update login status to Rejected
+    login = volunteer.LoginId
+    login.Status = 'Rejected'
+    login.save()
+    return redirect('viewvolunteer')

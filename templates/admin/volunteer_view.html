@@ -1,0 +1,163 @@
+{% load static %}
+{% include 'admin/header.html' %}
+
+			<!-- ============================================================== -->
+			<!-- pageheader  -->
+			<!-- ============================================================== -->
+			<div class="row">
+				<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+					<div class="page-header">
+						<h2 class="pageheader-title">Volunteer Approval Queue</h2>
+						<p class="pageheader-text">Review newly submitted volunteers and approve or reject them directly from this list.</p>
+						<div class="page-breadcrumb">
+							<nav aria-label="breadcrumb">
+								<ol class="breadcrumb">
+									<li class="breadcrumb-item"><a href="/admin" class="breadcrumb-link">Dashboard</a></li>
+									<li class="breadcrumb-item active" aria-current="page">Volunteer Approvals</li>
+								</ol>
+							</nav>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- ============================================================== -->
+			<!-- end pageheader  -->
+			<!-- ============================================================== -->
+
+			<div class="row mb-4">
+				<div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12">
+					<div class="card border-3 border-top border-top-primary h-100">
+						<div class="card-body">
+							<h5 class="text-muted">Pending Volunteers</h5>
+							<div class="metric-value d-inline-block">
+								<h1 class="mb-1">{{ pending_count|default:"0" }}</h1>
+							</div>
+							<div class="metric-label d-inline-block float-right text-warning font-weight-bold">
+								<span class="icon-circle-small icon-box-xs text-warning bg-warning-light"><i class="fa fa-fw fa-clock"></i></span><span class="ml-1">Awaiting review</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12">
+					<div class="card border-3 border-top border-top-success h-100">
+						<div class="card-body">
+							<h5 class="text-muted">Approved this week</h5>
+							<div class="metric-value d-inline-block">
+								<h1 class="mb-1">{{ approved_count|default:"0" }}</h1>
+							</div>
+							<div class="metric-label d-inline-block float-right text-success font-weight-bold">
+								<span class="icon-circle-small icon-box-xs text-success bg-success-light"><i class="fa fa-fw fa-check"></i></span><span class="ml-1">Cleared</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-xl-4 col-lg-4 col-md-12 col-sm-12 col-12">
+					<div class="card border-3 border-top border-top-danger h-100">
+						<div class="card-body">
+							<h5 class="text-muted">Rejected this week</h5>
+							<div class="metric-value d-inline-block">
+								<h1 class="mb-1">{{ rejected_count|default:"0" }}</h1>
+							</div>
+							<div class="metric-label d-inline-block float-right text-danger font-weight-bold">
+								<span class="icon-circle-small icon-box-xs text-danger bg-danger-light"><i class="fa fa-fw fa-times"></i></span><span class="ml-1">Declined</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-12">
+					<div class="card">
+						<div class="card-header d-flex align-items-center">
+							<div>
+								<h5 class="mb-0">Volunteer Registration Requests</h5>
+								<small class="text-muted">Use the action buttons to approve or reject each submission.</small>
+							</div>
+							<form class="form-inline ml-auto" method="get">
+								<div class="input-group input-group-sm">
+									<div class="input-group-prepend">
+										<span class="input-group-text bg-white"><i class="fa fa-search"></i></span>
+									</div>
+									<input type="search" class="form-control" name="q" placeholder="Search NGO name or email" value="{{ request.GET.q|default:'' }}">
+								</div>
+							</form>
+						</div>
+						<div class="card-body">
+							<div class="row">
+								{% for vol in volunteers %}
+								<div class="col-md-6 col-lg-4 mb-3">
+									<div class="card h-100 border">
+										<div class="card-body">
+											<div class="mb-3">
+												<div class="d-flex align-items-center mb-3">
+													<span class="avatar-lg rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mr-3" style="width: 50px; height: 50px; font-size: 20px;">
+														{{ vol.Name|default:"?"|first }}
+													</span>
+													<div>
+														<h6 class="mb-0 font-weight-bold">{{ vol.Name }}</h6>
+														<small class="text-muted">Volunteer</small>
+													</div>
+												</div>
+											</div>
+											<div class="mb-2">
+												<small class="text-muted d-block">DOB</small>
+												<span class="font-13">{{ vol.DateofBirth|default:"-" }}</span>
+											</div>
+											<div class="mb-2">
+												<small class="text-muted d-block">Age</small>
+												<span class="font-13">{{ vol.age|default:"-" }}</span>
+											</div>
+											<div class="mb-2">
+												<small class="text-muted d-block">Email</small>
+												<span class="font-13">{{ vol.Email|default:"-" }}</span>
+											</div>
+											<div class="mb-2">
+												<small class="text-muted d-block">Phone</small>
+												<span class="font-13">{{ vol.ContactNumber1|default:"-" }}</span>
+											</div>
+											<div class="mb-2">
+												<small class="text-muted d-block">Location</small>
+												<span class="font-13">{{ vol.LocalbodyID.LocalbodyName|default:"" }}, {{ vol.TalukID.TalukName|default:"" }}</span>
+											</div>
+											<div class="mb-2">
+												<small class="text-muted d-block">Skills</small>
+												<span class="font-13">{{ vol.skills|default:"-" }}</span>
+											</div>
+											<div class="mb-3">
+												<small class="text-muted d-block">Address</small>
+												<span class="font-13">{{ vol.Address|default:"-" }}</span>
+											</div>
+											{% if vol.ProofDocument %}
+											<div class="mb-3">
+												<a href="{{ vol.ProofDocument.url }}" class="btn btn-outline-primary btn-sm btn-block" target="_blank">
+													<i class="fa fa-file mr-1"></i>View Proof
+												</a>
+											</div>
+											{% endif %}
+											<div class="btn-group-vertical w-100">
+												<a href="{% url 'approve_volunteer' vol.VolunteerId %}" class="btn btn-success btn-sm mb-1">
+													<i class="fa fa-check mr-1"></i>Approve
+												</a>
+												<a href="{% url 'reject_volunteer' vol.VolunteerId %}" class="btn btn-danger btn-sm">
+													<i class="fa fa-times mr-1"></i>Reject
+												</a>
+											</div>
+										</div>
+									</div>
+								</div>
+								{% empty %}
+								<div class="col-12">
+									<div class="text-center text-muted py-5">
+										<i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+										<p class="lead">No volunteers in the system right now.</p>
+									</div>
+								</div>
+								{% endfor %}
+							</div>
+						</div>
+
+			</div>
+
+{% include 'admin/footer.html' %}
+						
