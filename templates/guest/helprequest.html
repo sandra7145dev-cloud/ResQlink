@@ -1,0 +1,101 @@
+{% load static %}
+{% include 'guest/header.html' %}
+<section class="contact-section section_padding">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 text-center mb-4">
+                <h2 class="contact-title">Enter Your Details</h2>
+                <p class="text-muted" style="font-size: 16px;"></p>
+            </div>
+            <div class="col-lg-9">
+                <div style="background: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.08);">
+                    <form class="form-contact contact_form" action="{% url 'helpreq' %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Organization Details Section -->
+                        <div class="section-heading mb-4">
+                            <h4 style="color: #6cec8a; border-left: 4px solid #6cec8a; padding-left: 15px; margin-bottom: 20px;">
+                                <i class="fa fa-building"></i> Individual Details
+                            </h4>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Full Name</label>
+                                    <input class="form-control" name="ngo_name" type="text" placeholder="Enter your NGO name" required 
+                                           style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Contact Number</label>
+                                    <input class="form-control" name="reg_number" type="text" placeholder="Govt. registration number" required
+                                           style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                </div>
+                            </div>
+                        </div>
+
+            
+
+                        
+                        <!-- Location Details Section -->
+                        <div class="section-heading mb-4 mt-4">
+                            <h4 style="color: #000000; border-left: 4px solid #000000; padding-left: 15px; margin-bottom: 20px;">
+                                <i class="fa fa-map-marker"></i> Location Details
+                            </h4>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Address</label>
+                                    <textarea class="form-control w-100" name="address" rows="3" placeholder="Complete address with landmarks" required
+                                              style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Taluk</label>
+                                    <select class="form-control" name="taluk" required
+                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                        <option value="">-- Select Place --</option>
+                                        {% for t in taluks %}
+                                        <option value="{{ t.TalukID }}">{{ t.TalukName }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Local body</label>
+                                    <select class="form-control" name="localbody" required
+                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                        <option value="">-- Select Local Body --</option>
+                                        {% for lb in localbodies %}
+                                        <option value="{{ lb.LocalbodyID }}">{{ lb.LocalbodyName }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                           
+                        </div>
+
+                        
+
+                        <!-- Account Credentials Section -->
+                        
+                        <div class="form-group mt-4 text-center">
+                            <button type="submit" class="button button-contactForm boxed-btn" 
+                                    style="padding: 15px 60px; font-size: 16px; font-weight: 600; border-radius: 50px; 
+                                           background: linear-gradient(135deg, #000000 0%, #333333 100%); border: none;
+                                           box-shadow: 0 4px 15px rgba(245, 56, 93, 0.3); transition: all 0.3s;">
+                                <i class="fa fa-check-circle"></i> Submit
+                            </button>
+                        </div>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% include 'guest/header.html' %}

@@ -189,3 +189,7 @@ def volunteer_reg(request):
                 'error': f'Registration failed: {str(e)}'
             })
     return render(request, 'guest/volunteer_reg.html', {'taluks': taluks, 'localbodies': localbodies})
+
+
+def helpreq(request):
+    return render(request, 'guest/helprequest.html')

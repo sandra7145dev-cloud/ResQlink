@@ -35,6 +35,10 @@ urlpatterns = [
     path('filter_subcategory/',views.filter_subcategory, name='filter_subcategory'),
     path('editsubcategory/<int:sid>/',views.editsubcategory, name='editsubcategory'),
     path('deletesubcategory/<int:sid>/',views.deletesubcategory,name='deletesubcategory'),
+    path('disaster_reg/',views.disaster_reg, name='disasterreg'),
+    path('viewdisaster/',views.viewdisaster, name='viewdisaster'),
+    path('editdisaster/<int:did>/',views.editdisaster, name='editdisaster'),
+    path('deletedisaster/<int:did>/',views.deletedisaster, name='deletedisaster'),
 
     path('viewngo/', views.viewngo, name='viewngo'),
     path('approve_ngo/<int:ngoid>/', views.approve_ngo, name='approve_ngo'),

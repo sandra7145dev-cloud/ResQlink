@@ -7,4 +7,5 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('ngo_vol_sel/', views.ngo_vol_sel, name='ngo_vol_sel'),
     path('volunteer_reg/', views.volunteer_reg, name='volunteer_reg'),
+    path('helprequest/' ,views.helpreq, name="helpreq"),
 ]

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 
 from guestapp.models import tbl_login, tbl_ngo_reg, tbl_volunteer_reg
-from .models import tbl_subcategory, tbl_category, tbl_taluk, tbl_localbody_type, tbl_localbody,  tbl_ward 
+from .models import tbl_subcategory, tbl_category, tbl_taluk, tbl_localbody_type, tbl_localbody,  tbl_ward , tbl_disaster
 from django.views.decorators.http import require_http_methods
 
 # Create your views here.
@@ -423,3 +423,31 @@ def reject_vol(request, volid):
     login.Status = 'Rejected'
     login.save()
     return redirect('viewvolunteer')
+
+
+def disaster_reg(request):
+    if request.method == 'POST':
+        disastername = request.POST.get('disastername')
+        disaster_obj = tbl_disaster()
+        disaster_obj.DisasterName = disastername
+        disaster_obj.save()
+    return render(request, 'admin/disaster_reg.html')
+
+def viewdisaster(request):
+    disasters = tbl_disaster.objects.all()
+    return render(request, 'admin/viewdisaster.html', {'disasters': disasters})
+
+def editdisaster(request, did):
+    disaster = tbl_disaster.objects.get(DisasterID=did)
+    if request.method == 'POST':
+        disastername = request.POST.get('disastername')
+        disaster.DisasterName = disastername
+        disaster.save()
+        return redirect('viewdisaster')
+    else:
+        return render(request, 'admin/editdisaster.html', {'disaster': disaster})
+    
+def deletedisaster(request, did):
+    disaster = tbl_disaster.objects.get(DisasterID=did)
+    disaster.delete()
+    return viewdisaster(request)

@@ -31,3 +31,7 @@ class tbl_subcategory(models.Model):
     subCategoryId = models.AutoField(primary_key=True)
     SubCategoryname = models.CharField(max_length=100)
     categoryID = models.ForeignKey(tbl_category, on_delete=models.CASCADE)
+
+class tbl_disaster(models.Model):
+    DisasterID = models.AutoField(primary_key=True)
+    DisasterName = models.CharField(max_length=100)
