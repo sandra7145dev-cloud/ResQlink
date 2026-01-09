@@ -1,0 +1,35 @@
+{% load static %}
+{% include 'admin/header.html' %}
+<!-- ============================================================== -->
+<!-- horizontal form -->
+<!-- ============================================================== -->
+<div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
+    <div class="card">
+        <h5 class="card-header">SERVICE REGISTRATION</h5>
+        <div class="card-body">
+            <form action="{% url 'servicereg' %}" method="post">
+                {% csrf_token %}
+                <div class="form-group row">
+                    <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right"> Name</label>
+                    <div class="col-9 col-lg-10">
+                        <input id="inputEmail2" type="text" name="servicename" placeholder="Service Name"
+                            class="form-control">
+                    </div>
+                </div>
+
+                <div class="row pt-2 pt-sm-5 mt-1">
+
+                    <div class="col-sm-6 pl-0">
+                        <p class="text-right">
+                            <button type="submit" class="btn btn-space btn-primary">Submit</button>
+                            <button class="btn btn-space btn-secondary">Cancel</button>
+                        </p>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- ============================================================== -->
+<!-- end horizontal form -->
+{% include 'admin/footer.html' %}

@@ -39,6 +39,10 @@ urlpatterns = [
     path('viewdisaster/',views.viewdisaster, name='viewdisaster'),
     path('editdisaster/<int:did>/',views.editdisaster, name='editdisaster'),
     path('deletedisaster/<int:did>/',views.deletedisaster, name='deletedisaster'),
+    path('service_reg/',views.service_reg, name='servicereg'),
+    path('viewservice/',views.viewservice, name='viewservice'),
+    path('editservice/<int:sid>/',views.editservice, name='editservice'),
+    path('deleteservice/<int:sid>/',views.deleteservice, name='deleteservice'),
 
     path('viewngo/', views.viewngo, name='viewngo'),
     path('approve_ngo/<int:ngoid>/', views.approve_ngo, name='approve_ngo'),

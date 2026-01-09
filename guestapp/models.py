@@ -38,3 +38,6 @@ class tbl_volunteer_reg(models.Model):
     Address = models.CharField(max_length=300)
     skills = models.CharField(max_length=300)
     availability_status = models.CharField(max_length=100)
+
+
+    

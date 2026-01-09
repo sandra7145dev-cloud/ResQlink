@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 
 from guestapp.models import tbl_login, tbl_ngo_reg, tbl_volunteer_reg
-from .models import tbl_subcategory, tbl_category, tbl_taluk, tbl_localbody_type, tbl_localbody,  tbl_ward , tbl_disaster
+from .models import tbl_subcategory, tbl_category, tbl_taluk, tbl_localbody_type, tbl_localbody,  tbl_ward , tbl_disaster, tbl_service_type
 from django.views.decorators.http import require_http_methods
 
 # Create your views here.
@@ -451,3 +451,30 @@ def deletedisaster(request, did):
     disaster = tbl_disaster.objects.get(DisasterID=did)
     disaster.delete()
     return viewdisaster(request)
+
+def service_reg(request):
+    if request.method == 'POST':
+        servicename = request.POST.get('servicename')
+        service_obj = tbl_service_type()
+        service_obj.serviceName = servicename
+        service_obj.save()
+    return render(request, 'admin/service_reg.html')
+
+def viewservice(request):
+    services = tbl_service_type.objects.all()
+    return render(request, 'admin/viewservice.html', {'services': services})
+
+def editservice(request, sid):
+    service = tbl_service_type.objects.get(serviceID=sid)
+    if request.method == 'POST':
+        servicename = request.POST.get('servicename')
+        service.serviceName = servicename
+        service.save()
+        return redirect('viewservice')
+    else:
+        return render(request, 'admin/service_edit.html', {'service': service})
+    
+def deleteservice(request, sid):
+    service = tbl_service_type.objects.get(serviceID=sid)
+    service.delete()
+    return viewservice(request)

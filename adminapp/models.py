@@ -35,3 +35,7 @@ class tbl_subcategory(models.Model):
 class tbl_disaster(models.Model):
     DisasterID = models.AutoField(primary_key=True)
     DisasterName = models.CharField(max_length=100)
+
+class tbl_service_type(models.Model):
+    serviceID = models.AutoField(primary_key=True)
+    serviceName = models.CharField(max_length=100)
