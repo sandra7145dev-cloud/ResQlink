@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from adminapp.models import tbl_taluk, tbl_localbody
+from adminapp.models import tbl_taluk, tbl_localbody, tbl_disaster
 from .models import tbl_login, tbl_ngo_reg, tbl_volunteer_reg
 # Create your views here.
 
@@ -102,7 +102,42 @@ def ngo_reg(request):
     
 
 def login(request):
-    return render(request, 'guest/login.html')
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        if tbl_login.objects.filter(Username=username, Password=password).exists():
+            log = tbl_login.objects.filter(Username=username, Password=password).first()
+            request.session['LoginID'] = log.LoginID
+            role = log.Role
+            status = log.Status
+            
+            if role == 'ADMIN':
+                return redirect('/adminapp/adminhome/')
+            elif role == 'NGO':
+                if status == 'Approved':
+                    return redirect('/NGOapp/ngohome/')
+                else:
+                    return render(request, 'guest/login.html', {
+                        'error': 'Your NGO account is not verified yet. Please wait for admin approval.'
+                    })
+            elif role == 'VOLUNTEER':
+                if status == 'Approved':
+                    return redirect('/volunteerapp/volunteerhome/')
+                else:
+                    return render(request, 'guest/login.html', {
+                        'error': 'Your volunteer account is not verified yet. Please wait for admin approval.'
+                    })
+            else:
+                return render(request, 'guest/login.html', {
+                    'error': 'Invalid role. Please contact administrator.'
+                })
+        else:
+            return render(request, 'guest/login.html', {
+                'error': 'Invalid username or password'
+            })
+    else:
+        return render(request, 'guest/login.html')
 
 def volunteer_reg(request):
     taluks = tbl_taluk.objects.all()
@@ -192,4 +227,11 @@ def volunteer_reg(request):
 
 
 def helpreq(request):
-    return render(request, 'guest/helprequest.html')
+    taluks = tbl_taluk.objects.all()
+    localbodies = tbl_localbody.objects.all()
+    disasters = tbl_disaster.objects.all()
+    return render(request, 'guest/helprequest.html', {
+        'taluks': taluks,
+        'localbodies': localbodies,
+        'disasters': disasters,
+    })

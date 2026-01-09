@@ -1,101 +1,169 @@
 {% load static %}
 {% include 'guest/header.html' %}
+
 <section class="contact-section section_padding">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-12 text-center mb-4">
-                <h2 class="contact-title">Enter Your Details</h2>
-                <p class="text-muted" style="font-size: 16px;"></p>
+                <h2 class="contact-title">Request for Help</h2>
+                <p class="text-muted" style="font-size: 16px;">
+                    Please provide accurate details to receive faster assistance
+                </p>
             </div>
+
             <div class="col-lg-9">
-                <div style="background: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.08);">
+                <div style="background:#fff;padding:40px;border-radius:10px;box-shadow:0 5px 20px rgba(0,0,0,0.08);">
+
                     <form class="form-contact contact_form" action="{% url 'helpreq' %}" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
-                        
-                        <!-- Organization Details Section -->
+
+                        <!-- Affected Individual Details -->
                         <div class="section-heading mb-4">
-                            <h4 style="color: #6cec8a; border-left: 4px solid #6cec8a; padding-left: 15px; margin-bottom: 20px;">
-                                <i class="fa fa-building"></i> Individual Details
+                            <h4 style="color:#6cec8a;border-left:4px solid #6cec8a;padding-left:15px;">
+                                <i class="fa fa-user"></i> Affected Individual Details
                             </h4>
                         </div>
+
                         <div class="row">
                             <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Full Name</label>
-                                    <input class="form-control" name="ngo_name" type="text" placeholder="Enter your NGO name" required 
-                                           style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
-                                </div>
+                                <label>Full Name</label>
+                                <input class="form-control" name="full_name" required>
                             </div>
                             <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Contact Number</label>
-                                    <input class="form-control" name="reg_number" type="text" placeholder="Govt. registration number" required
-                                           style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
-                                </div>
+                                <label>Contact Number</label>
+                                <input class="form-control" name="contact_number" required>
                             </div>
                         </div>
 
-            
-
-                        
-                        <!-- Location Details Section -->
+                        <!-- Location Details -->
                         <div class="section-heading mb-4 mt-4">
-                            <h4 style="color: #000000; border-left: 4px solid #000000; padding-left: 15px; margin-bottom: 20px;">
+                            <h4 style="color:#000;border-left:4px solid #000;padding-left:15px;">
                                 <i class="fa fa-map-marker"></i> Location Details
                             </h4>
                         </div>
+
                         <div class="row">
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Address</label>
-                                    <textarea class="form-control w-100" name="address" rows="3" placeholder="Complete address with landmarks" required
-                                              style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;"></textarea>
-                                </div>
-                            </div>
                             <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Taluk</label>
-                                    <select class="form-control" name="taluk" required
-                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
-                                        <option value="">-- Select Place --</option>
-                                        {% for t in taluks %}
-                                        <option value="{{ t.TalukID }}">{{ t.TalukName }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
+                                <label>Taluk</label>
+                                <select class="form-control" name="taluk" required>
+                                    <option value="">-- Select Taluk --</option>
+                                    {% for t in taluks %}
+                                    <option value="{{ t.TalukID }}">{{ t.TalukName }}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
+
                             <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Local body</label>
-                                    <select class="form-control" name="localbody" required
-                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
-                                        <option value="">-- Select Local Body --</option>
-                                        {% for lb in localbodies %}
-                                        <option value="{{ lb.LocalbodyID }}">{{ lb.LocalbodyName }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
+                                <label>Local Body</label>
+                                <select class="form-control" name="localbody" required>
+                                    <option value="">-- Select Local Body --</option>
+                                    {% for lb in localbodies %}
+                                    <option value="{{ lb.LocalbodyID }}">{{ lb.LocalbodyName }}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
-                           
+
+                            <div class="col-12 mt-3">
+                                <label>Locality / Landmark</label>
+                                <textarea class="form-control" name="locality" rows="2"></textarea>
+                            </div>
                         </div>
 
-                        
+                        <!-- Disaster Details -->
+                        <div class="row mt-4">
+                            <div class="col-sm-6">
+                                <label>Disaster Type</label>
+                                <select class="form-control" name="disaster" required>
+                                    <option value="">-- Select Disaster --</option>
+                                    {% for d in disasters %}
+                                    <option value="{{ d.DisasterID }}">{{ d.DisasterName }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
 
-                        <!-- Account Credentials Section -->
-                        
-                        <div class="form-group mt-4 text-center">
-                            <button type="submit" class="button button-contactForm boxed-btn" 
-                                    style="padding: 15px 60px; font-size: 16px; font-weight: 600; border-radius: 50px; 
-                                           background: linear-gradient(135deg, #000000 0%, #333333 100%); border: none;
-                                           box-shadow: 0 4px 15px rgba(245, 56, 93, 0.3); transition: all 0.3s;">
-                                <i class="fa fa-check-circle"></i> Submit
+                            <div class="col-sm-6">
+                                <label>Request Type</label>
+                                <select class="form-control" id="request_type" name="request_type" required>
+                                    <option value="">-- Select Type --</option>
+                                    <option value="resource">Resource Assistance</option>
+                                    <option value="emergency">Emergency Rescue</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Resource Section -->
+                        <div id="resource_section" style="display:none;">
+                            <div class="section-heading mt-4 mb-3">
+                                <h4 style="color:#6cec8a;border-left:4px solid #6cec8a;padding-left:15px;">
+                                    <i class="fa fa-cutlery"></i> Resource Requirements
+                                </h4>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <label>Resource Category</label>
+                                    <select class="form-control" name="resource_category">
+                                        <option>Food</option>
+                                        <option>Water</option>
+                                        <option>Clothes</option>
+                                        <option>Medical</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <label>Quantity Required</label>
+                                    <input class="form-control" name="quantity">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Emergency Section -->
+                        <div id="emergency_section" style="display:none;">
+                            <div class="section-heading mt-4 mb-3">
+                                <h4 style="color:#dc3545;border-left:4px solid #dc3545;padding-left:15px;">
+                                    <i class="fa fa-exclamation-triangle"></i> Emergency Details
+                                </h4>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <label>Nature of Emergency</label>
+                                    <select class="form-control" name="emergency_type">
+                                        <option>Trapped</option>
+                                        <option>Injured</option>
+                                        <option>Evacuation Needed</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <label>People Affected</label>
+                                    <input class="form-control" name="people_count">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="text-center mt-5">
+                            <button type="submit" class="button button-contactForm boxed-btn"
+                                    style="padding:15px 60px;border-radius:50px;">
+                                Submit Request
                             </button>
                         </div>
+
                     </form>
-                    
                 </div>
             </div>
         </div>
     </div>
 </section>
-{% include 'guest/header.html' %}
+
+<script>
+document.getElementById("request_type").addEventListener("change", function () {
+    document.getElementById("resource_section").style.display =
+        this.value === "resource" ? "block" : "none";
+    document.getElementById("emergency_section").style.display =
+        this.value === "emergency" ? "block" : "none";
+});
+</script>
+
+{% include 'guest/footer.html' %}
