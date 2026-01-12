@@ -40,7 +40,7 @@
               <div class="text">
               	<h3 class="mb-4">Be a Volunteer</h3>
               	<p>Even the all-powerful Pointing has no control about the blind texts.</p>
-              	<p><a href="#" class="btn btn-white px-3 py-2 mt-2">Be A Volunteer</a></p>
+              	<p><a href="#resource-section" class="btn btn-white px-3 py-2 mt-2">Add Services and Resources</a></p>
               </div>
             </div>
           </div>
@@ -344,68 +344,203 @@
       </div>
     </section>
 
-    <section class="ftco-section bg-light">
-      <div class="container">
-        <div class="row justify-content-center mb-5 pb-3">
-          <div class="col-md-7 heading-section ftco-animate text-center">
-            <h2 class="mb-4">Our Latest Events</h2>
-          </div>
-        </div>
-        <div class="row">
-        	<div class="col-md-4 d-flex ftco-animate">
-          	<div class="blog-entry align-self-stretch">
-              <a href="blog-single.html" class="block-20" style="background-image: url('{% static 'ngo/images/event-1.jpg' %}');">
+ <section class="ftco-section bg-light" id="resource-section">
+  <div class="container">
+    <div class="row justify-content-center mb-5 pb-3">
+      <div class="col-md-7 heading-section ftco-animate text-center">
+        <h2 class="mb-4">Services & Resources Provided by NGO</h2>
+        <p>Add each item or service individually to ensure accurate disaster relief mapping.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12 ftco-animate">
+        <div class="bg-white p-4 shadow-sm" style="border-radius: 12px; border-top: 4px solid #f86f2d;">
+          
+          <ul class="nav nav-pills nav-fill mb-4" id="helpTabs" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active py-3" id="resource-tab" data-toggle="tab" href="#resource-content">
+                <span class="icon-package mr-2"></span> Material Resources
               </a>
-              <div class="text p-4 d-block">
-              	<div class="meta mb-3">
-                  <div><a href="#">Sep. 10, 2018</a></div>
-                  <div><a href="#">Admin</a></div>
-                  <div><a href="#" class="meta-chat"><span class="icon-chat"></span> 3</a></div>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link py-3" id="service-tab" data-toggle="tab" href="#service-content">
+                <span class="icon-hand-stop-o mr-2"></span> Non-Material Services
+              </a>
+            </li>
+          </ul>
+
+          <form action="/NGOapp/submit-help-details/" method="POST">
+            {% csrf_token %}
+
+            {% if messages %}
+            <div class="mb-3">
+              {% for message in messages %}
+              <div class="alert alert-{{ message.tags|default:'info' }}" role="alert">{{ message }}</div>
+              {% endfor %}
+            </div>
+            {% endif %}
+            
+            <div class="tab-content">
+              <div class="tab-pane fade show active" id="resource-content">
+                <div class="alert alert-info py-2" style="font-size: 14px;">
+                  <i class="icon-info-circle mr-2"></i> Add a new row for every specific item you can provide.
                 </div>
-                <h3 class="heading mb-4"><a href="#">World Wide Donation</a></h3>
-                <p class="time-loc"><span class="mr-2"><i class="icon-clock-o"></i> 10:30AM-03:30PM</span> <span><i class="icon-map-o"></i> Venue Main Campus</span></p>
-                <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
-                <p><a href="event.html">Join Event <i class="ion-ios-arrow-forward"></i></a></p>
+                <div class="table-responsive">
+                  <table class="table" id="resourceTable">
+                    <thead>
+                      <tr style="color: #444; font-size: 13px;">
+                        <th>Category</th>
+                        <th>Subcategory</th>
+                        <th>Current Availability</th>
+                        <th>Quantity</th>
+                        
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody id="resourceBody">
+                      <tr class="resource-row">
+                        <td width="25%">
+                          <select name="category[]" class="form-control category-dropdown" required>
+                            <option value="">-- Select --</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.CategoryID }}">{{ cat.CategoryName }}</option>
+                            {% endfor %}
+                          </select>
+                        </td>
+                        <td width="25%">
+                          <select name="subcategory[]" class="form-control subcategory-dropdown" required>
+                            <option value="">-- Select Category First --</option>
+                          </select>
+                        </td>
+                        <td width="18%">
+                          <select name="status[]" class="form-control">
+                            <option value="Available">Available</option>
+                            <option value="Limited">Limited</option>
+                            <option value="Out of Stock">Out of Stock</option>
+                          </select>
+                        </td>
+                        <td width="15%">
+                          <input type="text" name="quantity[]" class="form-control" placeholder="e.g. 500 units">
+                        </td>
+                        
+                        <td width="5%">
+                          <button type="button" class="btn btn-link text-danger remove-row"><i class="icon-trash"></i></button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="addResourceRow">
+                  <i class="icon-plus-circle mr-1"></i> Add Another Item
+                </button>
+              </div>
+
+              <div class="tab-pane fade" id="service-content">
+                <div class="table-responsive">
+                  <table class="table" id="serviceTable">
+                    <thead>
+                      <tr style="color: #444; font-size: 13px;">
+                        <th>Service Type</th>
+                        
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody id="serviceBody">
+                      <tr class="service-row">
+                        <td width="35%">
+                          <select name="service_type[]" class="form-control" required>
+                            <option value="">-- Select Service --</option>
+                            {% for service in service_types %}
+                            <option value="{{ service.serviceID }}">{{ service.serviceName }}</option>
+                            {% endfor %}
+                          </select>
+                        </td>
+                       
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="addServiceRow">
+                  <i class="icon-plus-circle mr-1"></i> Add Another Service
+                </button>
               </div>
             </div>
-          </div>
-          <div class="col-md-4 d-flex ftco-animate">
-          	<div class="blog-entry align-self-stretch">
-              <a href="blog-single.html" class="block-20" style="background-image: url('{% static 'ngo/images/event-2.jpg' %}');">
-              </a>
-              <div class="text p-4 d-block">
-              	<div class="meta mb-3">
-                  <div><a href="#">Sep. 10, 2018</a></div>
-                  <div><a href="#">Admin</a></div>
-                  <div><a href="#" class="meta-chat"><span class="icon-chat"></span> 3</a></div>
-                </div>
-                <h3 class="heading mb-4"><a href="#">World Wide Donation</a></h3>
-                <p class="time-loc"><span class="mr-2"><i class="icon-clock-o"></i> 10:30AM-03:30PM</span> <span><i class="icon-map-o"></i> Venue Main Campus</span></p>
-                <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
-                <p><a href="event.html">Join Event <i class="ion-ios-arrow-forward"></i></a></p>
-              </div>
+
+            <div class="mt-5 text-center">
+              <button type="submit" class="btn btn-primary btn-lg px-5 shadow">Save All Selections</button>
             </div>
-          </div>
-          <div class="col-md-4 d-flex ftco-animate">
-          	<div class="blog-entry align-self-stretch">
-              <a href="blog-single.html" class="block-20" style="background-image: url('{% static 'ngo/images/event-3.jpg' %}');">
-              </a>
-              <div class="text p-4 d-block">
-              	<div class="meta mb-3">
-                  <div><a href="#">Sep. 10, 2018</a></div>
-                  <div><a href="#">Admin</a></div>
-                  <div><a href="#" class="meta-chat"><span class="icon-chat"></span> 3</a></div>
-                </div>
-                <h3 class="heading mb-4"><a href="#">World Wide Donation</a></h3>
-                <p class="time-loc"><span class="mr-2"><i class="icon-clock-o"></i> 10:30AM-03:30PM</span> <span><i class="icon-map-o"></i> Venue Main Campus</span></p>
-                <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
-                <p><a href="event.html">Join Event <i class="ion-ios-arrow-forward"></i></a></p>
-              </div>
-            </div>
-          </div>
+          </form>
         </div>
       </div>
-    </section>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Theme matching styles */
+  .nav-pills .nav-link { border-radius: 30px; background: #f0f0f0; color: #555; margin: 0 10px; font-weight: 600; font-size: 14px; }
+  .nav-pills .nav-link.active { background: #f86f2d !important; color: #fff; }
+  .form-control { border-radius: 5px; border: 1px solid #ddd !important; height: 45px !important; }
+  .table thead th { border-top: none; border-bottom: 2px solid #eee; }
+  .btn-outline-primary { color: #f86f2d; border-color: #f86f2d; }
+  .btn-outline-primary:hover { background: #f86f2d; color: #fff; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Add New Rows
+    document.getElementById('addResourceRow').addEventListener('click', function() {
+        const tbody = document.getElementById('resourceBody');
+        const newRow = tbody.rows[0].cloneNode(true);
+        newRow.querySelectorAll('input').forEach(i => i.value = '');
+        newRow.querySelector('.subcategory-dropdown').innerHTML = '<option value="">-- Select Category First --</option>';
+        tbody.appendChild(newRow);
+    });
+
+    document.getElementById('addServiceRow').addEventListener('click', function() {
+        const tbody = document.getElementById('serviceBody');
+        const newRow = tbody.rows[0].cloneNode(true);
+        newRow.querySelectorAll('input').forEach(i => i.value = '');
+        tbody.appendChild(newRow);
+    });
+
+    // 2. Remove Rows
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-row')) {
+            const rows = e.target.closest('tbody').querySelectorAll('tr');
+            if (rows.length > 1) {
+                e.target.closest('tr').remove();
+            }
+        }
+    });
+
+    // 3. Dynamic Subcategory Loading (AJAX)
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('category-dropdown')) {
+            const categoryId = e.target.value;
+            const subcategorySelect = e.target.closest('tr').querySelector('.subcategory-dropdown');
+            
+            if (!categoryId) {
+                subcategorySelect.innerHTML = '<option value="">-- Select Category First --</option>';
+                return;
+            }
+
+            // Fetch Subcategories via AJAX
+            fetch(`/NGOapp/get-subcategories/?category_id=${categoryId}`)
+                .then(response => response.json())
+                .then(data => {
+                    subcategorySelect.innerHTML = '<option value="">-- Select Subcategory --</option>';
+                    data.forEach(sub => {
+                        subcategorySelect.innerHTML += `<option value="${sub.id}">${sub.name}</option>`;
+                    });
+                });
+        }
+    });
+});
+</script>
+
+
 		
 		<section class="ftco-section-3 img" style="background-image: url('{% static 'ngo/images/bg_3.jpg' %}');">
     	<div class="overlay"></div>
