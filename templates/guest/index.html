@@ -451,63 +451,406 @@
     <!-- news__area_end  -->
 
     <div data-scroll-index='1' class="make_donation_area section_padding">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-6">
-                    <div class="section_title text-center mb-55">
-                        <h3><span>Make a Donation</span></h3>
-                    </div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="section_title text-center mb-30">
+                    <h3><span>Request Help</span></h3>
+                    <p>Please share your details so we can reach you quickly.</p>
                 </div>
+                {% if success %}
+                <div class="alert alert-success" role="alert">{{ success }}</div>
+                {% endif %}
+                {% if error %}
+                <div class="alert alert-danger" role="alert">{{ error }}</div>
+                {% endif %}
             </div>
-            <div class="row justify-content-center">
-                <div class="col-lg-6">
-                    <form action="#" class="donation_form">
-                        <div class="row align-items-center">
-                            <div class="col-md-4">
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <form action="{% url 'guesthome' %}" method="post" class="donation_form" style="background:#fff;padding:30px;border-radius:8px;box-shadow:0 5px 20px rgba(0,0,0,0.06);">
+                    {% csrf_token %}
+
+                    <div class="row mb-4">
+                        <div class="col-12 text-center">
+                            <label class="mr-3"><strong>Requesting for:</strong></label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="request_type" id="type_individual" value="individual" checked onchange="toggleFormType()">
+                                <label class="form-check-label" for="type_individual">Individual</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="request_type" id="type_community" value="community" onchange="toggleFormType()">
+                                <label class="form-check-label" for="type_community">Community/Group</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div id="individual_fields">
+                        <div class="row">
+                            <div class="col-md-6">
                                 <div class="single_amount">
-                                    <div class="input_field">
-                                        <div class="input-group">
-                                            <div class="input-group-prepend">
-                                              <span class="input-group-text" id="basic-addon1">$</span>
-                                            </div>
-                                            <input type="text" class="form-control" placeholder="40,200" aria-label="Username" aria-describedby="basic-addon1">
-                                          </div>
-                                    </div>
+                                    <label>Full Name</label>
+                                    <input type="text" name="name" class="form-control" placeholder="Enter your name">
                                 </div>
                             </div>
-                            <div class="col-md-8">
+                            <div class="col-md-3">
                                 <div class="single_amount">
-                                   <div class="fixed_donat d-flex align-items-center justify-content-between">
-                                       <div class="select_prise">
-                                           <h4>Select Amount:</h4>
-                                       </div>
-                                        <div class="single_doonate"> 
-                                            <input type="radio" id="blns_1" name="radio-group" checked>
-                                            <label for="blns_1">10</label>
-                                        </div>
-                                        <div class="single_doonate"> 
-                                            <input type="radio" id="blns_2" name="radio-group" checked>
-                                            <label for="blns_2">30</label>
-                                        </div>
-                                        <div class="single_doonate"> 
-                                            <input type="radio" id="Other" name="radio-group" checked>
-                                            <label for="Other">Other</label>
-                                        </div>
-                                   </div>
+                                    <label>Age</label>
+                                    <input type="number" name="age" min="1" class="form-control" placeholder="Age">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="single_amount">
+                                    <label>Gender</label>
+                                    <select name="gender" class="form-control">
+                                        <option value="">Select</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
-                    </form>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12">
-                    <div class="donate_now_btn text-center">
-                        <a href="#" class="boxed-btn4">Donate Now</a>
-                    </div>
-                </div>
 
+                        <!-- Help Required Section -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5 style="color: #333; margin-bottom: 15px;">Help Required</h5>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="single_amount">
+                                    <label>Request Type (Disaster)</label>
+                                    <select name="disaster_type" class="form-control" required>
+                                        <option value="">Select Disaster Type</option>
+                                        {% for disaster in disasters %}
+                                        <option value="{{ disaster.DisasterID }}">{{ disaster.DisasterName }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="single_amount">
+                                    <label>Service Type</label>
+                                    <select name="service_type" class="form-control" required>
+                                        <option value="">Select Service Type</option>
+                                        {% for service in service_types %}
+                                        <option value="{{ service.serviceID }}">{{ service.serviceName }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="community_fields" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="single_amount">
+                                    <label>Community/Camp Name</label>
+                                    <input type="text" name="community_name" class="form-control" placeholder="Enter group name">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="single_amount">
+                                    <label>Coordinator Name</label>
+                                    <input type="text" name="coordinator_name" class="form-control" placeholder="Enter coordinator name">
+                                </div>
+                            </div>
+                           
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="single_amount">
+                                    <label>Estimated People</label>
+                                    <textarea name="estimated_people" class="form-control" rows="2" placeholder="Enter estimated number of people"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Help Required Section for Community -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5 style="color: #333; margin-bottom: 15px;">Help Required</h5>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12" id="community_items_container">
+                                <div class="row community-item align-items-end">
+                                    <div class="col-md-4">
+                                        <div class="single_amount">
+                                            <label>Category</label>
+                                            <select name="category" class="form-control category-select" required onchange="filterSubcategories(this)">
+                                                <option value="">Select Category</option>
+                                                {% for category in categories %}
+                                                <option value="{{ category.CategoryID }}">{{ category.CategoryName }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="single_amount">
+                                            <label>Subcategory</label>
+                                            <select name="subcategory" class="form-control subcategory-select" required>
+                                                <option value="">Select Subcategory</option>
+                                                {% for subcategory in subcategories %}
+                                                <option value="{{ subcategory.subCategoryId }}" data-category-id="{{ subcategory.categoryID.CategoryID }}">{{ subcategory.SubCategoryname }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="single_amount">
+                                            <label>Quantity</label>
+                                            <input type="number" name="quantity" min="1" class="form-control" placeholder="Enter quantity" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 text-right">
+                                        <button type="button" class="btn btn-link text-danger remove-item-btn" style="display:none;" aria-label="Remove item" title="Remove item">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12 d-flex justify-content-between align-items-center">
+                                <small class="text-muted">You can add up to 4 items.</small>
+                                <button type="button" id="add_item_btn" class="btn btn-link p-0">+ Add another</button>
+                            </div>
+                        </div>
+                        <template id="community_item_template">
+                            <div class="row community-item align-items-end mt-2">
+                                <div class="col-md-4">
+                                    <div class="single_amount">
+                                        <label>Category</label>
+                                        <select name="category" class="form-control category-select" required onchange="filterSubcategories(this)">
+                                            <option value="">Select Category</option>
+                                            {% for category in categories %}
+                                            <option value="{{ category.CategoryID }}">{{ category.CategoryName }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="single_amount">
+                                        <label>Subcategory</label>
+                                        <select name="subcategory" class="form-control subcategory-select" required>
+                                            <option value="">Select Subcategory</option>
+                                            {% for subcategory in subcategories %}
+                                            <option value="{{ subcategory.subCategoryId }}" data-category-id="{{ subcategory.categoryID.CategoryID }}">{{ subcategory.SubCategoryname }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="single_amount">
+                                        <label>Quantity</label>
+                                        <input type="number" name="quantity" min="1" class="form-control" placeholder="Enter quantity" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-1 text-right">
+                                    <button type="button" class="btn btn-link text-danger remove-item-btn" aria-label="Remove item" title="Remove item">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="single_amount">
+                                <label>Contact Number</label>
+                                <input type="text" name="contact_number" class="form-control" placeholder="Phone number" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="single_amount">
+                                <label>Address</label>
+                                <textarea name="address" class="form-control" rows="2" placeholder="House / Street / Landmark" required></textarea>
+                            </div>
+                        </div>
+                       
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="single_amount">
+                                <label>Taluk</label>
+                                <select name="taluk" class="form-control" required>
+                                    <option value="">Select Taluk</option>
+                                    {% for t in taluks %}
+                                    <option value="{{ t.TalukID }}">{{ t.TalukName }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="single_amount">
+                                <label>Local Body</label>
+                                <select name="localbody" class="form-control" required>
+                                    <option value="">Select Local Body</option>
+                                    {% for lb in localbodies %}
+                                    <option value="{{ lb.LocalbodyID }}">{{ lb.LocalbodyName }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="single_amount">
+                                <label>Ward</label>
+                                <select name="ward" class="form-control" required>
+                                    <option value="">Select Ward</option>
+                                    {% for w in wards %}
+                                    <option value="{{ w.WardID }}">Ward {{ w.WardNumber }} ({{ w.LocalbodyID.LocalbodyName }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary btn-block">Submit Request</button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
+
+<script>
+const maxCommunityItems = 4;
+let subcategoryOptionsCache = [];
+
+function toggleFormType() {
+    const isIndividual = document.getElementById('type_individual').checked;
+    const individualDiv = document.getElementById('individual_fields');
+    const communityDiv = document.getElementById('community_fields');
+
+    const individualInputs = individualDiv.querySelectorAll('input, select, textarea');
+    const communityInputs = communityDiv.querySelectorAll('input, select, textarea');
+
+    if (isIndividual) {
+        individualDiv.style.display = 'block';
+        communityDiv.style.display = 'none';
+        individualInputs.forEach(el => el.setAttribute('required', 'true'));
+        communityInputs.forEach(el => el.removeAttribute('required'));
+    } else {
+        individualDiv.style.display = 'none';
+        communityDiv.style.display = 'block';
+        communityInputs.forEach(el => el.setAttribute('required', 'true'));
+        individualInputs.forEach(el => el.removeAttribute('required'));
+    }
+}
+
+function cacheSubcategoryOptions() {
+    const sampleSelect = document.querySelector('#community_items_container .subcategory-select');
+    if (!sampleSelect) {
+        return;
+    }
+    subcategoryOptionsCache = Array.from(sampleSelect.options).map(option => ({
+        value: option.value,
+        text: option.textContent,
+        categoryId: option.getAttribute('data-category-id') || ''
+    }));
+}
+
+function populateSubcategoryOptions(subcategorySelect, categoryId) {
+    if (!subcategorySelect) {
+        return;
+    }
+    subcategorySelect.innerHTML = '';
+    subcategoryOptionsCache.forEach(optionData => {
+        if (optionData.value === '' || !categoryId || optionData.categoryId === categoryId) {
+            const option = document.createElement('option');
+            option.value = optionData.value;
+            option.textContent = optionData.text;
+            if (optionData.categoryId) {
+                option.setAttribute('data-category-id', optionData.categoryId);
+            }
+            subcategorySelect.appendChild(option);
+        }
+    });
+}
+
+function filterSubcategories(categorySelect) {
+    if (!categorySelect) {
+        return;
+    }
+    const selectedCategoryId = categorySelect.value;
+    const subcategorySelect = categorySelect.closest('.community-item').querySelector('.subcategory-select');
+    populateSubcategoryOptions(subcategorySelect, selectedCategoryId);
+}
+
+function setupCommunityItems() {
+    const container = document.getElementById('community_items_container');
+    const addButton = document.getElementById('add_item_btn');
+    const template = document.getElementById('community_item_template');
+
+    if (!container || !addButton || !template) {
+        return;
+    }
+
+    const updateControls = () => {
+        const items = container.querySelectorAll('.community-item');
+        addButton.disabled = items.length >= maxCommunityItems;
+        items.forEach((item, index) => {
+            const removeBtn = item.querySelector('.remove-item-btn');
+            if (removeBtn) {
+                removeBtn.style.display = items.length > 1 ? 'inline-block' : 'none';
+            }
+            const categorySelect = item.querySelector('.category-select');
+            filterSubcategories(categorySelect);
+            if (index === 0) {
+                item.classList.remove('mt-2');
+            }
+        });
+    };
+
+    addButton.addEventListener('click', () => {
+        const items = container.querySelectorAll('.community-item');
+        if (items.length >= maxCommunityItems) {
+            return;
+        }
+        const newItem = template.content.firstElementChild.cloneNode(true);
+        newItem.querySelectorAll('input, select').forEach(field => {
+            if (field.tagName.toLowerCase() === 'select') {
+                field.selectedIndex = 0;
+            } else {
+                field.value = '';
+            }
+        });
+        container.appendChild(newItem);
+        updateControls();
+    });
+
+    container.addEventListener('click', (event) => {
+        if (event.target.classList.contains('remove-item-btn')) {
+            event.target.closest('.community-item').remove();
+            updateControls();
+        }
+    });
+
+    container.addEventListener('change', (event) => {
+        if (event.target.classList.contains('category-select')) {
+            filterSubcategories(event.target);
+        }
+    });
+
+    updateControls();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    toggleFormType();
+    cacheSubcategoryOptions();
+    setupCommunityItems();
+});
+</script>
 {% include 'guest/footer.html' %}

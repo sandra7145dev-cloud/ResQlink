@@ -84,6 +84,13 @@
 									</form>
 								</div>
 								<div class="card-body">
+									{% if messages %}
+									<div class="mb-3">
+										{% for message in messages %}
+										<div class="alert alert-{{ message.tags|default:'info' }}" role="alert">{{ message }}</div>
+										{% endfor %}
+									</div>
+									{% endif %}
 									{% for ngo in ngos %}
 									<div class="card mb-3 border">
 										<div class="card-body">

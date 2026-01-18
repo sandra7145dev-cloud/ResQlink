@@ -38,6 +38,51 @@ class tbl_volunteer_reg(models.Model):
     Address = models.CharField(max_length=300)
     skills = models.CharField(max_length=300)
     availability_status = models.CharField(max_length=100)
+    identity_proof = models.FileField(upload_to='volunteer_id_proofs/', null=True, blank=True)
+    vol_image = models.FileField(upload_to='volunteer_images/', null=True, blank=True)
+
+class tbl_affected_individual(models.Model):
+    affectedID = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    age = models.IntegerField(null=False, blank=False)
+    gender = models.CharField(max_length=10)
+    contact_number = models.CharField(max_length=15)
+    address = models.CharField(max_length=300)
+    talukID = models.ForeignKey('adminapp.tbl_taluk', on_delete=models.CASCADE)
+    localbodyID = models.ForeignKey('adminapp.tbl_localbody', on_delete=models.CASCADE)
+    wardID = models.ForeignKey('adminapp.tbl_ward', on_delete=models.CASCADE)
+
+class tbl_community_request(models.Model):
+    campID = models.AutoField(primary_key=True)
+    community_name = models.CharField(max_length=200, null=True, blank=True)
+    coordinator_name = models.CharField(max_length=200)
+    contact_number = models.CharField(max_length=15)
+    address = models.CharField(max_length=300)
+    talukID = models.ForeignKey('adminapp.tbl_taluk', on_delete=models.CASCADE)
+    localbodyID =  models.ForeignKey('adminapp.tbl_localbody', on_delete=models.CASCADE)
+    wardID = models.ForeignKey('adminapp.tbl_ward', on_delete=models.CASCADE)
+    estimated_people = models.IntegerField()
+    is_verified = models.CharField(max_length=10)  # 'Yes' or 'No'
+
+class tbl_request(models.Model):
+    request_id = models.AutoField(primary_key=True)
+    request_type = models.CharField(max_length=100)
+    affectedID = models.ForeignKey(tbl_affected_individual, on_delete=models.CASCADE, null=True, blank=True)
+    campID = models.ForeignKey(tbl_community_request, on_delete=models.CASCADE, null=True, blank=True)
+    disasterID = models.ForeignKey('adminapp.tbl_disaster', on_delete=models.CASCADE, null=True, blank=True)
+    request_status = models.CharField(max_length=50)  # e.g., 'Pending', 'Approved', 'Rejected'
+
+class tbl_request_service(models.Model):
+    request_service_id = models.AutoField(primary_key=True)
+    requestID = models.ForeignKey(tbl_request, on_delete=models.CASCADE, null=True, blank=True)
+    serviceID = models.ForeignKey('adminapp.tbl_service_type', on_delete=models.CASCADE, null=True, blank=True)
+    categoryID = models.ForeignKey('adminapp.tbl_category', on_delete=models.CASCADE, null=True, blank=True)
+    subCategoryID = models.ForeignKey('adminapp.tbl_subcategory', on_delete=models.CASCADE, null=True, blank=True)
+    quantity = models.IntegerField(null=True, blank=True)
+    status = models.CharField(max_length=50)  # e.g., 'Pending', 'Completed'
+
+
+
 
 
     
