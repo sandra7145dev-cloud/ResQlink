@@ -70,7 +70,8 @@ class tbl_request(models.Model):
     affectedID = models.ForeignKey(tbl_affected_individual, on_delete=models.CASCADE, null=True, blank=True)
     campID = models.ForeignKey(tbl_community_request, on_delete=models.CASCADE, null=True, blank=True)
     disasterID = models.ForeignKey('adminapp.tbl_disaster', on_delete=models.CASCADE, null=True, blank=True)
-    request_status = models.CharField(max_length=50)  # e.g., 'Pending', 'Approved', 'Rejected'
+    request_status = models.CharField(max_length=50) 
+    NGOID = models.ForeignKey('guestapp.tbl_ngo_reg', on_delete=models.CASCADE, null=True, blank=True)  # e.g., 'Pending', 'Approved', 'Rejected'
 
 class tbl_request_service(models.Model):
     request_service_id = models.AutoField(primary_key=True)
@@ -79,7 +80,23 @@ class tbl_request_service(models.Model):
     categoryID = models.ForeignKey('adminapp.tbl_category', on_delete=models.CASCADE, null=True, blank=True)
     subCategoryID = models.ForeignKey('adminapp.tbl_subcategory', on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.IntegerField(null=True, blank=True)
-    status = models.CharField(max_length=50)  # e.g., 'Pending', 'Completed'
+    status = models.CharField(max_length=50) 
+    
+class tbl_request_assignment(models.Model): 
+    assignmentID = models.AutoField(primary_key=True)
+    NGOID = models.ForeignKey(tbl_ngo_reg, on_delete=models.CASCADE, null=True, blank=True)
+    assigned_quntity = models.IntegerField(null=True, blank=True)
+    assignment_status = models.CharField(max_length=50)
+    request_serviceID = models.ForeignKey(tbl_request_service, on_delete=models.CASCADE, null=True, blank=True)
+
+class tbl_ngo_request_notification(models.Model):
+    notification_id = models.AutoField(primary_key=True)
+    requestID = models.ForeignKey('tbl_request', on_delete=models.CASCADE)
+    NGOID = models.ForeignKey('guestapp.tbl_ngo_reg', on_delete=models.CASCADE)
+    notified_at = models.DateTimeField(auto_now_add=True)
+    response_status = models.CharField( max_length=20,default='Pending')  
+    response_at = models.DateTimeField(null=True, blank=True)
+
 
 
 

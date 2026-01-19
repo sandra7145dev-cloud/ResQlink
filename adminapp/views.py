@@ -350,8 +350,8 @@ def viewngo(request):
     # Show only NGOs whose login status is Pending
     ngos = (
         tbl_ngo_reg.objects
-        .select_related('LoginId', 'TalukID', 'LocalbodyID')
-        .filter(LoginId__Role='NGO', LoginId__Status='Pending')
+        .select_related('LoginID', 'TalukID', 'LocalbodyID')
+        .filter(LoginID__Role='NGO', LoginID__Status='Pending')
         .order_by('NGOID')
     )
 
@@ -367,12 +367,12 @@ def viewngo(request):
 
 def approve_ngo(request, ngoid):
     try:
-        ngo = tbl_ngo_reg.objects.select_related('LoginId').get(NGOID=ngoid)
+        ngo = tbl_ngo_reg.objects.select_related('LoginID').get(NGOID=ngoid)
     except tbl_ngo_reg.DoesNotExist:
         return redirect('viewngo')
 
     # Update login status to Approved
-    login = ngo.LoginId
+    login = ngo.LoginID
     login.Status = 'Approved'
     login.save()
     messages.success(request, f"Approved NGO '{ngo.NGOname}'.")
@@ -381,12 +381,12 @@ def approve_ngo(request, ngoid):
 
 def reject_ngo(request, ngoid):
     try:
-        ngo = tbl_ngo_reg.objects.select_related('LoginId').get(NGOID=ngoid)
+        ngo = tbl_ngo_reg.objects.select_related('LoginID').get(NGOID=ngoid)
     except tbl_ngo_reg.DoesNotExist:
         return redirect('viewngo')
 
     # Update login status to Rejected
-    login = ngo.LoginId
+    login = ngo.LoginID
     login.Status = 'Rejected'
     login.save()
     messages.info(request, f"Rejected NGO '{ngo.NGOname}'.")

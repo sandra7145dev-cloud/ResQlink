@@ -10,6 +10,7 @@ from .models import (
     tbl_request,
     tbl_request_service,
 )
+from .services.ngo_matching_service import find_and_notify_ngos, assign_request_to_ngos
 # Create your views here.
 
 def guesthome(request):
@@ -80,6 +81,10 @@ def guesthome(request):
                         quantity=None,
                         status='Pending'
                     )
+
+                    # Notify and assign NGOs for this request
+                    eligible_ngos = find_and_notify_ngos(help_request)
+                    assign_request_to_ngos(help_request, eligible_ngos)
                     
                     success = 'Request submitted. Our team will reach out shortly.'
 
@@ -152,6 +157,10 @@ def guesthome(request):
                                     status='Pending'
                                 )
 
+                            # Notify and assign NGOs for this community request
+                            eligible_ngos = find_and_notify_ngos(help_request)
+                            assign_request_to_ngos(help_request, eligible_ngos)
+
                             success = 'Community request submitted. Our team will reach out shortly.'
 
         except (tbl_taluk.DoesNotExist, tbl_localbody.DoesNotExist, tbl_ward.DoesNotExist, tbl_category.DoesNotExist, tbl_subcategory.DoesNotExist):
@@ -176,6 +185,7 @@ def guesthome(request):
             'error': error,
         },
     )
+
 
 def ngo_vol_sel(request):
     return render(request, 'guest/ngo_vol_sel.html')
@@ -411,3 +421,4 @@ def helpreq(request):
         'disasters': disasters,
         'service_types': service_types,
     })
+
