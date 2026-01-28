@@ -48,6 +48,56 @@
     	</div>
     </section>
 
+    <section class="ftco-section bg-light">
+  <div class="container">
+    <div class="row justify-content-center mb-4">
+      <div class="col-md-8 heading-section ftco-animate text-center">
+        <h2 class="mb-3">NGO Dashboard Overview</h2>
+        <p>Quick snapshot of resources and services currently managed by your NGO.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Total Resources -->
+      <div class="col-md-3 ftco-animate">
+        <div class="dashboard-card text-center">
+          <span class="icon icon-package"></span>
+          <h3>{{ total_resources|default:"0" }}</h3>
+          <p>Total Resources</p>
+        </div>
+      </div>
+
+      <!-- Available -->
+      <div class="col-md-3 ftco-animate">
+        <div class="dashboard-card text-center border-success">
+          <span class="icon icon-check-circle"></span>
+          <h3>{{ available_resources|default:"0" }}</h3>
+          <p>Available</p>
+        </div>
+      </div>
+
+      <!-- Limited / Out -->
+      <div class="col-md-3 ftco-animate">
+        <div class="dashboard-card text-center border-warning">
+          <span class="icon icon-warning"></span>
+          <h3>{{ limited_resources|default:"0" }}</h3>
+          <p>Limited / Out of Stock</p>
+        </div>
+      </div>
+
+      <!-- Services -->
+      <div class="col-md-3 ftco-animate">
+        <div class="dashboard-card text-center border-primary">
+          <span class="icon icon-hand-stop-o"></span>
+          <h3>{{ total_services|default:"0" }}</h3>
+          <p>Services Offered</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
     <section class="ftco-section">
     	<div class="container">
     		<div class="row">
@@ -344,6 +394,86 @@
       </div>
     </section>
 
+   <section class="ftco-section bg-light" id="ngo-help-dashboard">
+  <div class="container">
+    <div class="row justify-content-center mb-5">
+      <div class="col-md-8 heading-section ftco-animate text-center">
+        <h2 class="mb-4">Emergency Help Requests</h2>
+        <p>Immediate individual assistance requests in your area.</p>
+      </div>
+    </div>
+
+    {% if pending_assignments %}
+    <div class="row">
+      <div class="col-md-12 ftco-animate">
+        <div class="bg-white p-4 shadow-sm" style="border-radius:12px; border-top:4px solid #f86f2d;">
+
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr style="font-size:14px; color:#444;">
+                  <th>ID</th>
+                  <th>Requester Name</th>
+                  <th>Required Service</th>
+                  <th>Location (Ward)</th>
+                  <th>Contact</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for assignment in pending_assignments %}
+                <tr>
+                  <td>#{{ assignment.requestID.request_id }}</td>
+
+                  <td style="font-weight: 600;">
+                    {{ assignment.requestID.affectedID.name|title }}
+                  </td>
+
+                  <td>
+                    <span class="text-primary" style="font-weight: bold;">
+                      {{ assignment.serviceID.serviceName }}
+                    </span>
+                  </td>
+
+                  <td>
+                    {{ assignment.requestID.affectedID.localbodyID.LocalbodyName }},<br>
+                    <small class="text-muted">Ward: {{ assignment.requestID.affectedID.wardID.WardNumber }}</small>
+                  </td>
+
+                  <td>{{ assignment.requestID.affectedID.contact_number }}</td>
+
+                  <td>
+                    <form method="POST" action="{% url 'ngo_accept_reject_request' %}" class="mb-0">
+                      {% csrf_token %}
+                      <input type="hidden" name="assignment_id" value="{{ assignment.request_service_id }}">
+                      <div class="btn-group btn-group-sm" role="group">
+                        <button name="action" value="accept" class="btn btn-success px-3">Accept</button>
+                        <button name="action" value="reject" class="btn btn-outline-danger px-3">Reject</button>
+                      </div>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="row justify-content-center">
+      <div class="col-md-8 text-center ftco-animate">
+        <div class="alert alert-info py-4">
+          <i class="icon-info-circle mr-2"></i> No individual help requests pending for your NGO right now.
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+
  <section class="ftco-section bg-light" id="resource-section">
   <div class="container">
     <div class="row justify-content-center mb-5 pb-3">
@@ -485,6 +615,38 @@
   .table thead th { border-top: none; border-bottom: 2px solid #eee; }
   .btn-outline-primary { color: #f86f2d; border-color: #f86f2d; }
   .btn-outline-primary:hover { background: #f86f2d; color: #fff; }
+  .dashboard-card {
+  background: #fff;
+  padding: 30px 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  border-top: 4px solid #f86f2d;
+  transition: transform 0.2s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+}
+
+.dashboard-card .icon {
+  font-size: 36px;
+  color: #f86f2d;
+  margin-bottom: 10px;
+  display: inline-block;
+}
+
+.dashboard-card h3 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.dashboard-card p {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
 </style>
 
 <script>

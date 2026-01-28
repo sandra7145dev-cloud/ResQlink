@@ -52,78 +52,59 @@
       <div class="header-text"><span>Blog</span> News</div>
     </div>
 
-			<section class="blog">
-				<div class="item col-md-4">
-           <div class="blok-read-sm">
-             <a href="single1.html" class="hover-image">
-                <img src="{% static 'volunteer/img/sea.jpg' %}" alt="image">
-                <span class="layer-block"></span>
-             </a>
-              <div class="editor-choice">
-                  <i class="fa fa-star"></i>
-                  <a href="#">Editor’s Choice</a>
-              </div>
-            <div class="content-block">
-              <span class="point-caption bg-blue-point"></span>
-              <span class="bottom-line bg-blue-point"></span>
-                <h4>Discovering OM: A visit back to The Vedas</h4>
-                <p>Gregor then turned to look out the window at the dull weather. Drops of rain could pane,which made..</p>
-                <div class="button-main bg-fio-point">read more</div>
-                 <div class="like-wrap">
-                     <a href="#"><i class="fa fa-heart col-red"></i></a><span>224</span>
-                     <a href="#"><i class="fa fa-comment col-green"></i></a><span>89</span>
-                 </div>
-            	</div>
-            </div>
-          </div>
-            <div class="item col-md-4">
-               <div class="blok-read-sm">
-                 <a href="single1.html" class="hover-image">
-                    <img src="{% static 'volunteer/img/sea.jpg' %}" alt="image">
-                    <span class="layer-block"></span>
-                 </a>
-                  <div class="editor-choice">
-                      <i class="fa fa-star"></i>
-                      <a href="#">Editor’s Choice</a>
-                  </div>
-                <div class="content-block">
-                  <span class="point-caption bg-blue-point"></span>
-                  <span class="bottom-line bg-blue-point"></span>
-                    <h4>Discovering OM: A visit back to The Vedas</h4>
-                    <p>Gregor then turned to look out the window at the dull weather. Drops of rain could pane,which made..</p>
-                    <div class="button-main bg-fio-point">read more</div>
-                       <div class="like-wrap">
-                           <a href="#"><i class="fa fa-heart col-red"></i></a><span>224</span>
-                           <a href="#"><i class="fa fa-comment col-green"></i></a><span>89</span>
-                       </div>
-                	   </div>
-                    </div>
-                 </div>
-                <div class="item col-md-4">
-                   <div class="blok-read-sm">
-                       <a href="single1.html" class="hover-image">
-                          <img src="{% static 'volunteer/img/sea.jpg' %}" alt="image">
-                          <span class="layer-block"></span>
-                       </a>
-                        <div class="editor-choice">
-                            <i class="fa fa-star"></i>
-                            <a href="#">Editor’s Choice</a>
-                        </div>
-                    <div class="content-block">
-                      <span class="point-caption bg-blue-point"></span>
-                      <span class="bottom-line bg-blue-point"></span>
-                        <h4>Discovering OM: A visit back to The Vedas</h4>
-                        <p>Gregor then turned to look out the window at the dull weather. Drops of rain could pane,which made..</p>
-                        <div class="button-main bg-fio-point">read more</div>
-                         <div class="like-wrap">
-                             <a href="#"><i class="fa fa-heart col-red"></i></a><span>224</span>
-                             <a href="#"><i class="fa fa-comment col-green"></i></a><span>89</span>
-                         </div>
-                    	</div>
-                    </div>
-                </div>
-            </section>
+			<div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+    </div>
 
+<div class="container header-start text-center">
+    <div class="heading-icon">
+        <i class="fa fa-3x fa-heart"></i>
+    </div>
+    <h1 class="main-text">Volunteer Service Portal</h1>
+    <p class="text-center sub-text">
+        <em class="first-line">Help is the greatest act of humanity.</em>
+    </p>
+</div>
+
+<div class="divider col-sm-12 col-xs-12 col-md-12">
+    <div class="header-text"><span>Active</span> Assignment</div>
+</div>
+
+<section class="container">
+    <div class="row">
+        {% if task %}
+        <div class="col-md-8 col-md-offset-2">
+            <div class="blok-read-sm" style="padding: 30px; border: 2px solid #28a745; border-radius: 15px; background: #fff;">
+                <h3 class="text-success"><i class="fa fa-warning"></i> New Mission Assigned</h3>
+                <hr>
+                <div class="content-block text-left" style="font-size: 16px; line-height: 2;">
+                    <p><strong>Victim Name:</strong> {{ task.request_serviceID.requestID.affectedID.name }}</p>
+                    <p><strong>Required Service:</strong> <span class="label label-warning">{{ task.request_serviceID.serviceID.serviceName }}</span></p>
+                    <p><strong>Address:</strong> {{ task.request_serviceID.requestID.affectedID.address }}</p>
+                    <p><strong>Contact:</strong> <span class="text-primary" style="font-weight:bold;">{{ task.request_serviceID.requestID.affectedID.contact_number }}</span></p>
+                    
+                    <hr>
+                    <p class="text-muted small">After providing the necessary help, please click the button below to update your status.</p>
+                    
+                    <form method="POST" action="{% url 'update_work_status' task.assignmentID %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-lg btn-block" onclick="return confirm('Confirm task completion?')">
+                            <i class="fa fa-check-circle"></i> Mark as Completed
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-md-12 text-center py-5">
+            <div class="alert alert-info" style="border-radius: 10px; padding: 40px;">
+                <i class="fa fa-4x fa-clock-o text-muted"></i>
+                <h3 class="text-muted">No pending tasks!</h3>
+                <p>You are currently <strong>Available</strong> for assignments in your local area.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
 
 			     <div class="divider col-sm-12 col-xs-12 col-md-12">
               <div class="header-text">Our <span>Testimonials</span></div>

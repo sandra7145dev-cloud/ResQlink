@@ -37,9 +37,9 @@ class tbl_volunteer_reg(models.Model):
     LocalbodyID = models.ForeignKey('adminapp.tbl_localbody', on_delete=models.CASCADE)
     Address = models.CharField(max_length=300)
     skills = models.CharField(max_length=300)
-    availability_status = models.CharField(max_length=100)
     identity_proof = models.FileField(upload_to='volunteer_id_proofs/', null=True, blank=True)
     vol_image = models.FileField(upload_to='volunteer_images/', null=True, blank=True)
+    availability_status = models.CharField(max_length=20, default='Available')
 
 class tbl_affected_individual(models.Model):
     affectedID = models.AutoField(primary_key=True)
@@ -88,6 +88,7 @@ class tbl_request_assignment(models.Model):
     assigned_quntity = models.IntegerField(null=True, blank=True)
     assignment_status = models.CharField(max_length=50)
     request_serviceID = models.ForeignKey(tbl_request_service, on_delete=models.CASCADE, null=True, blank=True)
+    volunteerID = models.ForeignKey(tbl_volunteer_reg, on_delete=models.CASCADE, null=True, blank=True)
 
 class tbl_ngo_request_notification(models.Model):
     notification_id = models.AutoField(primary_key=True)

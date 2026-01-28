@@ -1,26 +1,39 @@
-# guestapp/services/email_service.py
 from django.core.mail import send_mail
 from django.conf import settings
+from guestapp.models import tbl_request_service
 
 def notify_ngos(ngo_emails, help_request):
     """
     Send email notifications to a list of NGOs about a new help request.
     """
-
     subject = "EMERGENCY | Individual Help Request"
 
     # ---------- INDIVIDUAL REQUEST ----------
     if help_request.request_type == 'individual':
-
-        # Fetch requested services (Food, Water, etc.)
-        services = help_request.request_services.all()  # related_name assumed
-        if services:
-            required_help = ", ".join(
-                f"{s.serviceID.service_name} ({s.quantity})"
+        # Use the correct model for services
+        services = tbl_request_service.objects.filter(requestID=help_request)
+        
+        if services.exists():
+            required_help = "\n ".join(
+                f"- {s.serviceID.serviceName} ({s.quantity})"
                 for s in services
             )
         else:
             required_help = "Not specified"
+
+        location = "N/A"
+        contact = "N/A"
+        
+        if help_request.affectedID:
+            # Matches your adminapp.tbl_ward field 'WardNumber'
+            loc_name = help_request.affectedID.localbodyID.LocalbodyName
+            ward_no = help_request.affectedID.wardID.WardNumber 
+            
+            location = f"{loc_name}, Ward {ward_no}"
+            contact = help_request.affectedID.contact_number
+
+        site_url = getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000')
+        logic_link = f"{site_url}/guestapp/login/"
 
         body = f"""
 Emergency Help Request (Individual)
@@ -28,17 +41,19 @@ Emergency Help Request (Individual)
 Disaster: {help_request.disasterID.DisasterName if help_request.disasterID else 'N/A'}
 
 Location:
-{help_request.affectedID.localbody if help_request.affectedID else 'N/A'},
-Ward {help_request.affectedID.ward if help_request.affectedID else 'N/A'}
+{location}
 
 Required Help:
 {required_help}
 
 Contact:
-{help_request.affectedID.contact_number if help_request.affectedID else 'N/A'}
+{contact}
 
 Request ID:
 {help_request.request_id}
+
+To review and respond to this request, please log in to your NGO dashboard:
+{logic_link}
 
 Please respond immediately if you can assist.
         """
@@ -46,28 +61,21 @@ Please respond immediately if you can assist.
     # ---------- COMMUNITY REQUEST ----------
     elif help_request.request_type == 'community':
         subject = "Community Help Request"
-
-        body = f"""
-Community Help Request
-
-Request ID: {help_request.request_id}
-Community Name: {help_request.campID.community_name if help_request.campID else 'N/A'}
-Coordinator: {help_request.campID.coordinator_name if help_request.campID else 'N/A'}
-Estimated People: {help_request.campID.estimated_people if help_request.campID else 'N/A'}
-Address: {help_request.campID.address if help_request.campID else 'N/A'}
-
-Please respond as soon as possible.
-        """
+        body = f"A new community request (ID: {help_request.request_id}) has been submitted. Please check the dashboard."
 
     else:
         body = "New help request submitted."
 
     # ---------- SEND EMAIL ----------
     for email in ngo_emails:
-        send_mail(
-            subject,
-            body.strip(),
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            fail_silently=False,
-        )
+        try:
+            send_mail(
+                subject,
+                message=body.strip(),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            print(f"--- SUCCESS: Email sent to {email} ---")
+        except Exception as e:
+            print(f"--- ERROR: Could not send email to {email}: {e} ---")

@@ -37,17 +37,33 @@
 			</div>
 			<div class="collapse navbar-collapse">
 				<ul class="nav navbar-nav">
-					<li class="selected"><a href="index.html">Home</a></li>
-					<li><a href="about.html">About</a></li>
-					<li><a href="service.html">Sevices</a></li>
-					<li><a href="gallery.html">Gallery</a></li>
-          <li class= "hidden-xs hidden-sm">
-            <a rel="home" href="index.html"><img class="logo" src="{% static 'volunteer/img/logo.png' %}" width="200" alt="logo"></a>
-          </li>
-					<li><a href="event.html">Events</a></li>
-					<li><a href="team.html">Team</a></li>
-					<li><a href="donate.html">Donate</a></li>
-          <li><a href="contact.html">Contact</a></li>
-				</ul>
+    <li class="selected"><a href="{% url 'volunteer_dashboard' %}">Home</a></li>
+    
+    <li><a href="#" style="color: #28a745; font-weight: bold;">
+        <i class="fa fa-user"></i> {{ request.session.vol_name }}
+    </a></li>
+
+    <li class="hidden-xs hidden-sm">
+        <a rel="home" href="{% url 'volunteer_dashboard' %}">
+            <img class="logo" src="{% static 'volunteer/img/logo.png' %}" width="200" alt="logo">
+        </a>
+    </li>
+
+    
+    <li><a href="contact.html">Help Desk</a></li>
+</ul>
 			</div>
 		</div>
+		<style>
+    /* Reduces the width of the top logo section */
+    .header.container {
+        max-width: 200px; /* Adjust this number to your liking */
+        margin: 0 auto;
+    }
+    /* Optional: Shrink the Navigation bar width as well */
+    .navbar {
+        max-width: 900px;
+        margin: 0 auto !important;
+        float: none;
+    }
+</style>

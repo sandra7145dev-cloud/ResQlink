@@ -1,0 +1,119 @@
+{% load static %}
+{% include 'ngo/header.html' %}
+
+<section class="ftco-section bg-light">
+  <div class="container">
+    <div class="row justify-content-center mb-5">
+      <div class="col-md-8 heading-section ftco-animate text-center">
+        <h2 class="mb-4">Our Active Tasks</h2>
+        <p>Manage and track the individual requests your NGO is currently fulfilling.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="bg-white p-4 shadow-sm" style="border-radius:12px; border-left:4px solid #28a745;">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr style="font-size:14px; color:#444;">
+                  <th>Request ID</th>
+                  <th>Victim Details</th>
+                  <th>Required Service</th>
+                  <th>Assigned Volunteer</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for task in accepted_list %}
+                <tr>
+                  <td>#{{ task.request_serviceID.requestID.request_id }}</td>
+                  
+                  <td>
+                    <strong>{{ task.request_serviceID.requestID.affectedID.name }}</strong><br>
+                    <small>{{ task.request_serviceID.requestID.affectedID.contact_number }}</small>
+                  </td>
+
+                  <td>{{ task.request_serviceID.serviceID.serviceName }}</td>
+
+                  <td>
+                    {% if task.volunteerID %}
+                      <a href="#" data-toggle="modal" data-target="#volModal{{ task.volunteerID.VolunteerId }}" class="text-success" style="font-weight: 600; text-decoration: underline;">
+                        {{ task.volunteerID.Name }}
+                      </a><br>
+                      <small>Mob: {{ task.volunteerID.ContactNumber1 }}</small>
+
+                      <div class="modal fade" id="volModal{{ task.volunteerID.VolunteerId }}" tabindex="-1" role="dialog" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title">Volunteer Profile</h5>
+                              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                              </button>
+                            </div>
+                            <div class="modal-body text-center">
+                              {% if task.volunteerID.vol_image %}
+                                <img src="{{ task.volunteerID.vol_image.url }}" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover; border: 2px solid #28a745;">
+                              {% endif %}
+                              <h4>{{ task.volunteerID.Name }}</h4>
+                              <p class="badge badge-info">{{ task.volunteerID.skills }}</p>
+                              <hr>
+                              <div class="text-left px-3">
+                                <p><strong>Age:</strong> {{ task.volunteerID.age }}</p>
+                                <p><strong>Email:</strong> {{ task.volunteerID.Email }}</p>
+                                <p><strong>Address:</strong> {{ task.volunteerID.Address }}</p>
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                    {% else %}
+                      <span class="text-muted italic">NGO Internal Staff</span>
+                    {% endif %}
+                  </td>
+
+               <td>
+  {% if task.assignment_status == 'Completed' %}
+    <span class="badge badge-success px-3 py-2" style="background-color: #28a745 !important;">
+      <i class="fa fa-check-circle"></i> Completed
+    </span>
+  {% else %}
+    {% if not task.volunteerID %}
+      <form action="{% url 'ngo_complete_task' task.assignmentID %}" method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-success" style="font-size: 12px;">
+          Mark as Finished
+        </button>
+      </form>
+    {% else %}
+      <span class="badge badge-warning px-3 py-2" style="background-color: #ffc107 !important; color: #000;">
+        <i class="fa fa-clock-o"></i> In Progress
+      </span>
+    {% endif %}
+  {% endif %}
+</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-muted">No active tasks at the moment.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="{% url 'ngohome' %}" class="btn btn-primary px-4">Back to Dashboard</a>
+    </div>
+  </div>
+</section>
+
+{% include 'ngo/footer.html' %}

@@ -10,7 +10,7 @@ from .models import (
     tbl_request,
     tbl_request_service,
 )
-from .services.ngo_matching_service import find_and_notify_ngos, assign_request_to_ngos
+from .services.ngo_matching_service import find_and_notify_ngos
 # Create your views here.
 
 def guesthome(request):
@@ -296,6 +296,10 @@ def login(request):
                 return redirect('/adminapp/adminhome/')
             elif role == 'NGO':
                 if status == 'Approved':
+                    ngo_data = tbl_ngo_reg.objects.filter(LoginID=log).first()
+                    if ngo_data:
+                        request.session['ngo_id'] = ngo_data.NGOID
+                        request.session['ngo_name'] = ngo_data.NGOname
                     return redirect('/NGOapp/ngohome/')
                 else:
                     return render(request, 'guest/login.html', {
@@ -303,7 +307,11 @@ def login(request):
                     })
             elif role == 'VOLUNTEER':
                 if status == 'Approved':
-                    return redirect('/volunteerapp/volunteerhome/')
+                    vol_data = tbl_volunteer_reg.objects.filter(LoginId=log).first()
+                    if vol_data:
+                        request.session['vol_id'] = vol_data.VolunteerId
+                        request.session['vol_name'] = vol_data.Name
+                    return redirect('/volunteerapp/volunteer_dashboard/')
                 else:
                     return render(request, 'guest/login.html', {
                         'error': 'Your volunteer account is not verified yet. Please wait for admin approval.'
@@ -337,6 +345,7 @@ def volunteer_reg(request):
             password = request.POST.get('password')
             photo = request.FILES.get('photo')
             id_proof = request.FILES.get('id_proof')
+            availability_status='Available'
 
 
             # Validate required fields
@@ -382,6 +391,7 @@ def volunteer_reg(request):
                 skills=skills,
                 vol_image=photo,
                 identity_proof=id_proof,
+                availability_status=availability_status
             )
             return render(request, 'guest/volunteer_reg.html', {
                 'taluks': taluks,

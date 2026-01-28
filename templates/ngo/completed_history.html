@@ -1,0 +1,70 @@
+{% load static %}
+{% include 'ngo/header.html' %}
+
+<section class="ftco-section bg-light">
+    <div class="container">
+        <h2 class="mb-5 text-center">Service History</h2>
+
+        <div class="card mb-5 shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fa fa-users"></i> Tasks Completed by Volunteers</h4>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Victim</th>
+                            <th>Service</th>
+                            <th>Volunteer</th>
+                            <th>Contact</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in volunteer_tasks %}
+                        <tr>
+                            <td>{{ task.request_serviceID.requestID.affectedID.name }}</td>
+                            <td>{{ task.request_serviceID.serviceID.serviceName }}</td>
+                            <td><span class="text-success font-weight-bold">{{ task.volunteerID.Name }}</span></td>
+                            <td>{{ task.volunteerID.ContactNumber1 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center">No volunteer-assisted tasks found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fa fa-building"></i> Tasks Completed by Internal Staff</h4>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Victim</th>
+                            <th>Service</th>
+                            <th>Handled By</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in internal_tasks %}
+                        <tr>
+                            <td>{{ task.request_serviceID.requestID.affectedID.name }}</td>
+                            <td>{{ task.request_serviceID.serviceID.serviceName }}</td>
+                            <td><span class="badge badge-primary">NGO Internal Team</span></td>
+                            <td><i class="fa fa-check text-success"></i> Verified</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center">No internal staff tasks found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% include 'ngo/footer.html' %}
