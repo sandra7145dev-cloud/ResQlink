@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('adminhome/', views.adminhome, name='adminhome'),
+    path('logout/', views.user_logout, name='logout'),
     path('taluk_reg/', views.taluk_reg, name='talukreg'),
     path('viewtaluk/', views.viewtaluk, name='viewtaluk'),
     path('edittaluk/<int:tid>/', views.edittaluk, name='edittaluk'),
@@ -45,10 +46,32 @@ urlpatterns = [
     path('deleteservice/<int:sid>/',views.deleteservice, name='deleteservice'),
 
     path('viewngo/', views.viewngo, name='viewngo'),
+    path('assign_volunteer/<int:ngoid>/', views.assign_volunteer_to_ngo, name='assign_volunteer'),
+    path('manage_ngo_volunteers/', views.manage_ngo_volunteers, name='manage_ngo_volunteers'),
+    path('add_emergency_volunteer/<int:ngoid>/', views.add_emergency_volunteer_to_ngo, name='add_emergency_volunteer'),
+    path('remove_volunteer_assignment/<int:assignment_id>/', views.remove_volunteer_assignment, name='remove_volunteer_assignment'),
     path('approve_ngo/<int:ngoid>/', views.approve_ngo, name='approve_ngo'),
     path('reject_ngo/<int:ngoid>/', views.reject_ngo, name='reject_ngo'),
 
     path('viewvolunteer/', views.viewvolunteer, name='viewvolunteer'),
+    path('approved_volunteer_list/', views.approved_volunteer_list, name='approved_volunteer_list'),
     path('approve_vol/<int:volid>/', views.approve_vol, name='approve_volunteer'),
     path('reject_vol/<int:volid>/', views.reject_vol, name='reject_volunteer'),   
+
+    path('approve_request/<int:reqid>/', views.approve_community_request, name='approve_request'),
+    path('fix_verification/', views.fix_community_verification, name='fix_verification'),
+    path('view_ngo_stock/', views.admin_view_ngo_stock, name='view_ngo_stock'),
+    path('viewrequest/', views.view_community_requests, name='viewrequest'),
+    path('export_stock_csv/', views.export_ngo_stock_csv, name='export_stock_csv'),
+    path('notify_shortage_global/', views.notify_shortage_global, name='notify_shortage_global'),
+    path('reset_broadcast/', views.reset_broadcast_session, name='reset_broadcast'),
+    path('admin_control_hub/', views.admin_control_hub, name='admin_control_hub'),
+    path('approved_ngo_list/', views.approved_ngo_list, name='approved_ngo_list'),
+    path('view_ngo_profile/<int:ngoid>/', views.view_ngo_profile, name='view_ngo_profile'),
+    path('view_volunteer_profile/<int:volid>/', views.view_volunteer_profile, name='volunteer_profile'),
+    path('ad_dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('completed_individual_requests/', views.view_completed_individual_requests, name='completed_individual_requests'),
+    path('approve_individual_request/<int:reqid>/', views.approve_individual_request, name='approve_individual_request'),
+    path('approve_waiting_assignment/<int:assignment_id>/', views.approve_waiting_assignment, name='approve_waiting_assignment'),
+
 ]

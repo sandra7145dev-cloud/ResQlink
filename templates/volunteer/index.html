@@ -1,71 +1,203 @@
 {% load static %}
 {% include 'volunteer/header.html' %}
-<div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
-		  <!-- Indicators -->
-		  <ol class="carousel-indicators">
-		    <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
-		    <li data-target="#carousel-example-generic" data-slide-to="1"></li>
-		    <li data-target="#carousel-example-generic" data-slide-to="2"></li>
-		  </ol>
-
-		  <!-- Wrapper for slides -->
-		  <div class="carousel-inner" role="listbox">
-		    <div class="item active">
-		      <img src="{% static 'volunteer/img/slide3.jpg' %}" alt="">
-		      <div class="carousel-caption">
-		        Make Donation
-		      </div>
-		    </div>
-		    <div class="item">
-		      <img src="{% static 'volunteer/img/slide2.jpg' %}" alt="">
-		      <div class="carousel-caption">
-		        Be a Donator
-		      </div>
-		    </div>
-		    <div class="item">
-		      <img src="{% static 'volunteer/img/slide1.jpg' %}" alt="">
-		      <div class="carousel-caption">
-		        Be a volunteer
-		      </div>
-		    </div>
-		  </div>
-
-		  <!-- Controls -->
-		  <a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">
-		    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
-		    <span class="sr-only">Previous</span>
-		  </a>
-		  <a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">
-		    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-		    <span class="sr-only">Next</span>
-		  </a>
-		</div>
-    <div class="container header-start text-center">
-        <div class="heading-icon">
-          <i class="fa fa-3x fa-heart"></i>
+<style>
+  :root {
+    --rq-ink: #101820;
+    --rq-slate: #2b3a44;
+    --rq-sand: #f3efe7;
+    --rq-amber: #f4b400;
+    --rq-teal: #0f8b8d;
+    --rq-coral: #ff6f61;
+    --rq-white: #ffffff;
+  }
+  body {
+    background: radial-gradient(circle at 10% 10%, #fff7e6 0%, #ffffff 35%, #f7fbff 100%);
+  }
+  .rq-hero {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 6px solid var(--rq-amber);
+    background: linear-gradient(120deg, rgba(16, 24, 32, 0.72) 0%, rgba(15, 139, 141, 0.6) 60%, rgba(255, 111, 97, 0.6) 100%);
+  }
+  .rq-hero .carousel-inner > .item > img {
+    width: 100%;
+    height: 520px;
+    object-fit: cover;
+    filter: brightness(0.7);
+  }
+  .rq-hero .carousel-caption {
+    text-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    font-size: 28px;
+    letter-spacing: 1px;
+  }
+  .rq-banner {
+    margin-top: -70px;
+    background: var(--rq-white);
+    padding: 36px 30px;
+    border-radius: 18px;
+    box-shadow: 0 20px 50px rgba(16, 24, 32, 0.15);
+  }
+  .rq-banner-compact {
+    margin-top: -40px;
+    padding: 16px 20px;
+  }
+  .rq-banner-compact .main-text {
+    font-size: 22px;
+  }
+  .rq-banner-compact .sub-text {
+    font-size: 12px;
+  }
+  .rq-banner .heading-icon i {
+    color: var(--rq-coral);
+  }
+  .rq-banner .main-text {
+    color: var(--rq-ink);
+    font-weight: 700;
+  }
+  .rq-banner .sub-text {
+    color: var(--rq-slate);
+    font-size: 16px;
+  }
+  .rq-divider .header-text {
+    font-weight: 700;
+    color: var(--rq-ink);
+  }
+  .rq-divider .header-text span {
+    color: var(--rq-teal);
+  }
+  .rq-card {
+    border-radius: 18px;
+    border: 1px solid rgba(16, 24, 32, 0.08);
+    box-shadow: 0 16px 35px rgba(16, 24, 32, 0.1);
+  }
+  .rq-task-title {
+    font-weight: 700;
+    color: var(--rq-teal);
+  }
+  .rq-task-card {
+    position: relative;
+    background: linear-gradient(135deg, rgba(15, 139, 141, 0.08) 0%, rgba(255, 255, 255, 1) 65%);
+    border: 1px solid rgba(15, 139, 141, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .rq-task-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 45px rgba(16, 24, 32, 0.18);
+  }
+  .rq-task-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(244, 180, 0, 0.15);
+    color: #9a6b00;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+  .rq-task-list {
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .rq-task-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dashed rgba(16, 24, 32, 0.12);
+  }
+  .rq-task-list li:last-child {
+    border-bottom: none;
+  }
+  .rq-task-list i {
+    color: var(--rq-teal);
+    margin-top: 4px;
+  }
+  .rq-cta {
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    padding: 12px 18px;
+  }
+  .rq-cta:hover {
+    filter: brightness(1.02);
+  }
+  .rq-available {
+    position: relative;
+    overflow: hidden;
+  }
+  .rq-available::after {
+    content: "";
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 120px;
+    height: 120px;
+    background: rgba(15, 139, 141, 0.08);
+    border-radius: 50%;
+  }
+  .rq-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(15, 139, 141, 0.12);
+    color: var(--rq-teal);
+    font-weight: 600;
+  }
+  .rq-available {
+    background: linear-gradient(120deg, #f9fbff 0%, #ffffff 100%);
+    border: 1px dashed rgba(15, 139, 141, 0.3);
+  }
+  .rq-testimonial {
+    background: var(--rq-sand);
+    border-radius: 20px;
+    padding: 40px 30px;
+  }
+  .rq-subscribe {
+    border-radius: 18px;
+    background: var(--rq-white);
+    box-shadow: 0 14px 30px rgba(16, 24, 32, 0.12);
+  }
+  @media (max-width: 768px) {
+    .rq-hero .carousel-inner > .item > img {
+      height: 360px;
+    }
+    .rq-banner {
+      margin-top: -40px;
+      padding: 28px 20px;
+    }
+  }
+</style>
+<section class="rq-hero" style="padding: 70px 0 90px;">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-7">
+        <h1 style="color: #ffffff; font-weight: 700; margin-bottom: 12px;">ResQlink Rapid Response</h1>
+        <p style="color: rgba(255, 255, 255, 0.9); font-size: 18px; max-width: 520px;">A unified volunteer network for emergencies. Coordinate relief, deliver essentials, and support survivors with verified missions and real-time updates.</p>
+        <div style="margin-top: 22px; display: flex; gap: 12px; flex-wrap: wrap;">
+          <span class="rq-pill" style="background: rgba(255, 255, 255, 0.2); color: #ffffff;">Verified Requests</span>
+          <span class="rq-pill" style="background: rgba(255, 255, 255, 0.2); color: #ffffff;">Fast Dispatch</span>
+          <span class="rq-pill" style="background: rgba(255, 255, 255, 0.2); color: #ffffff;">Live Tracking</span>
         </div>
-      <h1 class="main-text">Show your Love for the Humanity</h1>
-      <p class="text-center sub-text"><em class="first-line">Lorem ipsum dolor sit amet, consectetur adipisiciSng elit, sed do eiusmod tempor </em><em class="next-line"> incididunt ut labore et dolore magna aliqua.A sed do eiusmod tempor incididunt ut labore et dolore magna.</em></p>
+      </div>
+      <div class="col-md-5">
+        <div class="rq-card" style="background: #ffffff; padding: 22px; border-radius: 16px;">
+          <h4 style="margin-top: 0; font-weight: 700; color: var(--rq-ink);">Mission Snapshot</h4>
+          <ul class="rq-task-list" style="margin-top: 10px;">
+            <li><i class="fa fa-shield"></i><span><strong>Safety First:</strong> Follow verified routes and instructions.</span></li>
+            <li><i class="fa fa-clock-o"></i><span><strong>Response Time:</strong> Prioritize urgent requests.</span></li>
+            <li><i class="fa fa-handshake-o"></i><span><strong>Collaboration:</strong> Coordinate with NGOs and admins.</span></li>
+          </ul>
+        </div>
+      </div>
     </div>
-
-    <div class="divider col-sm-12 col-xs-12 col-md-12">
-      <div class="header-text"><span>Blog</span> News</div>
-    </div>
-
-			<div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
-    </div>
-
-<div class="container header-start text-center">
-    <div class="heading-icon">
-        <i class="fa fa-3x fa-heart"></i>
-    </div>
-    <h1 class="main-text">Volunteer Service Portal</h1>
-    <p class="text-center sub-text">
-        <em class="first-line">Help is the greatest act of humanity.</em>
-    </p>
-</div>
-
-<div class="divider col-sm-12 col-xs-12 col-md-12">
+  </div>
+</section>
+<div class="divider col-sm-12 col-xs-12 col-md-12 rq-divider">
     <div class="header-text"><span>Active</span> Assignment</div>
 </div>
 
@@ -73,21 +205,35 @@
     <div class="row">
         {% if task %}
         <div class="col-md-8 col-md-offset-2">
-            <div class="blok-read-sm" style="padding: 30px; border: 2px solid #28a745; border-radius: 15px; background: #fff;">
-                <h3 class="text-success"><i class="fa fa-warning"></i> New Mission Assigned</h3>
-                <hr>
-                <div class="content-block text-left" style="font-size: 16px; line-height: 2;">
-                    <p><strong>Victim Name:</strong> {{ task.request_serviceID.requestID.affectedID.name }}</p>
-                    <p><strong>Required Service:</strong> <span class="label label-warning">{{ task.request_serviceID.serviceID.serviceName }}</span></p>
-                    <p><strong>Address:</strong> {{ task.request_serviceID.requestID.affectedID.address }}</p>
-                    <p><strong>Contact:</strong> <span class="text-primary" style="font-weight:bold;">{{ task.request_serviceID.requestID.affectedID.contact_number }}</span></p>
+          <div class="blok-read-sm rq-card rq-task-card" style="padding: 28px;">
+            <div class="rq-task-badge"><i class="fa fa-bolt"></i> Active Mission</div>
+            <h3 class="rq-task-title" style="margin-top: 12px;"><i class="fa fa-bullhorn"></i> New Mission Assigned</h3>
+            <div class="content-block text-left" style="font-size: 16px; line-height: 1.8;">
+                    
+                    {% if task.request_serviceID.requestID.affectedID %}
+                        <ul class="rq-task-list">
+                          <li><i class="fa fa-user"></i><span><strong>Victim Name:</strong> {{ task.request_serviceID.requestID.affectedID.name|default:"Victim Name Not Provided" }}</span></li>
+                          <li><i class="fa fa-medkit"></i><span><strong>Required Service:</strong> <span class="rq-pill">{{ task.request_serviceID.serviceID.serviceName|default:"General Help" }}</span></span></li>
+                          <li><i class="fa fa-map-marker"></i><span><strong>Address:</strong> {{ task.request_serviceID.requestID.affectedID.address|default:"Refer to Contact for Address" }}</span></li>
+                          <li><i class="fa fa-phone"></i><span><strong>Contact:</strong> <span class="text-primary" style="font-weight:bold;">{{ task.request_serviceID.requestID.affectedID.contact_number }}</span></span></li>
+                        </ul>
+                    {% elif task.request_serviceID.requestID.campID %}
+                        <ul class="rq-task-list">
+                          <li><i class="fa fa-flag"></i><span><strong>Destination:</strong> {{ task.request_serviceID.requestID.campID.community_name }} (Relief Camp)</span></li>
+                          <li><i class="fa fa-dropbox"></i><span><strong>Item to Deliver:</strong> <span class="rq-pill">{{ task.request_serviceID.subCategoryID.SubCategoryname }}</span></span></li>
+                          <li><i class="fa fa-map-marker"></i><span><strong>Address:</strong> {{ task.request_serviceID.requestID.campID.address }}</span></li>
+                          <li><i class="fa fa-phone"></i><span><strong>Contact:</strong> <span class="text-primary" style="font-weight:bold;">{{ task.request_serviceID.requestID.campID.contact_number }}</span></span></li>
+                        </ul>
+                    {% else %}
+                        <p class="text-danger">Task details are currently unavailable. Please contact Admin.</p>
+                    {% endif %}
                     
                     <hr>
                     <p class="text-muted small">After providing the necessary help, please click the button below to update your status.</p>
                     
                     <form method="POST" action="{% url 'update_work_status' task.assignmentID %}">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-success btn-lg btn-block" onclick="return confirm('Confirm task completion?')">
+                        <button type="submit" class="btn btn-success btn-lg btn-block rq-cta" onclick="return confirm('Confirm task completion?')">
                             <i class="fa fa-check-circle"></i> Mark as Completed
                         </button>
                     </form>
@@ -96,78 +242,13 @@
         </div>
         {% else %}
         <div class="col-md-12 text-center py-5">
-            <div class="alert alert-info" style="border-radius: 10px; padding: 40px;">
+                <div class="alert alert-info rq-available" style="border-radius: 10px; padding: 40px;">
                 <i class="fa fa-4x fa-clock-o text-muted"></i>
                 <h3 class="text-muted">No pending tasks!</h3>
-                <p>You are currently <strong>Available</strong> for assignments in your local area.</p>
+                  <p>You are currently <strong>Available</strong> for missions in your local area. Stay ready.</p>
             </div>
         </div>
         {% endif %}
     </div>
 </section>
-
-			     <div class="divider col-sm-12 col-xs-12 col-md-12">
-              <div class="header-text">Our <span>Testimonials</span></div>
-            </div>
-
-       <section class="testimonial">
-          <div class="col-md-7 testimonial-blog">
-             <div id="wrapper">
-            <!-- DEMO -->
-                <div class="testimonials-slider">
-                  <div class="slide">
-                    <div class="testimonials-carousel-thumbnail"><img width="120" alt="" src="images/team1.jpg"></div>
-                      <div class="testimonials-carousel-context">
-                        <div class="testimonials-name">
-                          Rub elvi <span>shuvohabib.com</span>
-                        </div>
-                        <div class="testimonials-carousel-content">
-                          <p>Sed posuere consectetur est at lobortis. Fusce dapibus, tellus ac cursus commodo.Cras mattis consectetur purus sit amet fermentum. Sed posuere consectetur est at lobortis. Fusce dapibus, tellus ac cursus commodo.</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="slide">
-                      <div class="testimonials-carousel-thumbnail">
-                        <img width="120" alt="" src="{% static 'volunteer/images/team2.jpg' %}">
-                      </div>
-                      <div class="testimonials-carousel-context">
-                        <div class="testimonials-name">Jewel Jahan <span>technextit.com</span>
-                        </div>
-                        <div class="testimonials-carousel-content">
-                        <p>Cras mattis consectetur purus sit amet fermentum. Sed posuere consectetur est at lobortis. Fusce dapibus, tellus ac cursus commodo.</p>
-                        </div>
-                      </div>
-                    </div>
-
-                      <div class="slide">
-                        <div class="testimonials-carousel-thumbnail"><img width="120" alt="" src="{% static 'volunteer/images/team3.jpg' %}"></div>
-                          <div class="testimonials-carousel-context">
-                            <div class="testimonials-name">Mark Zuckerberg<span>www.Facebook.com</span></div>
-                              <div class="testimonials-carousel-content">
-                                <p>It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal..</p>
-                              </div>
-                            </div>
-                      </div>
-                    </div>
-                 <!-- END DEMO -->
-                  <div class="clearfix"></div>
-                </div>
-              </div>
-              <div class="col-md-4 subscribe-form">
-                <div class="subscribe">
-                  <h4>Subscribe to Newsletter</h4>
-                    <div class="email-field">
-                        <form action="http://demo.nrgthemes.com/">
-                               <div class="email-input">
-                                  <input type="email" placeholder="Enter your email..." required>
-                                  <i class="fa fa-check col-green"></i>
-                               </div>
-                          <button type="submit" class="button-main bg-green">Submit</button>
-                        </form>
-                          <span>We never spam :)</span>
-                    </div>
-                  </div>
-                </div>
-              </section>
 {% include 'volunteer/footer.html' %}

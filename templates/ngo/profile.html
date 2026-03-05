@@ -1,0 +1,378 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>NGO Profile - ResQlink</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+    <link href="https://fonts.googleapis.com/css?family=Dosis:200,300,400,500,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Overpass:300,400,400i,600,700" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'ngo/css/open-iconic-bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'ngo/css/animate.css' %}">
+    <link rel="stylesheet" href="{% static 'ngo/css/owl.carousel.min.css' %}">
+    <link rel="stylesheet" href="{% static 'ngo/css/owl.theme.default.min.css' %}">
+    <link rel="stylesheet" href="{% static 'ngo/css/magnific-popup.css' %}">
+    <link rel="stylesheet" href="{% static 'ngo/css/aos.css' %}">
+    <link rel="stylesheet" href="{% static 'ngo/css/ionicons.min.css' %}">
+    <link rel="stylesheet" href="{% static 'ngo/css/bootstrap-datepicker.css' %}">
+    <link rel="stylesheet" href="{% static 'ngo/css/jquery.timepicker.css' %}">
+    <link rel="stylesheet" href="{% static 'ngo/css/flaticon.css' %}">
+    <link rel="stylesheet" href="{% static 'ngo/css/icomoon.css' %}">
+    <link rel="stylesheet" href="{% static 'ngo/css/style.css' %}">
+
+    <style>
+        :root {
+            --primary-color: #28a745;
+            --secondary-color: #17a2b8;
+            --accent-color: #ffc107;
+            --dark-color: #343a40;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
+        
+        .profile-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            border: 3px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .profile-header {
+            background: linear-gradient(135deg, #2ecc71 0%, #3498db 100%);
+            padding: 45px 40px;
+            text-align: center;
+            color: white;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.1;
+        }
+        
+        .ngo-name {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .ngo-name i {
+            font-size: 50px;
+        }
+        
+        .ngo-reg-number {
+            display: inline-block;
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .profile-body {
+            padding: 50px 40px;
+        }
+        
+        .info-section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .section-title i {
+            color: var(--secondary-color);
+            font-size: 24px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .info-card {
+            background: var(--light-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: var(--dark-color);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-label i {
+            color: var(--secondary-color);
+            font-size: 16px;
+        }
+        
+        .info-value {
+            color: #2c3e50;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .full-width-card {
+            grid-column: 1 / -1;
+        }
+        
+        .btn-back {
+            display: inline-block;
+            margin: 30px 0 20px;
+            padding: 14px 35px;
+            background: white;
+            color: #667eea;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+            color: #764ba2;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .btn-back i {
+            margin-right: 8px;
+        }
+        
+        .document-link {
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .document-link:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+        
+        .badge-volunteers {
+            display: inline-block;
+            padding: 6px 16px;
+            background: var(--accent-color);
+            color: #856404;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        .container-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        
+    /* Force the navbar to have a background on this specific page */
+    #ftco-navbar {
+        background: #343a40 !important; /* This is the bg-dark color */
+        position: relative !important;   /* Keeps it at the top of the content */
+        top: 0;
+    }
+    
+    /* Alternatively, if you want it to stay white but be visible, add a shadow */
+    /*
+    #ftco-navbar {
+        background: #ffffff !important;
+        box-shadow: 0px 2px 10px rgba(0,0,0,0.1);
+    }
+    .nav-link { color: #000 !important; }
+    */
+
+    </style>
+</head>
+<body>
+    {% include 'ngo/header.html' %}
+    
+    <div class="container-wrapper">
+        <a href="{% url 'ngohome' %}" class="btn-back">
+            <i class="fa fa-arrow-left"></i> Back to Dashboard
+        </a>
+
+        <div class="profile-container">
+            <div class="profile-header">
+                <h1 class="ngo-name">
+                    <i class="fa fa-building"></i>
+                    {{ ngo.NGOname }}
+                </h1>
+                <span class="ngo-reg-number">
+                    <i class="fa fa-certificate"></i> Reg. No: {{ ngo.RegNumber }}
+                </span>
+            </div>
+
+            <div class="profile-body">
+                <!-- Contact Information -->
+                <div class="info-section">
+                    <h2 class="section-title">
+                        <i class="fa fa-address-book"></i> Contact Information
+                    </h2>
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <div class="info-label">
+                                <i class="fa fa-phone"></i> Primary Phone
+                            </div>
+                            <div class="info-value">{{ ngo.ContactNumber1 }}</div>
+                        </div>
+                        
+                        {% if ngo.ContactNumber2 %}
+                        <div class="info-card">
+                            <div class="info-label">
+                                <i class="fa fa-phone"></i> Alternate Phone
+                            </div>
+                            <div class="info-value">{{ ngo.ContactNumber2 }}</div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="info-card">
+                            <div class="info-label">
+                                <i class="fa fa-envelope"></i> Email Address
+                            </div>
+                            <div class="info-value">{{ ngo.Email }}</div>
+                        </div>
+                        
+                        <div class="info-card full-width-card">
+                            <div class="info-label">
+                                <i class="fa fa-home"></i> Address
+                            </div>
+                            <div class="info-value">{{ ngo.Address }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Information -->
+                <div class="info-section">
+                    <h2 class="section-title">
+                        <i class="fa fa-map-marker"></i> Location Details
+                    </h2>
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <div class="info-label">
+                                <i class="fa fa-map"></i> Taluk
+                            </div>
+                            <div class="info-value">{{ ngo.TalukID.TalukName }}</div>
+                        </div>
+                        
+                        <div class="info-card">
+                            <div class="info-label">
+                                <i class="fa fa-building-o"></i> Local Body
+                            </div>
+                            <div class="info-value">{{ ngo.LocalbodyID.LocalbodyName }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Organization Details -->
+                <div class="info-section">
+                    <h2 class="section-title">
+                        <i class="fa fa-id-card"></i> Organization Details
+                    </h2>
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <div class="info-label">
+                                <i class="fa fa-users"></i> Has Volunteers
+                            </div>
+                            <div class="info-value">
+                                <span class="badge-volunteers">{{ ngo.hasVolunteers }}</span>
+                            </div>
+                        </div>
+                        
+                        {% if ngo.ProofDocument %}
+                        <div class="info-card full-width-card">
+                            <div class="info-label">
+                                <i class="fa fa-file-text"></i> Registration Document
+                            </div>
+                            <div class="info-value">
+                                <a href="{{ ngo.ProofDocument.url }}" target="_blank" class="document-link">
+                                    <i class="fa fa-download"></i> Download Registration Proof
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'ngo/footer.html' %}
+
+    <!-- Scripts -->
+    <script src="{% static 'ngo/js/jquery.min.js' %}"></script>
+    <script src="{% static 'ngo/js/jquery-migrate-3.0.1.min.js' %}"></script>
+    <script src="{% static 'ngo/js/popper.min.js' %}"></script>
+    <script src="{% static 'ngo/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'ngo/js/jquery.easing.1.3.js' %}"></script>
+    <script src="{% static 'ngo/js/jquery.waypoints.min.js' %}"></script>
+    <script src="{% static 'ngo/js/jquery.stellar.min.js' %}"></script>
+    <script src="{% static 'ngo/js/owl.carousel.min.js' %}"></script>
+    <script src="{% static 'ngo/js/jquery.magnific-popup.min.js' %}"></script>
+    <script src="{% static 'ngo/js/aos.js' %}"></script>
+    <script src="{% static 'ngo/js/jquery.animateNumber.min.js' %}"></script>
+    <script src="{% static 'ngo/js/bootstrap-datepicker.js' %}"></script>
+    <script src="{% static 'ngo/js/jquery.timepicker.min.js' %}"></script>
+    <script src="{% static 'ngo/js/main.js' %}"></script>
+</body>
+</html>

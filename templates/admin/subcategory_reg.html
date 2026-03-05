@@ -3,36 +3,74 @@
 <!-- ============================================================== -->
 <!-- horizontal form -->
 <!-- ============================================================== -->
+
+<!-- Display Messages -->
+{% if messages %}
+<div style="position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 520px; max-width: calc(100% - 32px);">
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert" style="box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2); border-radius: 8px; font-size: 16px; padding: 14px 16px; {% if message.tags == 'error' %}border: 2px solid #dc3545; background: #fff5f5;{% elif message.tags == 'success' %}border: 2px solid #28a745; background: #f3fff6;{% else %}border: 2px solid #17a2b8; background: #f3fbff;{% endif %}">
+            <strong style="font-size: 17px;">{% if message.tags == 'success' %}✓ Success!{% elif message.tags == 'error' %}✗ Error!{% else %}ℹ Info{% endif %}</strong> {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    {% endfor %}
+</div>
+<script>
+    // Auto-hide success messages after 3 seconds
+    document.querySelectorAll('.alert-success').forEach(function(alert) {
+        setTimeout(function() {
+            alert.remove();
+        }, 3000);
+    });
+</script>
+{% endif %}
+
 <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
     <div class="card">
         <h5 class="card-header">SUBCATEGORY REGISTRATION</h5>
         <div class="card-body">
-            <form action="{% url 'subcatreg' %}" method="post">
+            <form action="{% url 'subcatreg' %}" method="post" id="subcategoryForm">
                 {% csrf_token %}
                 <div class="form-group row">
-                    <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right">Subcategory</label>
+                    <label for="categoryid" class="col-3 col-lg-2 col-form-label text-right">Category</label>
                      <div class="col-9 col-lg-10">
-                        <select name="categoryid" class="form-control">
+                        <select id="categoryid" name="categoryid" class="form-control" required>
                             <option value="">--Select Category--</option>
                             {% for c in categories %}
                             <option value="{{ c.CategoryID }}">{{ c.CategoryName }}</option>
                             {% endfor %}
                         </select>
-                        <br><br>
+                        <small class="form-text text-danger" id="category_error"></small>
                     </div>
-                    <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right"> Name</label>
+                </div>
+                
+                <div class="form-group row">
+                    <label for="subcatname" class="col-3 col-lg-2 col-form-label text-right">Name</label>
                     <div class="col-9 col-lg-10">
-                        <input id="inputEmail2" type="text" name="subcatname" placeholder="Subcategory Name"
-                            class="form-control">
+                        <input id="subcatname" type="text" name="subcatname" placeholder="Enter Subcategory Name"
+                            class="form-control" required minlength="2" maxlength="100" pattern="[A-Za-z0-9\s\-]+">
+                        <small class="form-text text-muted">Only letters, numbers, spaces, and hyphens allowed (2-100 characters)</small>
+                        <small class="form-text text-danger" id="subcatname_error"></small>
+                    </div>
+                </div>
+                
+                <div class="form-group row">
+                    <label for="minRequiredQty" class="col-3 col-lg-2 col-form-label text-right">Min Quantity</label>
+                    <div class="col-9 col-lg-10">
+                        <input id="minRequiredQty" type="number" name="min_required_quantity" 
+                            placeholder="Enter Minimum Required Quantity"
+                            class="form-control" required min="0" step="1">
+                        <small class="form-text text-muted">Minimum quantity must be 0 or greater</small>
+                        <small class="form-text text-danger" id="minqty_error"></small>
                     </div>
                 </div>
 
                 <div class="row pt-2 pt-sm-5 mt-1">
-
                     <div class="col-sm-6 pl-0">
                         <p class="text-right">
                             <button type="submit" class="btn btn-space btn-primary">Submit</button>
-                            <button class="btn btn-space btn-secondary">Cancel</button>
+                            <a href="{% url 'adminhome' %}" class="btn btn-space btn-secondary">Cancel</a>
                         </p>
                     </div>
                 </div>
@@ -40,6 +78,141 @@
         </div>
     </div>
 </div>
+
+<script>
+// Real-time validation for subcategory name
+document.getElementById('subcatname').addEventListener('input', function() {
+    const subcatName = this.value.trim();
+    const errorElement = document.getElementById('subcatname_error');
+    
+    // Clear previous error
+    errorElement.textContent = '';
+    this.classList.remove('is-invalid');
+    
+    if (subcatName) {
+        // Check for invalid characters
+        if (!/^[A-Za-z0-9\s\-]+$/.test(subcatName)) {
+            errorElement.textContent = 'Only letters, numbers, spaces, and hyphens are allowed.';
+            this.classList.add('is-invalid');
+        }
+        // Check length
+        else if (subcatName.length < 2) {
+            errorElement.textContent = 'Subcategory name must be at least 2 characters long.';
+            this.classList.add('is-invalid');
+        }
+        else if (subcatName.length > 100) {
+            errorElement.textContent = 'Subcategory name cannot exceed 100 characters.';
+            this.classList.add('is-invalid');
+        }
+        else {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    }
+});
+
+// Real-time validation for minimum quantity
+document.getElementById('minRequiredQty').addEventListener('input', function() {
+    const minQty = this.value.trim();
+    const errorElement = document.getElementById('minqty_error');
+    
+    // Clear previous error
+    errorElement.textContent = '';
+    this.classList.remove('is-invalid');
+    
+    if (minQty) {
+        const qty = parseInt(minQty);
+        if (isNaN(qty)) {
+            errorElement.textContent = 'Please enter a valid number.';
+            this.classList.add('is-invalid');
+        }
+        else if (qty < 0) {
+            errorElement.textContent = 'Minimum quantity must be 0 or greater.';
+            this.classList.add('is-invalid');
+        }
+        else {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    }
+});
+
+// Form validation before submit
+document.getElementById('subcategoryForm').addEventListener('submit', function(e) {
+    let isValid = true;
+    
+    // Validate category
+    const category = document.getElementById('categoryid');
+    const categoryError = document.getElementById('category_error');
+    if (!category.value) {
+        categoryError.textContent = 'Please select a category.';
+        category.classList.add('is-invalid');
+        isValid = false;
+    } else {
+        categoryError.textContent = '';
+        category.classList.remove('is-invalid');
+    }
+    
+    // Validate subcategory name
+    const subcatName = document.getElementById('subcatname').value.trim();
+    const subcatnameError = document.getElementById('subcatname_error');
+    if (!subcatName) {
+        subcatnameError.textContent = 'Subcategory name is required.';
+        document.getElementById('subcatname').classList.add('is-invalid');
+        isValid = false;
+    }
+    else if (!/^[A-Za-z0-9\s\-]+$/.test(subcatName)) {
+        subcatnameError.textContent = 'Only letters, numbers, spaces, and hyphens are allowed.';
+        document.getElementById('subcatname').classList.add('is-invalid');
+        isValid = false;
+    }
+    else if (subcatName.length < 2) {
+        subcatnameError.textContent = 'Subcategory name must be at least 2 characters long.';
+        document.getElementById('subcatname').classList.add('is-invalid');
+        isValid = false;
+    }
+    else if (subcatName.length > 100) {
+        subcatnameError.textContent = 'Subcategory name cannot exceed 100 characters.';
+        document.getElementById('subcatname').classList.add('is-invalid');
+        isValid = false;
+    }
+    else {
+        subcatnameError.textContent = '';
+        document.getElementById('subcatname').classList.remove('is-invalid');
+    }
+    
+    // Validate minimum quantity
+    const minQty = document.getElementById('minRequiredQty').value.trim();
+    const minQtyError = document.getElementById('minqty_error');
+    if (!minQty) {
+        minQtyError.textContent = 'Minimum required quantity is required.';
+        document.getElementById('minRequiredQty').classList.add('is-invalid');
+        isValid = false;
+    }
+    else {
+        const qty = parseInt(minQty);
+        if (isNaN(qty)) {
+            minQtyError.textContent = 'Please enter a valid number.';
+            document.getElementById('minRequiredQty').classList.add('is-invalid');
+            isValid = false;
+        }
+        else if (qty < 0) {
+            minQtyError.textContent = 'Minimum quantity must be 0 or greater.';
+            document.getElementById('minRequiredQty').classList.add('is-invalid');
+            isValid = false;
+        }
+        else {
+            minQtyError.textContent = '';
+            document.getElementById('minRequiredQty').classList.remove('is-invalid');
+        }
+    }
+    
+    if (!isValid) {
+        e.preventDefault();
+        return false;
+    }
+});
+</script>
 <!-- ============================================================== -->
 <!-- end horizontal form -->
 {% include 'admin/footer.html' %}

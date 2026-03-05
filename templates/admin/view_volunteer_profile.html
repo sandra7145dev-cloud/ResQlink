@@ -1,0 +1,100 @@
+{% load static %}
+{% include 'admin/header.html' %}
+
+<div class="dashboard-wrapper">
+    <div class="container-fluid dashboard-content">
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="page-header">
+                    <h2 class="pageheader-title">Volunteer Profile: {{ volunteer.Name }}</h2>
+                    <div class="page-breadcrumb">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{% url 'viewvolunteer' %}" class="breadcrumb-link">Volunteer Network</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Profile Details</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xl-4 col-lg-4 col-md-5 col-sm-12 col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="user-avatar text-center d-block">
+                            {% if volunteer.vol_image %}
+                            <img src="{{ volunteer.vol_image.url }}" alt="{{ volunteer.Name }}" class="user-avatar-xl rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+                            {% else %}
+                            <i class="fas fa-user-circle fa-5x text-primary mb-3"></i>
+                            {% endif %}
+                        </div>
+                        <div class="text-center">
+                            <h3 class="font-24 mb-0">{{ volunteer.Name }}</h3>
+                            <p class="text-muted mb-2">Status: {{ volunteer.availability_status }}</p>
+                            <span class="badge badge-info">Volunteer ID: {{ volunteer.VolunteerId }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body border-top">
+                        <h5 class="font-16">Contact Information</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2"><i class="fas fa-fw fa-phone mr-2"></i>{{ volunteer.ContactNumber1 }}</li>
+                            <li class="mb-2"><i class="fas fa-fw fa-envelope mr-2"></i>{{ volunteer.Email }}</li>
+                            <li class="mb-2"><i class="fas fa-fw fa-map-marker-alt mr-2"></i>{{ volunteer.Address }}</li>
+                        </ul>
+                    </div>
+                    <div class="card-body border-top">
+                        <h5 class="font-16">Jurisdiction</h5>
+                        <p class="mb-0">{{ volunteer.LocalbodyID.LocalbodyName }}, {{ volunteer.TalukID.TalukName }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-8 col-lg-8 col-md-7 col-sm-12 col-12">
+                <div class="card mb-4">
+                    <h5 class="card-header">Personal Details</h5>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <tbody>
+                                    <tr>
+                                        <th style="width: 35%;">Date of Birth</th>
+                                        <td>{{ volunteer.DateofBirth|date:"F d, Y" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Age</th>
+                                        <td>{{ volunteer.age }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Skills</th>
+                                        <td>{{ volunteer.skills }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Username</th>
+                                        <td>{{ volunteer.LoginId.Username }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h5 class="card-header">Identity Proof</h5>
+                    <div class="card-body">
+                        {% if volunteer.identity_proof %}
+                        <a href="{{ volunteer.identity_proof.url }}" target="_blank" class="btn btn-outline-primary">
+                            <i class="fas fa-file-alt mr-2"></i>View Document
+                        </a>
+                        {% else %}
+                        <p class="text-muted mb-0">No identity proof uploaded.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'admin/footer.html' %}

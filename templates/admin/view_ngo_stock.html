@@ -1,0 +1,132 @@
+{% load static %}
+{% include 'admin/header.html' %}
+
+<div class="dashboard-wrapper">
+    <div class="container-fluid dashboard-content">
+        
+        <div class="row">
+            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                <div class="page-header">
+                    <h2 class="pageheader-title">NGO Inventory & Supply Management</h2>
+                    <p class="pageheader-text">Monitor stock levels and broadcast resource shortages to the NGO network.</p>
+                </div>
+            </div>
+        </div>
+
+        {% if shortages %}
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card border-3 border-top border-top-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="text-muted"><i class="fas fa-broadcast-tower text-danger"></i> Urgent Resource Alerts</h5>
+                    
+                    {% if request.session.last_broadcast_time %}
+                    <a href="{% url 'reset_broadcast' %}" class="btn btn-xs btn-link text-muted">
+                        <i class="fas fa-undo"></i> Reset Button (For Demo)
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="table-responsive mt-2">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Item Sub-Category</th>
+                                <th>Total Quantity Needed</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in shortages %}
+                            <tr>
+                                <td><strong>{{ item.subCategoryID__SubCategoryname }}</strong></td>
+                                <td class="text-danger font-weight-bold">{{ item.total_shortage }} units requested</td>
+                                <td>
+                                    {% if request.session.last_broadcast_time %}
+                                        <button class="btn btn-light btn-xs" disabled>
+                                            <i class="fas fa-check-circle text-success"></i> Broadcast Sent
+                                        </button>
+                                    {% else %}
+                                        <a href="{% url 'notify_shortage_global' %}" class="btn btn-primary btn-xs" onclick="return confirm('Send alert to all NGOs?')">
+                                            <i class="fas fa-paper-plane"></i> Broadcast Need
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+        <div class="row">
+            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                <div class="card">
+                    <h5 class="card-header">Current NGO Stock Inventory (NGO-wise)</h5>
+                    <div class="card-body">
+                        {% if ngo_wise_inventory %}
+                            {% for ngo_group in ngo_wise_inventory %}
+                            <div class="table-responsive mb-4">
+                                <h5 class="mb-2 text-primary">{{ ngo_group.ngo.NGOname }}</h5>
+                                <table class="table table-hover table-bordered mb-0">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Category / Service</th>
+                                            <th>Subcategory</th>
+                                            <th>Stock Quantity</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in ngo_group.items %}
+                                        <tr>
+                                            <td>
+                                                {% if item.serviceID %}
+                                                    <span class="badge badge-info">Service</span>
+                                                {% else %}
+                                                    <span class="badge badge-success">Resource</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ item.categoryID.CategoryName }}
+                                                {{ item.serviceID.serviceName }}
+                                            </td>
+                                            <td>{{ item.subCategoryID.SubCategoryname|default:"-" }}</td>
+                                            <td>
+                                                {% if item.quantity %}
+                                                    <span class="{% if item.quantity|add:0 < 50 %}text-danger font-weight-bold{% endif %}">
+                                                        {{ item.quantity }} units
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">N/A</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-info mb-0">No active NGO stock records found.</div>
+                        {% endif %}
+                        
+                        <div class="m-t-20 mt-3">
+                            <a href="{% url 'export_stock_csv' %}" class="btn btn-success">
+                                <i class="fas fa-file-excel"></i> Download Full Stock Report (CSV)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+{% include 'admin/footer.html' %}

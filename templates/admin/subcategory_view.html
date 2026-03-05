@@ -57,6 +57,7 @@
                                                         <th class="border-0">#</th>
                                                         <th class="border-0">Sub Category Name</th>
                                                         <th class="border-0">Category</th>
+                                                        <th class="border-0">Minimum Quantity</th>
                                                         <th class="border-0">Actions</th>
                         
                                                     </tr>
@@ -67,6 +68,7 @@
                                                         <td>{{ forloop.counter }}</td>
                                                         <td>{{ sc.SubCategoryname }}</td>
                                                         <td>{{ sc.categoryID.CategoryName }}</td>
+                                                        <td>{{ sc.min_required_quantity }}</td>
                                                         <td>
                                                             <div class="d-flex align-items-center">
                                                             <a href="{% url 'editsubcategory' sid=sc.subCategoryId %}">
@@ -110,7 +112,7 @@ document.getElementById('filter_btn').addEventListener('click', function() {
             tbody.innerHTML = '';
             
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center">No subcategories found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No subcategories found</td></tr>';
                 return;
             }
             
@@ -120,6 +122,7 @@ document.getElementById('filter_btn').addEventListener('click', function() {
                     <td>${index + 1}</td>
                     <td>${sc.SubCategoryName}</td>
                     <td>${sc.CategoryID.CategoryName}</td>
+                    <td>${sc.MinRequiredQuantity}</td>
                     <td>
                         <div class="d-flex align-items-center">
                         <a href="/adminapp/editsubcategory/${sc.SubCategoryID}/">

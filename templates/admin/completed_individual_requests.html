@@ -1,0 +1,405 @@
+{% load static %}
+{% include 'admin/header.html' %}
+
+<div class="dashboard-wrapper">
+    <div class="container-fluid dashboard-content">
+        <div class="row">
+            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                <div class="page-header">
+                    <h2 class="pageheader-title">Individual Request Control Panel</h2>
+                    <p class="pageheader-text">Approve new requests, release waiting assignments, and track delivery completion.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                <div class="card shadow-sm mb-4">
+                    <h5 class="card-header bg-white">
+                        <span>Waiting List: New Individual Requests</span>
+                    </h5>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered first">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Request ID</th>
+                                        <th>Requester</th>
+                                        <th>Location</th>
+                                        <th>Requested Service</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for r in waiting_requests %}
+                                    <tr>
+                                        <td><strong class="text-primary">#{{ r.request_id }}</strong></td>
+                                        <td>
+                                            <strong>{{ r.affectedID.name }}</strong><br>
+                                            <small>{{ r.affectedID.contact_number }}</small>
+                                        </td>
+                                        <td>
+                                            {{ r.affectedID.localbodyID.LocalbodyName }}, {{ r.affectedID.talukID.TalukName }}
+                                        </td>
+                                        <td>
+                                            {% for item in r.tbl_request_service_set.all %}
+                                                <div>{{ item.serviceID.serviceName|default:'General Help' }}</div>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            <form method="post" action="{% url 'approve_individual_request' r.request_id %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-primary">Approve & Send to NGO</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted p-4">No new pending individual requests.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mb-4">
+                    <h5 class="card-header bg-white">Waiting List: Volunteers Busy</h5>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered first">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Request ID</th>
+                                        <th>NGO</th>
+                                        <th>Requester</th>
+                                        <th>Location</th>
+                                        <th>Service</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for wa in waiting_assignments %}
+                                    <tr>
+                                        <td><strong class="text-primary">#{{ wa.request_serviceID.requestID.request_id }}</strong></td>
+                                        <td>{{ wa.NGOID.NGOname }}</td>
+                                        <td>{{ wa.request_serviceID.requestID.affectedID.name }}</td>
+                                        <td>
+                                            {{ wa.request_serviceID.requestID.affectedID.localbodyID.LocalbodyName }},
+                                            {{ wa.request_serviceID.requestID.affectedID.talukID.TalukName }}
+                                        </td>
+                                        <td>{{ wa.request_serviceID.serviceID.serviceName|default:'General Help' }}</td>
+                                        <td><span class="badge badge-info">{{ wa.assignment_status }}</span></td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted p-4">No assignments are waiting for volunteer availability.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                <div class="card shadow-sm mb-4">
+                    <h5 class="card-header bg-white">Recently Approved Requests (Sent to NGOs)</h5>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered first">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Request ID</th>
+                                        <th>Requester</th>
+                                        <th>Location</th>
+                                        <th>Requested Service</th>
+                                        <th>Assigned NGO</th>
+                                        <th>Current Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for r in approved_requests %}
+                                    <tr>
+                                        <td><strong class="text-primary">#{{ r.request_id }}</strong></td>
+                                        <td>
+                                            <strong>{{ r.affectedID.name }}</strong><br>
+                                            <small>{{ r.affectedID.contact_number }}</small>
+                                        </td>
+                                        <td>
+                                            {{ r.affectedID.localbodyID.LocalbodyName }}, {{ r.affectedID.talukID.TalukName }}
+                                        </td>
+                                        <td>
+                                            {% for item in r.tbl_request_service_set.all %}
+                                                <div>{{ item.serviceID.serviceName|default:'General Help' }}</div>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% if r.NGOID %}
+                                                <span class="badge badge-success">{{ r.NGOID.NGOname }}</span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if r.request_status == 'Pending NGO Approval' %}
+                                                <span class="badge badge-warning">Pending NGO</span>
+                                            {% elif r.request_status == 'Approved' %}
+                                                <span class="badge badge-info">In Progress</span>
+                                            {% else %}
+                                                <span class="badge badge-secondary">{{ r.request_status }}</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted p-4">No approved requests yet.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                <div class="card shadow-sm mb-4">
+                    <h5 class="card-header bg-white">Completed Individual Request Tracking</h5>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered first">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Request ID</th>
+                                        <th>Affected Individual</th>
+                                        <th>Contact & Location</th>
+                                        <th>Requirements & Item Status</th>
+                                        <th>NGO & Volunteer Allocation</th>
+                                        <th>Delivery Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for r in completed_requests %}
+                                    <tr>
+                                        <td class="text-center">
+                                            <strong class="text-primary">#{{ r.request_id }}</strong>
+                                            {% if r.disasterID %}
+                                            <br><span class="badge badge-danger">{{ r.disasterID.DisasterName }}</span>
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <td>
+                                            <strong>{{ r.affectedID.name }}</strong><br>
+                                            <span class="text-muted small">Age: {{ r.affectedID.age }}</span><br>
+                                            <span class="text-muted small">Gender: {{ r.affectedID.gender }}</span>
+                                        </td>
+
+                                        <td>
+                                            <i class="fas fa-phone text-primary"></i> {{ r.affectedID.contact_number }}<br>
+                                            <i class="fas fa-map-marker-alt text-danger"></i> {{ r.affectedID.address }}<br>
+                                            <span class="badge badge-info">{{ r.affectedID.localbodyID.LocalbodyName }}</span>
+                                            <span class="badge badge-secondary">{{ r.affectedID.talukID.TalukName }}</span>
+                                        </td>
+                                        
+                                        <td>
+                                            <ul class="list-unstyled mb-0">
+                                                {% for item in r.tbl_request_service_set.all %}
+                                                <li class="mb-1" style="font-size: 13px;">
+                                                    <i class="fas fa-caret-right text-primary"></i> 
+                                                    {{ item.subCategoryID.SubCategoryname }} 
+                                                    <span class="text-dark font-weight-bold">({{ item.quantity }})</span>
+                                                    
+                                                    {% if item.status == 'Fully Assigned' %}
+                                                        <small class="text-success ml-2"><i class="fas fa-check-circle"></i> Fully Assigned</small>
+                                                    {% elif 'Shortage' in item.status %}
+                                                        <small class="text-warning ml-2" title="{{ item.status }}"><i class="fas fa-exclamation-triangle"></i></small>
+                                                    {% endif %}
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </td>
+
+                                        <td>
+                                            <ul class="list-unstyled mb-0" style="font-size: 12px;">
+                                                {% for service in r.tbl_request_service_set.all %}
+                                                    {% for assignment in service.tbl_request_assignment_set.all %}
+                                                    {% if assignment.assignment_status != 'Pending' %}
+                                                    <li class="border-bottom mb-2 pb-1">
+                                                        <i class="fas fa-building text-success"></i> <strong>{{ assignment.NGOID.NGOname }}</strong> 
+                                                        <br>
+                                                        <i class="fas fa-box-open"></i> {{ service.subCategoryID.SubCategoryname }} ({{ assignment.assigned_quntity }})
+                                                        <br>
+                                                        <i class="fas fa-user-check text-primary"></i> 
+                                                        {% if assignment.volunteerID %}
+                                                            Vol: {{ assignment.volunteerID.Name }}
+                                                        {% else %}
+                                                            <span class="text-muted italic">NGO Internal Staff</span>
+                                                        {% endif %}
+                                                    </li>
+                                                    {% endif %}
+                                                    {% endfor %}
+                                                {% empty %}
+                                                    <span class="text-muted italic">No allocations found</span>
+                                                {% endfor %}
+                                            </ul>
+                                        </td>
+
+                                        <td class="text-center">
+                                            {% if r.is_fully_completed %}
+                                                <span class="badge badge-success badge-lg">
+                                                    <i class="fas fa-check-double"></i> COMPLETED
+                                                </span>
+                                            {% else %}
+                                                <span class="badge badge-info badge-lg">
+                                                    <i class="fas fa-truck"></i> IN TRANSIT
+                                                </span>
+                                            {% endif %}
+                                            <br><br>
+                                            {% for service in r.tbl_request_service_set.all %}
+                                                {% for assignment in service.tbl_request_assignment_set.all %}
+                                                    {% if assignment.assignment_status != 'Pending' %}
+                                                    <div class="text-left small mb-1">
+                                                        {% if assignment.assignment_status == 'Completed' %}
+                                                            <span class="text-success">✓ {{ service.subCategoryID.SubCategoryname }}: Delivered</span>
+                                                        {% elif assignment.assignment_status == 'Delivered' %}
+                                                            <span class="text-info">→ {{ service.subCategoryID.SubCategoryname }}: Waiting Confirmation</span>
+                                                        {% else %}
+                                                            <span class="text-warning">⊙ {{ service.subCategoryID.SubCategoryname }}: In Progress</span>
+                                                        {% endif %}
+                                                    </div>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center p-4 text-muted">No completed individual requests found.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <h5 class="card-header bg-white">In Progress Individual Request Tracking</h5>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered first">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Request ID</th>
+                                        <th>Affected Individual</th>
+                                        <th>Contact & Location</th>
+                                        <th>Requirements & Item Status</th>
+                                        <th>NGO & Volunteer Allocation</th>
+                                        <th>Delivery Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for r in in_progress_requests %}
+                                    <tr>
+                                        <td class="text-center">
+                                            <strong class="text-primary">#{{ r.request_id }}</strong>
+                                            {% if r.disasterID %}
+                                            <br><span class="badge badge-danger">{{ r.disasterID.DisasterName }}</span>
+                                            {% endif %}
+                                        </td>
+
+                                        <td>
+                                            <strong>{{ r.affectedID.name }}</strong><br>
+                                            <span class="text-muted small">Age: {{ r.affectedID.age }}</span><br>
+                                            <span class="text-muted small">Gender: {{ r.affectedID.gender }}</span>
+                                        </td>
+
+                                        <td>
+                                            <i class="fas fa-phone text-primary"></i> {{ r.affectedID.contact_number }}<br>
+                                            <i class="fas fa-map-marker-alt text-danger"></i> {{ r.affectedID.address }}<br>
+                                            <span class="badge badge-info">{{ r.affectedID.localbodyID.LocalbodyName }}</span>
+                                            <span class="badge badge-secondary">{{ r.affectedID.talukID.TalukName }}</span>
+                                        </td>
+
+                                        <td>
+                                            <ul class="list-unstyled mb-0">
+                                                {% for item in r.tbl_request_service_set.all %}
+                                                <li class="mb-1" style="font-size: 13px;">
+                                                    <i class="fas fa-caret-right text-primary"></i>
+                                                    {{ item.subCategoryID.SubCategoryname }}
+                                                    <span class="text-dark font-weight-bold">({{ item.quantity }})</span>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </td>
+
+                                        <td>
+                                            <ul class="list-unstyled mb-0" style="font-size: 12px;">
+                                                {% for service in r.tbl_request_service_set.all %}
+                                                    {% for assignment in service.tbl_request_assignment_set.all %}
+                                                    {% if assignment.assignment_status != 'Pending' %}
+                                                    <li class="border-bottom mb-2 pb-1">
+                                                        <i class="fas fa-building text-success"></i> <strong>{{ assignment.NGOID.NGOname }}</strong>
+                                                        <br>
+                                                        <i class="fas fa-box-open"></i> {{ service.subCategoryID.SubCategoryname }} ({{ assignment.assigned_quntity }})
+                                                        <br>
+                                                        <i class="fas fa-user-check text-primary"></i>
+                                                        {% if assignment.volunteerID %}
+                                                            Vol: {{ assignment.volunteerID.Name }}
+                                                        {% else %}
+                                                            <span class="text-muted italic">NGO Internal Staff</span>
+                                                        {% endif %}
+                                                    </li>
+                                                    {% endif %}
+                                                    {% endfor %}
+                                                {% empty %}
+                                                    <span class="text-muted italic">No allocations found</span>
+                                                {% endfor %}
+                                            </ul>
+                                        </td>
+
+                                        <td class="text-center">
+                                            <span class="badge badge-info badge-lg">
+                                                <i class="fas fa-truck"></i> IN TRANSIT
+                                            </span>
+                                            <br><br>
+                                            {% for service in r.tbl_request_service_set.all %}
+                                                {% for assignment in service.tbl_request_assignment_set.all %}
+                                                    {% if assignment.assignment_status != 'Pending' %}
+                                                    <div class="text-left small mb-1">
+                                                        {% if assignment.assignment_status == 'Completed' %}
+                                                            <span class="text-success">✓ {{ service.subCategoryID.SubCategoryname }}: Delivered</span>
+                                                        {% elif assignment.assignment_status == 'Delivered' %}
+                                                            <span class="text-info">→ {{ service.subCategoryID.SubCategoryname }}: Waiting Confirmation</span>
+                                                        {% else %}
+                                                            <span class="text-warning">⊙ {{ service.subCategoryID.SubCategoryname }}: In Progress</span>
+                                                        {% endif %}
+                                                    </div>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center p-4 text-muted">No in-progress individual requests found.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'admin/footer.html' %}

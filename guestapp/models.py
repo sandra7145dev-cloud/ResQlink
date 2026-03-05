@@ -80,6 +80,7 @@ class tbl_request_service(models.Model):
     categoryID = models.ForeignKey('adminapp.tbl_category', on_delete=models.CASCADE, null=True, blank=True)
     subCategoryID = models.ForeignKey('adminapp.tbl_subcategory', on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.IntegerField(null=True, blank=True)
+    fulfilled_quantity = models.IntegerField(default=0)
     status = models.CharField(max_length=50) 
     
 class tbl_request_assignment(models.Model): 
@@ -97,6 +98,17 @@ class tbl_ngo_request_notification(models.Model):
     notified_at = models.DateTimeField(auto_now_add=True)
     response_status = models.CharField( max_length=20,default='Pending')  
     response_at = models.DateTimeField(null=True, blank=True)
+
+class tbl_ngo_volunteer_assignment(models.Model):
+    assignment_id = models.AutoField(primary_key=True)
+    NGOID = models.ForeignKey(tbl_ngo_reg, on_delete=models.CASCADE)
+    VolunteerID = models.ForeignKey(tbl_volunteer_reg, on_delete=models.CASCADE, unique=True)  # One volunteer = One NGO only
+    assignment_type = models.CharField(max_length=20, choices=[('Permanent', 'Permanent'), ('Emergency', 'Emergency')], default='Permanent')
+    assignment_date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=[('Active', 'Active'), ('Inactive', 'Inactive')], default='Active')
+    
+    class Meta:
+        unique_together = ('NGOID', 'VolunteerID')  # Ensure only one assignment per NGO-Volunteer pair
 
 
 

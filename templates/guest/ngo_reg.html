@@ -37,16 +37,20 @@
                         <div class="row">
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">NGO Name</label>
-                                    <input class="form-control" name="ngo_name" type="text" placeholder="Enter your NGO name" required 
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">NGO Name <span class="text-danger">*</span></label>
+                                    <input class="form-control" name="ngo_name" id="ngo_name" type="text" placeholder="Enter your NGO name" required 
+                                           minlength="3"
                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                    <small class="text-danger" id="ngo_name_error" style="display:none;">NGO name must be at least 3 characters</small>
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Registration Number</label>
-                                    <input class="form-control" name="reg_number" type="text" placeholder="Govt. registration number" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Registration Number <span class="text-danger">*</span></label>
+                                    <input class="form-control" name="reg_number" id="reg_number" type="text" placeholder="Govt. registration number" required
+                                           minlength="5"
                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                    <small class="text-danger" id="reg_number_error" style="display:none;">Registration number is required</small>
                                 </div>
                             </div>
                         </div>
@@ -56,13 +60,14 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label style="font-weight: 600; color: #555; margin-bottom: 8px;">
-                                        <i class="fa fa-file-certificate"></i> Proof Certificate (NGO Registration Document)
+                                        <i class="fa fa-file-certificate"></i> Proof Certificate (NGO Registration Document) <span class="text-danger">*</span>
                                     </label>
-                                    <input class="form-control" name="proof_document" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required
+                                    <input class="form-control" name="proof_document" id="proof_document" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required
                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
                                     <small class="text-muted d-block mt-2">
                                         <i class="fa fa-info-circle"></i> Upload your NGO registration certificate or proof document (PDF, JPG, PNG, DOC, DOCX). Max size: 5MB
                                     </small>
+                                    <small class="text-danger" id="proof_document_error" style="display:none;">Please upload a valid document (max 5MB)</small>
                                 </div>
                             </div>
                         </div>
@@ -76,23 +81,28 @@
                         <div class="row">
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Phone Number</label>
-                                    <input class="form-control" name="phone" type="tel" placeholder="+91 XXXXX XXXXX" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Phone Number <span class="text-danger">*</span></label>
+                                    <input class="form-control" name="phone" id="ngo_phone" type="tel" placeholder="10-digit mobile number" required
+                                           pattern="[0-9]{10}" maxlength="10"
                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                    <small class="text-danger" id="phone_error" style="display:none;">Phone number must be exactly 10 digits</small>
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Phone Number (other)</label>
-                                    <input class="form-control" name="phone_other" type="tel" placeholder="+91 XXXXX XXXXX" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Phone Number (other) <span class="text-danger">*</span></label>
+                                    <input class="form-control" name="phone_other" id="ngo_phone_other" type="tel" placeholder="10-digit alternate number" required
+                                           pattern="[0-9]{10}" maxlength="10"
                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                    <small class="text-danger" id="phone_other_error" style="display:none;">Alternate phone must be exactly 10 digits</small>
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Email Address</label>
-                                    <input class="form-control" name="email" type="email" placeholder="official@ngo.org" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Email Address <span class="text-danger">*</span></label>
+                                    <input class="form-control" name="email" id="ngo_email" type="email" placeholder="official@ngo.org" required
                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                    <small class="text-danger" id="email_error" style="display:none;">Please enter a valid email address</small>
                                 </div>
                             </div>
                         </div>
@@ -106,33 +116,34 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Address</label>
-                                    <textarea class="form-control w-100" name="address" rows="3" placeholder="Complete address with landmarks" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Address <span class="text-danger">*</span></label>
+                                    <textarea class="form-control w-100" name="address" id="ngo_address" rows="3" placeholder="Complete address with landmarks" required
+                                              minlength="20"
                                               style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;"></textarea>
+                                    <small class="text-danger" id="address_error" style="display:none;">Address must be at least 20 characters</small>
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Taluk</label>
-                                    <select class="form-control" name="taluk" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Taluk <span class="text-danger">*</span></label>
+                                    <select class="form-control" name="taluk" id="ngo_taluk" required
                                             style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
                                         <option value="">-- Select Place --</option>
                                         {% for t in taluks %}
                                         <option value="{{ t.TalukID }}">{{ t.TalukName }}</option>
                                         {% endfor %}
                                     </select>
+                                    <small class="text-danger" id="taluk_error" style="display:none;">Please select a taluk</small>
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Local body</label>
-                                    <select class="form-control" name="localbody" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Local body <span class="text-danger">*</span></label>
+                                    <select class="form-control" name="localbody" id="ngo_localbody" required
                                             style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
                                         <option value="">-- Select Local Body --</option>
-                                        {% for lb in localbodies %}
-                                        <option value="{{ lb.LocalbodyID }}">{{ lb.LocalbodyName }}</option>
-                                        {% endfor %}
                                     </select>
+                                    <small class="text-danger" id="localbody_error" style="display:none;">Please select a local body</small>
                                 </div>
                             </div>
                         </div>
@@ -174,22 +185,26 @@
                         <div class="row">
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Username</label>
-                                    <input class="form-control" name="username" type="text" placeholder="Choose a username" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Username <span class="text-danger">*</span></label>
+                                    <input class="form-control" name="username" id="ngo_username" type="text" placeholder="Choose a username" required
+                                           pattern="[A-Za-z0-9_]{4,20}" minlength="4" maxlength="20"
                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                    <small class="text-danger" id="username_error" style="display:none;">Username must be 4-20 characters (letters, numbers, underscore only)</small>
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Password</label>
-                                    <input class="form-control" name="password" type="password" placeholder="Create a strong password" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Password <span class="text-danger">*</span></label>
+                                    <input class="form-control" name="password" id="ngo_password" type="password" placeholder="Create a strong password" required
+                                           minlength="6"
                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                    <small class="text-danger" id="password_error" style="display:none;">Password must be at least 6 characters with letters and numbers</small>
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group mt-4 text-center">
-                            <button type="submit" class="button button-contactForm boxed-btn" 
+                            <button type="submit" id="submit_btn" class="button button-contactForm boxed-btn" 
                                     style="padding: 15px 60px; font-size: 16px; font-weight: 600; border-radius: 50px; 
                                            background: linear-gradient(135deg, #000000 0%, #333333 100%); border: none;
                                            box-shadow: 0 4px 15px rgba(245, 56, 93, 0.3); transition: all 0.3s;">
@@ -210,5 +225,339 @@
     </div>
 </section>
 <!-- contact_area_end -->
+
+<script>
+function clearValidationErrors() {
+    document.querySelectorAll('.text-danger[id$="_error"]').forEach(el => {
+        el.style.display = 'none';
+    });
+    document.querySelectorAll('.form-control').forEach(el => {
+        el.classList.remove('is-invalid');
+        el.style.borderColor = '#e8e8e8';
+    });
+}
+
+function showError(fieldId, errorId, message) {
+    const field = document.getElementById(fieldId);
+    const error = document.getElementById(errorId);
+    if (field && error) {
+        field.classList.add('is-invalid');
+        field.style.borderColor = '#dc3545';
+        error.textContent = message;
+        error.style.display = 'block';
+    }
+}
+
+function clearError(fieldId, errorId) {
+    const field = document.getElementById(fieldId);
+    const error = document.getElementById(errorId);
+    if (field && error) {
+        field.classList.remove('is-invalid');
+        field.style.borderColor = '#e8e8e8';
+        error.style.display = 'none';
+    }
+}
+
+function validateNGOForm() {
+    let isValid = true;
+    clearValidationErrors();
+
+    // Validate NGO Name
+    const ngoName = document.getElementById('ngo_name');
+    if (!ngoName.value.trim()) {
+        showError('ngo_name', 'ngo_name_error', 'NGO name is required');
+        isValid = false;
+    } else if (ngoName.value.trim().length < 3) {
+        showError('ngo_name', 'ngo_name_error', 'NGO name must be at least 3 characters');
+        isValid = false;
+    }
+
+    // Validate Registration Number
+    const regNumber = document.getElementById('reg_number');
+    if (!regNumber.value.trim()) {
+        showError('reg_number', 'reg_number_error', 'Registration number is required');
+        isValid = false;
+    } else if (regNumber.value.trim().length < 5) {
+        showError('reg_number', 'reg_number_error', 'Registration number must be at least 5 characters');
+        isValid = false;
+    }
+
+    // Validate Proof Document
+    const proofDoc = document.getElementById('proof_document');
+    if (proofDoc.files.length > 0) {
+        const file = proofDoc.files[0];
+        const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 
+                           'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        
+        if (!validTypes.includes(file.type)) {
+            showError('proof_document', 'proof_document_error', 'Please upload a valid document (PDF, JPG, PNG, DOC, DOCX)');
+            isValid = false;
+        } else if (file.size > maxSize) {
+            showError('proof_document', 'proof_document_error', 'Document size must not exceed 5MB');
+            isValid = false;
+        }
+    } else {
+        showError('proof_document', 'proof_document_error', 'Please upload your NGO registration document');
+        isValid = false;
+    }
+
+    // Validate Primary Phone
+    const phone = document.getElementById('ngo_phone');
+    const phonePattern = /^[0-9]{10}$/;
+    if (!phone.value.trim()) {
+        showError('ngo_phone', 'phone_error', 'Phone number is required');
+        isValid = false;
+    } else if (!phonePattern.test(phone.value.trim())) {
+        showError('ngo_phone', 'phone_error', 'Phone number must be exactly 10 digits');
+        isValid = false;
+    }
+
+    // Validate Alternate Phone
+    const phoneOther = document.getElementById('ngo_phone_other');
+    if (!phoneOther.value.trim()) {
+        showError('ngo_phone_other', 'phone_other_error', 'Alternate phone number is required');
+        isValid = false;
+    } else if (!phonePattern.test(phoneOther.value.trim())) {
+        showError('ngo_phone_other', 'phone_other_error', 'Alternate phone must be exactly 10 digits');
+        isValid = false;
+    } else if (phone.value.trim() === phoneOther.value.trim()) {
+        showError('ngo_phone_other', 'phone_other_error', 'Alternate phone must be different from primary phone');
+        isValid = false;
+    }
+
+    // Validate Email
+    const email = document.getElementById('ngo_email');
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.value.trim()) {
+        showError('ngo_email', 'email_error', 'Email is required');
+        isValid = false;
+    } else if (!emailPattern.test(email.value.trim())) {
+        showError('ngo_email', 'email_error', 'Please enter a valid email address');
+        isValid = false;
+    }
+
+    // Validate Address
+    const address = document.getElementById('ngo_address');
+    if (!address.value.trim()) {
+        showError('ngo_address', 'address_error', 'Address is required');
+        isValid = false;
+    } else if (address.value.trim().length < 20) {
+        showError('ngo_address', 'address_error', 'Address must be at least 20 characters');
+        isValid = false;
+    }
+
+    // Validate Taluk
+    const taluk = document.getElementById('ngo_taluk');
+    if (!taluk.value) {
+        showError('ngo_taluk', 'taluk_error', 'Please select a taluk');
+        isValid = false;
+    }
+
+    // Validate Local Body
+    const localbody = document.getElementById('ngo_localbody');
+    if (!localbody.value) {
+        showError('ngo_localbody', 'localbody_error', 'Please select a local body');
+        isValid = false;
+    }
+
+    // Validate Username
+    const username = document.getElementById('ngo_username');
+    const usernamePattern = /^[A-Za-z0-9_]{4,20}$/;
+    if (!username.value.trim()) {
+        showError('ngo_username', 'username_error', 'Username is required');
+        isValid = false;
+    } else if (!usernamePattern.test(username.value.trim())) {
+        showError('ngo_username', 'username_error', 'Username must be 4-20 characters (letters, numbers, underscore only)');
+        isValid = false;
+    }
+
+    // Validate Password
+    const password = document.getElementById('ngo_password');
+    if (!password.value) {
+        showError('ngo_password', 'password_error', 'Password is required');
+        isValid = false;
+    } else if (password.value.length < 6) {
+        showError('ngo_password', 'password_error', 'Password must be at least 6 characters');
+        isValid = false;
+    } else if (!/[A-Za-z]/.test(password.value) || !/[0-9]/.test(password.value)) {
+        showError('ngo_password', 'password_error', 'Password must contain both letters and numbers');
+        isValid = false;
+    }
+
+    if (!isValid) {
+        // Scroll to first error
+        const firstError = document.querySelector('.is-invalid');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstError.focus();
+        }
+    }
+
+    return isValid;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('.form-contact');
+    
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            if (!validateNGOForm()) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    }
+
+    // Handle Taluk change to filter LocalBodies
+    const talukSelect = document.getElementById('ngo_taluk');
+    const localbodySelect = document.getElementById('ngo_localbody');
+    
+    if (talukSelect) {
+        talukSelect.addEventListener('change', function() {
+            const talukId = this.value;
+            
+            // Reset localbody dropdown
+            localbodySelect.innerHTML = '<option value="">-- Select Local Body --</option>';
+            
+            if (talukId) {
+                // Fetch localbodies for selected taluk
+                fetch(`/api/localbodies/${talukId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(localbody => {
+                            const option = document.createElement('option');
+                            option.value = localbody.LocalbodyID;
+                            option.textContent = localbody.LocalbodyName;
+                            localbodySelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching localbodies:', error));
+            }
+        });
+    }
+
+    // Real-time validation
+    const ngoNameField = document.getElementById('ngo_name');
+    if (ngoNameField) {
+        ngoNameField.addEventListener('input', function() {
+            if (this.value && this.value.length < 3) {
+                showError('ngo_name', 'ngo_name_error', 'NGO name must be at least 3 characters');
+            } else {
+                clearError('ngo_name', 'ngo_name_error');
+            }
+        });
+    }
+
+    const regNumberField = document.getElementById('reg_number');
+    if (regNumberField) {
+        regNumberField.addEventListener('input', function() {
+            if (this.value && this.value.length < 5) {
+                showError('reg_number', 'reg_number_error', 'Registration number must be at least 5 characters');
+            } else {
+                clearError('reg_number', 'reg_number_error');
+            }
+        });
+    }
+
+    const phoneField = document.getElementById('ngo_phone');
+    if (phoneField) {
+        phoneField.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            const phonePattern = /^[0-9]{10}$/;
+            if (this.value && !phonePattern.test(this.value)) {
+                showError('ngo_phone', 'phone_error', 'Phone number must be exactly 10 digits');
+            } else if (this.value.length === 10) {
+                clearError('ngo_phone', 'phone_error');
+            }
+        });
+    }
+
+    const phoneOtherField = document.getElementById('ngo_phone_other');
+    if (phoneOtherField) {
+        phoneOtherField.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            const phonePattern = /^[0-9]{10}$/;
+            const primaryPhone = document.getElementById('ngo_phone').value;
+            
+            if (this.value && !phonePattern.test(this.value)) {
+                showError('ngo_phone_other', 'phone_other_error', 'Alternate phone must be exactly 10 digits');
+            } else if (this.value.length === 10 && this.value === primaryPhone) {
+                showError('ngo_phone_other', 'phone_other_error', 'Alternate phone must be different from primary phone');
+            } else if (this.value.length === 10) {
+                clearError('ngo_phone_other', 'phone_other_error');
+            }
+        });
+    }
+
+    const emailField = document.getElementById('ngo_email');
+    if (emailField) {
+        emailField.addEventListener('blur', function() {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (this.value && !emailPattern.test(this.value)) {
+                showError('ngo_email', 'email_error', 'Please enter a valid email address');
+            } else {
+                clearError('ngo_email', 'email_error');
+            }
+        });
+    }
+
+    const addressField = document.getElementById('ngo_address');
+    if (addressField) {
+        addressField.addEventListener('input', function() {
+            if (this.value && this.value.length < 20) {
+                showError('ngo_address', 'address_error', 'Address must be at least 20 characters');
+            } else {
+                clearError('ngo_address', 'address_error');
+            }
+        });
+    }
+
+    const usernameField = document.getElementById('ngo_username');
+    if (usernameField) {
+        usernameField.addEventListener('input', function() {
+            const usernamePattern = /^[A-Za-z0-9_]{4,20}$/;
+            if (this.value && !usernamePattern.test(this.value)) {
+                showError('ngo_username', 'username_error', 'Username must be 4-20 characters (letters, numbers, underscore only)');
+            } else {
+                clearError('ngo_username', 'username_error');
+            }
+        });
+    }
+
+    const passwordField = document.getElementById('ngo_password');
+    if (passwordField) {
+        passwordField.addEventListener('input', function() {
+            if (this.value.length < 6) {
+                showError('ngo_password', 'password_error', 'Password must be at least 6 characters');
+            } else if (!/[A-Za-z]/.test(this.value) || !/[0-9]/.test(this.value)) {
+                showError('ngo_password', 'password_error', 'Password must contain both letters and numbers');
+            } else {
+                clearError('ngo_password', 'password_error');
+            }
+        });
+    }
+
+    const proofDocField = document.getElementById('proof_document');
+    if (proofDocField) {
+        proofDocField.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png',
+                                   'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                const maxSize = 5 * 1024 * 1024;
+                
+                if (!validTypes.includes(file.type)) {
+                    showError('proof_document', 'proof_document_error', 'Please upload a valid document (PDF, JPG, PNG, DOC, DOCX)');
+                } else if (file.size > maxSize) {
+                    showError('proof_document', 'proof_document_error', 'Document size must not exceed 5MB');
+                } else {
+                    clearError('proof_document', 'proof_document_error');
+                }
+            }
+        });
+    }
+});
+</script>
 
 {% include 'guest/footer.html' %}  

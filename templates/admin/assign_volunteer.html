@@ -1,0 +1,217 @@
+{% load static %}
+{% include 'admin/header.html' %}
+
+<!-- ============================================================== -->
+<!-- pageheader  -->
+<!-- ============================================================== -->
+<div class="row">
+	<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+		<div class="page-header">
+			<h2 class="pageheader-title">Assign Volunteer to NGO</h2>
+			<p class="pageheader-text">Assign an available volunteer to handle tasks for this NGO.</p>
+			<div class="page-breadcrumb">
+				<nav aria-label="breadcrumb">
+					<ol class="breadcrumb">
+						<li class="breadcrumb-item"><a href="/admin" class="breadcrumb-link">Dashboard</a></li>
+						<li class="breadcrumb-item"><a href="{% url 'viewngo' %}" class="breadcrumb-link">NGO Approvals</a></li>
+						<li class="breadcrumb-item active" aria-current="page">Assign Volunteer</li>
+					</ol>
+				</nav>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- ============================================================== -->
+<!-- end pageheader  -->
+<!-- ============================================================== -->
+
+{% if ngo.hasVolunteers == 'Yes' %}
+<div class="row">
+	<div class="col-xl-8 col-lg-8 col-md-12 col-sm-12 col-12 mx-auto">
+		<div class="alert alert-info alert-dismissible fade show" role="alert">
+			<strong><i class="fas fa-info-circle mr-2"></i>Information</strong>
+			<p class="mb-0">This NGO has opted to use internal volunteers. External volunteer assignment is not applicable.</p>
+			<a href="{% url 'viewngo' %}" class="btn btn-sm btn-outline-primary mt-2">
+				<i class="fas fa-arrow-left mr-1"></i>Back to NGO List
+			</a>
+		</div>
+	</div>
+</div>
+{% else %}
+
+<div class="row">
+	<div class="col-xl-8 col-lg-8 col-md-12 col-sm-12 col-12 mx-auto">
+		<!-- Messages -->
+		{% if messages %}
+		<div style="position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 520px; max-width: calc(100% - 32px);">
+			{% for message in messages %}
+			<div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert" style="box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2); border-radius: 8px; font-size: 16px; padding: 14px 16px; {% if message.tags == 'error' %}border: 2px solid #dc3545; background: #fff5f5;{% elif message.tags == 'success' %}border: 2px solid #28a745; background: #f3fff6;{% else %}border: 2px solid #17a2b8; background: #f3fbff;{% endif %}">
+				<strong style="font-size: 17px;">{% if message.tags == 'success' %}✓ Success!{% elif message.tags == 'error' %}✗ Error!{% else %}ℹ Info{% endif %}</strong> {{ message }}
+				<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			{% endfor %}
+		</div>
+		<script>
+			document.querySelectorAll('.alert-success').forEach(function(alert) {
+				setTimeout(function() {
+					alert.remove();
+				}, 3000);
+			});
+		</script>
+		{% endif %}
+
+		<!-- NGO Details Card -->
+		<div class="card mb-4">
+			<div class="card-header bg-primary text-white">
+				<h5 class="mb-0"><i class="fas fa-building mr-2"></i>NGO Details</h5>
+			</div>
+			<div class="card-body">
+				<div class="row">
+					<div class="col-md-6 mb-3">
+						<small class="text-muted d-block">NGO Name</small>
+						<h6 class="font-weight-bold">{{ ngo.NGOname }}</h6>
+					</div>
+					<div class="col-md-6 mb-3">
+						<small class="text-muted d-block">Registration Number</small>
+						<h6 class="font-weight-bold">{{ ngo.RegNumber }}</h6>
+					</div>
+					<div class="col-md-6 mb-3">
+						<small class="text-muted d-block">Email</small>
+						<h6>{{ ngo.Email }}</h6>
+					</div>
+					<div class="col-md-6 mb-3">
+						<small class="text-muted d-block">Contact Number</small>
+						<h6>{{ ngo.ContactNumber1 }}</h6>
+					</div>
+					<div class="col-md-6 mb-3">
+						<small class="text-muted d-block">Location</small>
+						<h6>{{ ngo.LocalbodyID.LocalbodyName }}, {{ ngo.TalukID.TalukName }}</h6>
+					</div>
+					<div class="col-md-6 mb-3">
+						<small class="text-muted d-block">Address</small>
+						<h6>{{ ngo.Address }}</h6>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Currently Assigned Volunteer -->
+		{% if assigned_volunteer %}
+		<div class="card mb-4 border-success">
+			<div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+				<h5 class="mb-0"><i class="fas fa-check-circle mr-2"></i>Currently Assigned Volunteer</h5>
+				<form method="post" action="{% url 'assign_volunteer' ngo.NGOID %}" style="display: inline;">
+					{% csrf_token %}
+					<input type="hidden" name="action" value="unassign">
+					<button type="submit" class="btn btn-sm btn-outline-light" onclick="return confirm('Are you sure you want to unassign this volunteer?');">
+						<i class="fas fa-trash mr-1"></i>Unassign
+					</button>
+				</form>
+			</div>
+			<div class="card-body">
+				<div class="row">
+					<div class="col-md-6">
+						<small class="text-muted d-block">Volunteer Name</small>
+						<h6 class="font-weight-bold">{{ assigned_volunteer.VolunteerID.Name }}</h6>
+					</div>
+					<div class="col-md-6">
+						<small class="text-muted d-block">Contact</small>
+						<h6>{{ assigned_volunteer.VolunteerID.ContactNumber1 }}</h6>
+					</div>
+					<div class="col-md-6 mt-3">
+						<small class="text-muted d-block">Skills</small>
+						<h6>{{ assigned_volunteer.VolunteerID.skills }}</h6>
+					</div>
+					<div class="col-md-6 mt-3">
+						<small class="text-muted d-block">Assignment Type</small>
+						<span class="badge {% if assigned_volunteer.assignment_type == 'Permanent' %}badge-primary{% else %}badge-warning{% endif %} px-3 py-2">{{ assigned_volunteer.assignment_type }}</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		{% endif %}
+
+		<!-- Assign Volunteer Form -->
+		<div class="card">
+			<div class="card-header bg-info text-white">
+				<h5 class="mb-0"><i class="fas fa-users mr-2"></i>Select a Volunteer to Assign</h5>
+			</div>
+			<div class="card-body">
+				{% if available_volunteers %}
+				<form method="post">
+					{% csrf_token %}
+					<div class="form-group">
+						<label for="volunteer_id" class="font-weight-bold">Available Volunteers from {{ ngo.LocalbodyID.LocalbodyName }}</label>
+						<select class="form-control form-control-lg" id="volunteer_id" name="volunteer_id" required>
+							<option value="">-- Select a Volunteer --</option>
+							{% for volunteer in available_volunteers %}
+							<option value="{{ volunteer.VolunteerId }}">
+								{{ volunteer.Name }} | Contact: {{ volunteer.ContactNumber1 }} | Skills: {{ volunteer.skills }}
+							</option>
+							{% endfor %}
+						</select>
+						<small class="form-text text-muted">
+							<i class="fas fa-info-circle mr-1"></i>Only available volunteers from the same location are shown.
+						</small>
+					</div>
+
+					<div class="form-group mt-4">
+						<label class="font-weight-bold">Assignment Type</label>
+						<div class="custom-control custom-radio">
+							<input type="radio" class="custom-control-input" id="permanent" name="assignment_type" value="Permanent" checked>
+							<label class="custom-control-label" for="permanent">
+								<strong>Permanent</strong> - This volunteer will be the primary contact for all tasks from this NGO
+							</label>
+						</div>
+						<div class="custom-control custom-radio mt-2">
+							<input type="radio" class="custom-control-input" id="emergency" name="assignment_type" value="Emergency" disabled>
+							<label class="custom-control-label" for="emergency" style="color: #999;">
+								<strong>Emergency</strong> - (Can add later for additional volunteers during emergencies)
+							</label>
+						</div>
+					</div>
+
+					<div class="form-group mt-4">
+						<button type="submit" class="btn btn-success btn-lg btn-block">
+							<i class="fas fa-check mr-2"></i>Assign Volunteer
+						</button>
+					</div>
+				</form>
+				{% else %}
+				<div class="alert alert-warning" role="alert">
+					<h5 class="alert-heading"><i class="fas fa-exclamation-triangle mr-2"></i>No Volunteers Available</h5>
+					<p>
+						There are no available volunteers in <strong>{{ ngo.LocalbodyID.LocalbodyName }}</strong> to assign to this NGO.
+					</p>
+					<hr>
+					<p class="mb-0">
+						<small>Available volunteers must be:</small>
+						<ul>
+							<li>Approved by admin</li>
+							<li>In the same LocalBody as this NGO</li>
+							<li>Not assigned to another NGO</li>
+						</ul>
+					</p>
+					<p class="mt-3 mb-0">
+						<a href="{% url 'approved_volunteer_list' %}" class="btn btn-info btn-sm">
+							<i class="fas fa-user-check mr-1"></i>View Approved Volunteers
+						</a>
+					</p>
+				</div>
+				{% endif %}
+			</div>
+		</div>
+
+		<!-- Action Buttons -->
+		<div class="mt-4 text-center">
+			<a href="{% url 'viewngo' %}" class="btn btn-secondary btn-lg">
+				<i class="fas fa-arrow-left mr-2"></i>Back to NGO Approvals
+			</a>
+		</div>
+	</div>
+</div>
+{% endif %}
+
+{% include 'admin/footer.html' %}

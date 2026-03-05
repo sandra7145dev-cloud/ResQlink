@@ -1,0 +1,125 @@
+{% load static %}
+{% include 'admin/header.html' %}
+
+<div class="dashboard-wrapper">
+    <div class="container-fluid dashboard-content">
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="page-header">
+                    <h2 class="pageheader-title">NGO Profile: {{ ngo.NGOname }}</h2>
+                    <div class="page-breadcrumb">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{% url 'approved_ngo_list' %}" class="breadcrumb-link">NGO Network</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Profile Details</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xl-4 col-lg-4 col-md-5 col-sm-12 col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="user-avatar text-center d-block">
+                            <i class="fas fa-university fa-5x text-primary mb-3"></i>
+                        </div>
+                        <div class="text-center">
+                            <h3 class="font-24 mb-0">{{ ngo.NGOname }}</h3>
+                            <p>Reg No: {{ ngo.RegNumber }}</p>
+                        </div>
+                    </div>
+                    <div class="card-body border-top">
+                        <h5 class="font-16">Contact Information</h5>
+                        <div class="">
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2"><i class="fas fa-fw fa-envelope mr-2"></i>{{ ngo.Email }}</li>
+                                <li class="mb-2"><i class="fas fa-fw fa-phone mr-2"></i>{{ ngo.ContactNumber1 }}</li>
+                                <li class="mb-2"><i class="fas fa-fw fa-map-marker-alt mr-2"></i>{{ ngo.Address }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body border-top">
+                        <h5 class="font-16">Jurisdiction</h5>
+                        <p class="mb-0">{{ ngo.LocalbodyID.LocalbodyName }}, {{ ngo.TalukID.TalukName }}</p>
+                    </div>
+                    <div class="card-body border-top">
+                        <h5 class="font-16">Volunteer Information</h5>
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-1">Has Volunteers</small>
+                            {% if ngo.hasVolunteers == 'Yes' %}
+                                <span class="badge badge-success px-3 py-2">Yes</span>
+                            {% else %}
+                                <span class="badge badge-secondary px-3 py-2">No</span>
+                            {% endif %}
+                        </div>
+                        {% if assigned_volunteer %}
+                        <div class="alert alert-info mb-0">
+                            <small class="text-muted d-block mb-2"><strong>Assigned Volunteer</strong></small>
+                            <div class="mb-2">
+                                <i class="fas fa-user text-info mr-2"></i>
+                                <strong>{{ assigned_volunteer.VolunteerID.Name }}</strong>
+                            </div>
+                            <small class="d-block mb-1"><i class="fas fa-phone mr-1"></i>{{ assigned_volunteer.VolunteerID.ContactNumber1 }}</small>
+                            <small class="d-block mb-1"><i class="fas fa-envelope mr-1"></i>{{ assigned_volunteer.VolunteerID.Email }}</small>
+                            <small class="d-block"><i class="fas fa-star mr-1"></i>Skills: {{ assigned_volunteer.VolunteerID.skills }}</small>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-warning mb-0">
+                            <small class="text-muted"><i class="fas fa-exclamation-circle mr-1"></i>No volunteer assigned yet</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-8 col-lg-8 col-md-7 col-sm-12 col-12">
+                <div class="card">
+                    <h5 class="card-header">Current Resource Inventory</h5>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Resource/Service</th>
+                                        <th>Category</th>
+                                        <th>Current Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in inventory %}
+                                    <tr>
+                                        <td>
+                                            {% if item.subCategoryID %}
+                                                {{ item.subCategoryID.SubCategoryname }}
+                                            {% else %}
+                                                {{ item.serviceID.serviceName }}
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ item.categoryID.CategoryName|default:"Service" }}</td>
+                                        <td>
+                                            {% if item.quantity %}
+                                                <span class="badge badge-info">{{ item.quantity }} Units</span>
+                                            {% else %}
+                                                <span class="badge badge-light">On-Call Service</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center">This NGO has not listed any resources yet.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'admin/footer.html' %}

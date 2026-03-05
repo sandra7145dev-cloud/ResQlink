@@ -85,11 +85,24 @@
 								</div>
 								<div class="card-body">
 									{% if messages %}
-									<div class="mb-3">
+									<div style="position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 520px; max-width: calc(100% - 32px);">
 										{% for message in messages %}
-										<div class="alert alert-{{ message.tags|default:'info' }}" role="alert">{{ message }}</div>
+										<div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert" style="box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2); border-radius: 8px; font-size: 16px; padding: 14px 16px; {% if message.tags == 'error' %}border: 2px solid #dc3545; background: #fff5f5;{% elif message.tags == 'success' %}border: 2px solid #28a745; background: #f3fff6;{% else %}border: 2px solid #17a2b8; background: #f3fbff;{% endif %}">
+											<strong style="font-size: 17px;">{% if message.tags == 'success' %}✓ Success!{% elif message.tags == 'error' %}✗ Error!{% else %}ℹ Info{% endif %}</strong> {{ message }}
+											<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+												<span aria-hidden="true">&times;</span>
+											</button>
+										</div>
 										{% endfor %}
 									</div>
+									<script>
+										// Auto-hide success messages after 3 seconds
+										document.querySelectorAll('.alert-success').forEach(function(alert) {
+											setTimeout(function() {
+												alert.remove();
+											}, 3000);
+										});
+									</script>
 									{% endif %}
 									{% for volunteer in volunteers %}
 									<div class="card mb-3 border">
@@ -173,6 +186,9 @@
 														</span>
 													</div>
 													<div class="btn-group-vertical w-100 mt-2">
+														<a href="{% url 'volunteer_profile' volunteer.VolunteerId %}" class="btn btn-outline-primary btn-sm mb-2">
+															<i class="fa fa-user mr-1"></i>View Profile
+														</a>
 												<a href="{% url 'approve_volunteer' volunteer.VolunteerId %}" class="btn btn-success btn-sm mb-2">
 															<i class="fa fa-check mr-1"></i>Approve
 														</a>

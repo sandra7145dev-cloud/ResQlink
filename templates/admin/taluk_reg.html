@@ -3,26 +3,50 @@
 <!-- ============================================================== -->
 <!-- horizontal form -->
 <!-- ============================================================== -->
+
+<!-- Display Messages -->
+{% if messages %}
+<div style="position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 520px; max-width: calc(100% - 32px);">
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" style="box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2); border-radius: 8px; font-size: 16px; padding: 14px 16px; {% if message.tags == 'error' %}border: 2px solid #dc3545; background: #fff5f5;{% elif message.tags == 'success' %}border: 2px solid #28a745; background: #f3fff6;{% endif %}">
+            <strong style="font-size: 17px;">{% if message.tags == 'success' %}✓ Success!{% elif message.tags == 'error' %}✗ Error!{% else %}ℹ Info{% endif %}</strong> {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    {% endfor %}
+</div>
+<script>
+    // Auto-hide success messages after 3 seconds
+    document.querySelectorAll('.alert-success').forEach(function(alert) {
+        setTimeout(function() {
+            alert.remove();
+        }, 3000);
+    });
+</script>
+{% endif %}
+
 <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
     <div class="card">
         <h5 class="card-header">TALUK REGISTRATION</h5>
         <div class="card-body">
-            <form action="{% url 'talukreg' %}" method="post">
+            <form action="{% url 'talukreg' %}" method="post" id="talukForm">
                 {% csrf_token %}
                 <div class="form-group row">
-                    <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right"> Taluk Name</label>
+                    <label for="talukname" class="col-3 col-lg-2 col-form-label text-right">Taluk Name</label>
                     <div class="col-9 col-lg-10">
-                        <input id="inputEmail2" type="text" name="talukname" placeholder="Taluk Name"
-                            class="form-control">
+                        <input id="talukname" type="text" name="talukname" placeholder="Enter Taluk Name"
+                            class="form-control" required minlength="2" maxlength="100" pattern="[A-Za-z\s\-]+">
+                        <small class="form-text text-muted">Only letters, spaces, and hyphens allowed (2-100 characters)</small>
+                        <small class="form-text text-danger" id="talukname_error"></small>
                     </div>
                 </div>
 
                 <div class="row pt-2 pt-sm-5 mt-1">
-
                     <div class="col-sm-6 pl-0">
                         <p class="text-right">
                             <button type="submit" class="btn btn-space btn-primary">Submit</button>
-                            <button class="btn btn-space btn-secondary">Cancel</button>
+                            <a href="{% url 'adminhome' %}" class="btn btn-space btn-secondary">Cancel</a>
                         </p>
                     </div>
                 </div>
@@ -30,6 +54,77 @@
         </div>
     </div>
 </div>
+
+<script>
+// Real-time validation for taluk name
+document.getElementById('talukname').addEventListener('input', function() {
+    const talukName = this.value.trim();
+    const errorElement = document.getElementById('talukname_error');
+    
+    // Clear previous error
+    errorElement.textContent = '';
+    this.classList.remove('is-invalid');
+    
+    if (talukName) {
+        // Check for invalid characters
+        if (!/^[A-Za-z\s\-]+$/.test(talukName)) {
+            errorElement.textContent = 'Only letters, spaces, and hyphens are allowed.';
+            this.classList.add('is-invalid');
+        }
+        // Check length
+        else if (talukName.length < 2) {
+            errorElement.textContent = 'Taluk name must be at least 2 characters long.';
+            this.classList.add('is-invalid');
+        }
+        else if (talukName.length > 100) {
+            errorElement.textContent = 'Taluk name cannot exceed 100 characters.';
+            this.classList.add('is-invalid');
+        }
+        else {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    }
+});
+
+// Form validation before submit
+document.getElementById('talukForm').addEventListener('submit', function(e) {
+    const talukName = document.getElementById('talukname').value.trim();
+    const errorElement = document.getElementById('talukname_error');
+    let isValid = true;
+    
+    // Clear previous errors
+    errorElement.textContent = '';
+    document.getElementById('talukname').classList.remove('is-invalid');
+    
+    // Validate taluk name
+    if (!talukName) {
+        errorElement.textContent = 'Taluk name is required.';
+        document.getElementById('talukname').classList.add('is-invalid');
+        isValid = false;
+    }
+    else if (!/^[A-Za-z\s\-]+$/.test(talukName)) {
+        errorElement.textContent = 'Only letters, spaces, and hyphens are allowed.';
+        document.getElementById('talukname').classList.add('is-invalid');
+        isValid = false;
+    }
+    else if (talukName.length < 2) {
+        errorElement.textContent = 'Taluk name must be at least 2 characters long.';
+        document.getElementById('talukname').classList.add('is-invalid');
+        isValid = false;
+    }
+    else if (talukName.length > 100) {
+        errorElement.textContent = 'Taluk name cannot exceed 100 characters.';
+        document.getElementById('talukname').classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    if (!isValid) {
+        e.preventDefault();
+        return false;
+    }
+});
+</script>
 <!-- ============================================================== -->
 <!-- end horizontal form -->
 {% include 'admin/footer.html' %}

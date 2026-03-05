@@ -1,5 +1,9 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.core.mail import send_mail
+from django.conf import settings
+from django.urls import reverse
+from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
 from adminapp.models import tbl_taluk, tbl_localbody, tbl_disaster, tbl_ward, tbl_service_type, tbl_category, tbl_subcategory
 from .models import (
     tbl_login,
@@ -10,8 +14,8 @@ from .models import (
     tbl_request,
     tbl_request_service,
 )
-from .services.ngo_matching_service import find_and_notify_ngos
-# Create your views here.
+# Create your views here.# Add the second function name here so the Chef (view) can find the tool (function)
+from .services.ngo_matching_service import find_and_notify_ngos, assign_request_to_ngos
 
 def guesthome(request):
     taluks = tbl_taluk.objects.all()
@@ -82,11 +86,8 @@ def guesthome(request):
                         status='Pending'
                     )
 
-                    # Notify and assign NGOs for this request
-                    eligible_ngos = find_and_notify_ngos(help_request)
-                    assign_request_to_ngos(help_request, eligible_ngos)
-                    
-                    success = 'Request submitted. Our team will reach out shortly.'
+                    # Individual requests are routed by admin approval workflow.
+                    success = 'Request submitted successfully. It is now in admin review queue.'
 
             elif request_type == 'community':
                 # Handle community request
@@ -157,11 +158,11 @@ def guesthome(request):
                                     status='Pending'
                                 )
 
-                            # Notify and assign NGOs for this community request
-                            eligible_ngos = find_and_notify_ngos(help_request)
-                            assign_request_to_ngos(help_request, eligible_ngos)
+                            # Don't notify NGOs for community requests - admin will handle verification and assignment
+                            # eligible_ngos = find_and_notify_ngos(help_request)
+                            # assign_request_to_ngos(help_request, eligible_ngos)
 
-                            success = 'Community request submitted. Our team will reach out shortly.'
+                            success = 'Community request submitted successfully. It will be reviewed by admin for verification.'
 
         except (tbl_taluk.DoesNotExist, tbl_localbody.DoesNotExist, tbl_ward.DoesNotExist, tbl_category.DoesNotExist, tbl_subcategory.DoesNotExist):
             error = 'Selected location, category, or subcategory was not found.'
@@ -327,6 +328,130 @@ def login(request):
     else:
         return render(request, 'guest/login.html')
 
+
+def _get_recovery_email(login_obj):
+    if login_obj.Role == 'NGO':
+        ngo_data = tbl_ngo_reg.objects.filter(LoginID=login_obj).first()
+        return ngo_data.Email if ngo_data else None
+
+    if login_obj.Role == 'VOLUNTEER':
+        volunteer_data = tbl_volunteer_reg.objects.filter(LoginId=login_obj).first()
+        return volunteer_data.Email if volunteer_data else None
+
+    return None
+
+
+def forgot_password(request):
+    if request.method == 'POST':
+        username = (request.POST.get('username') or '').strip()
+
+        if not username:
+            return render(request, 'guest/forgot_password.html', {
+                'error': 'Please enter your username.'
+            })
+
+        login_obj = tbl_login.objects.filter(Username=username).first()
+
+        if not login_obj:
+            return render(request, 'guest/forgot_password.html', {
+                'success': 'If the account exists, a password reset link has been sent to the registered email.'
+            })
+
+        recovery_email = _get_recovery_email(login_obj)
+        if not recovery_email:
+            return render(request, 'guest/forgot_password.html', {
+                'error': 'No recovery email is available for this account. Please contact administrator.'
+            })
+
+        signer = TimestampSigner()
+        token = signer.sign(str(login_obj.LoginID))
+        reset_link = request.build_absolute_uri(
+            f"{reverse('reset_password')}?token={token}"
+        )
+
+        subject = 'ResQlink | Password Reset Request'
+        body = (
+            'A password reset was requested for your ResQlink account.\n\n'
+            f'Username: {login_obj.Username}\n\n'
+            f'Use this link to reset your password (valid for 30 minutes):\n{reset_link}\n\n'
+            'If you did not request this, please ignore this email.'
+        )
+
+        try:
+            send_mail(
+                subject,
+                body,
+                settings.DEFAULT_FROM_EMAIL,
+                [recovery_email],
+                fail_silently=False,
+            )
+        except Exception:
+            return render(request, 'guest/forgot_password.html', {
+                'error': 'Unable to send reset email right now. Please try again later.'
+            })
+
+        return render(request, 'guest/forgot_password.html', {
+            'success': 'If the account exists, a password reset link has been sent to the registered email.'
+        })
+
+    return render(request, 'guest/forgot_password.html')
+
+
+def reset_password(request):
+    token = request.GET.get('token') if request.method == 'GET' else request.POST.get('token')
+
+    if not token:
+        return render(request, 'guest/reset_password.html', {
+            'error': 'Invalid password reset link.'
+        })
+
+    signer = TimestampSigner()
+
+    try:
+        login_id = signer.unsign(token, max_age=1800)
+        login_obj = tbl_login.objects.filter(LoginID=login_id).first()
+        if not login_obj:
+            raise BadSignature
+    except SignatureExpired:
+        return render(request, 'guest/reset_password.html', {
+            'error': 'This password reset link has expired. Please request a new one.'
+        })
+    except BadSignature:
+        return render(request, 'guest/reset_password.html', {
+            'error': 'Invalid password reset link.'
+        })
+
+    if request.method == 'POST':
+        new_password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if not new_password or not confirm_password:
+            return render(request, 'guest/reset_password.html', {
+                'error': 'Please fill in both password fields.',
+                'token': token,
+            })
+
+        if len(new_password) < 6:
+            return render(request, 'guest/reset_password.html', {
+                'error': 'Password must be at least 6 characters long.',
+                'token': token,
+            })
+
+        if new_password != confirm_password:
+            return render(request, 'guest/reset_password.html', {
+                'error': 'Passwords do not match.',
+                'token': token,
+            })
+
+        login_obj.Password = new_password
+        login_obj.save(update_fields=['Password'])
+
+        return render(request, 'guest/login.html', {
+            'success': 'Password reset successful. Please login with your new password.'
+        })
+
+    return render(request, 'guest/reset_password.html', {'token': token})
+
 def volunteer_reg(request):
     taluks = tbl_taluk.objects.all()
     localbodies = tbl_localbody.objects.all()
@@ -431,4 +556,22 @@ def helpreq(request):
         'disasters': disasters,
         'service_types': service_types,
     })
+
+
+def get_localbodies_by_taluk(request, taluk_id):
+    """API endpoint to get localbodies filtered by taluk"""
+    try:
+        localbodies = tbl_localbody.objects.filter(TalukId=taluk_id).values('LocalbodyID', 'LocalbodyName')
+        return JsonResponse(list(localbodies), safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+def get_wards_by_localbody(request, localbody_id):
+    """API endpoint to get wards filtered by localbody"""
+    try:
+        wards = tbl_ward.objects.filter(LocalbodyID=localbody_id).values('WardID', 'WardNumber')
+        return JsonResponse(list(wards), safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 

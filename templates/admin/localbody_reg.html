@@ -3,46 +3,83 @@
 <!-- ============================================================== -->
 <!-- horizontal form -->
 <!-- ============================================================== -->
-<div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
+
+<!-- Display Messages -->
+{% if messages %}
+<div style="position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 520px; max-width: calc(100% - 32px);">
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert" style="box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2); border-radius: 8px; font-size: 16px; padding: 14px 16px; {% if message.tags == 'error' %}border: 2px solid #dc3545; background: #fff5f5;{% elif message.tags == 'success' %}border: 2px solid #28a745; background: #f3fff6;{% else %}border: 2px solid #17a2b8; background: #f3fbff;{% endif %}">
+            <strong style="font-size: 17px;">{% if message.tags == 'success' %}✓ Success!{% elif message.tags == 'error' %}✗ Error!{% else %}ℹ Info{% endif %}</strong> {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    {% endfor %}
+</div>
+<script>
+    // Show popup alert for success messages
+    {% for message in messages %}
+        {% if message.tags == 'success' %}
+            alert('{{ message|escapejs }}');
+        {% endif %}
+    {% endfor %}
+    
+    // Auto-hide success messages after 3 seconds
+    document.querySelectorAll('.alert-success').forEach(function(alert) {
+        setTimeout(function() {
+            alert.remove();
+        }, 3000);
+    });
+</script>
+{% endif %}
+
+<div class="col-xl-8 col-lg-8 col-md-12 col-sm-12 col-12">
     <div class="card">
         <h5 class="card-header">LOCAL BODY REGISTRATION</h5>
-        <div class="card-body">
-            <form action="{% url 'localbody' %}" method="post">
+        <div class="card-body" style="padding-bottom: 32px;">
+            <form action="{% url 'localbody' %}" method="post" id="localbodyForm">
                 {% csrf_token %}
                 <div class="form-group row">
-                    <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right">Taluk</label>
+                    <label for="talukid" class="col-3 col-lg-2 col-form-label text-right">Taluk</label>
                      <div class="col-9 col-lg-10">
-                        <select name="talukid" class="form-control">
+                        <select id="talukid" name="talukid" class="form-control" required>
                             <option value="">--Select Taluk--</option>
                             {% for c in taluks %}
                             <option value="{{ c.TalukID }}">{{ c.TalukName }}</option>
                             {% endfor %}
                         </select>
-                        <br><br>
+                        <small class="form-text text-danger" id="taluk_error"></small>
                     </div>
-                    <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right">Local Body</label>
+                </div>
+                
+                <div class="form-group row">
+                    <label for="localbodyid" class="col-3 col-lg-2 col-form-label text-right">Local Body Type</label>
                      <div class="col-9 col-lg-10">
-                        <select name="localbodyid" class="form-control">
+                        <select id="localbodyid" name="localbodyid" class="form-control" required>
                             <option value="">--Select Local Body Type--</option>
                             {% for c in localbodies %}
                             <option value="{{ c.TypeID }}">{{ c.TypeName }}</option>
                             {% endfor %}
                         </select>
-                        <br><br>
+                        <small class="form-text text-danger" id="localbodytype_error"></small>
                     </div>
-                    <label for="inputEmail2" class="col-3 col-lg-2 col-form-label text-right">Local Body Name</label>
+                </div>
+                
+                <div class="form-group row">
+                    <label for="localbodyname" class="col-3 col-lg-2 col-form-label text-right">Local Body Name</label>
                     <div class="col-9 col-lg-10">
-                        <input id="localbody" type="text" name="localbodyname" placeholder="Local Body Name"
-                            class="form-control">
+                        <input id="localbodyname" type="text" name="localbodyname" placeholder="Enter Local Body Name"
+                            class="form-control" required minlength="2" maxlength="100" pattern="[A-Za-z0-9\s\-]+">
+                        <small class="form-text text-muted">Only letters, numbers, spaces, and hyphens allowed (2-100 characters)</small>
+                        <small class="form-text text-danger" id="localbodyname_error"></small>
                     </div>
                 </div>
 
                 <div class="row pt-2 pt-sm-5 mt-1">
-
                     <div class="col-sm-6 pl-0">
                         <p class="text-right">
                             <button type="submit" class="btn btn-space btn-primary">Submit</button>
-                            <button class="btn btn-space btn-secondary">Cancel</button>
+                            <a href="{% url 'adminhome' %}" class="btn btn-space btn-secondary">Cancel</a>
                         </p>
                     </div>
                 </div>
@@ -50,6 +87,101 @@
         </div>
     </div>
 </div>
+
+<script>
+// Real-time validation for local body name
+document.getElementById('localbodyname').addEventListener('input', function() {
+    const localbodyName = this.value.trim();
+    const errorElement = document.getElementById('localbodyname_error');
+    
+    // Clear previous error
+    errorElement.textContent = '';
+    this.classList.remove('is-invalid');
+    
+    if (localbodyName) {
+        // Check for invalid characters
+        if (!/^[A-Za-z0-9\s\-]+$/.test(localbodyName)) {
+            errorElement.textContent = 'Only letters, numbers, spaces, and hyphens are allowed.';
+            this.classList.add('is-invalid');
+        }
+        // Check length
+        else if (localbodyName.length < 2) {
+            errorElement.textContent = 'Local body name must be at least 2 characters long.';
+            this.classList.add('is-invalid');
+        }
+        else if (localbodyName.length > 100) {
+            errorElement.textContent = 'Local body name cannot exceed 100 characters.';
+            this.classList.add('is-invalid');
+        }
+        else {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    }
+});
+
+// Form validation before submit
+document.getElementById('localbodyForm').addEventListener('submit', function(e) {
+    let isValid = true;
+    
+    // Validate taluk
+    const taluk = document.getElementById('talukid');
+    const talukError = document.getElementById('taluk_error');
+    if (!taluk.value) {
+        talukError.textContent = 'Please select a taluk.';
+        taluk.classList.add('is-invalid');
+        isValid = false;
+    } else {
+        talukError.textContent = '';
+        taluk.classList.remove('is-invalid');
+    }
+    
+    // Validate local body type
+    const localbodyType = document.getElementById('localbodyid');
+    const localbodyTypeError = document.getElementById('localbodytype_error');
+    if (!localbodyType.value) {
+        localbodyTypeError.textContent = 'Please select a local body type.';
+        localbodyType.classList.add('is-invalid');
+        isValid = false;
+    } else {
+        localbodyTypeError.textContent = '';
+        localbodyType.classList.remove('is-invalid');
+    }
+    
+    // Validate local body name
+    const localbodyName = document.getElementById('localbodyname').value.trim();
+    const localbodyNameError = document.getElementById('localbodyname_error');
+    if (!localbodyName) {
+        localbodyNameError.textContent = 'Local body name is required.';
+        document.getElementById('localbodyname').classList.add('is-invalid');
+        isValid = false;
+    }
+    else if (!/^[A-Za-z0-9\s\-]+$/.test(localbodyName)) {
+        localbodyNameError.textContent = 'Only letters, numbers, spaces, and hyphens are allowed.';
+        document.getElementById('localbodyname').classList.add('is-invalid');
+        isValid = false;
+    }
+    else if (localbodyName.length < 2) {
+        localbodyNameError.textContent = 'Local body name must be at least 2 characters long.';
+        document.getElementById('localbodyname').classList.add('is-invalid');
+        isValid = false;
+    }
+    else if (localbodyName.length > 100) {
+        localbodyNameError.textContent = 'Local body name cannot exceed 100 characters.';
+        document.getElementById('localbodyname').classList.add('is-invalid');
+        isValid = false;
+    }
+    else {
+        localbodyNameError.textContent = '';
+        document.getElementById('localbodyname').classList.remove('is-invalid');
+    }
+    
+    if (!isValid) {
+        e.preventDefault();
+        return false;
+    }
+});
+</script>
 <!-- ============================================================== -->
 <!-- end horizontal form -->
 {% include 'admin/footer.html' %}

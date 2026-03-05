@@ -46,16 +46,36 @@
             margin-bottom: 2rem;
         }
 
-        .header i {
-            font-size: 3rem;
-            color: var(--primary-color);
+        .header-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin-bottom: 1rem;
         }
 
-        .header h1 {
-            font-size: 1.5rem;
-            color: var(--text-color);
-            margin-bottom: 0.5rem;
+        .logo-icon {
+            position: relative;
+            margin-right: 12px;
+        }
+
+        .logo-icon .fa-map-marker {
+            font-size: 40px;
+            color: var(--primary-color);
+        }
+
+        .logo-icon .fa-plus {
+            font-size: 16px;
+            color: var(--white);
+            position: absolute;
+            top: 8px;
+            left: 11px;
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary-color);
+            letter-spacing: 1px;
         }
 
         .header p {
@@ -143,12 +163,6 @@
             font-size: 0.9rem;
         }
 
-        .public-access a {
-            color: var(--alert-color);
-            font-weight: bold;
-            text-decoration: none;
-        }
-
         /* Mobile Adjustments */
         @media (max-width: 480px) {
             .login-container {
@@ -166,8 +180,13 @@
 
     <div class="login-container">
         <div class="header">
-            <i class="fas fa-hand-holding-medical"></i> 
-            <h1>ResQ System</h1>
+            <div class="header-logo">
+                <div class="logo-icon">
+                    <i class="fa fa-map-marker"></i>
+                    <i class="fa fa-plus"></i>
+                </div>
+                <span class="logo-text">ResQlink</span>
+            </div>
             <p>Disaster Resource Management</p>
         </div>
 
@@ -199,13 +218,13 @@
             <button type="submit" class="btn-login">Secure Login</button>
 
             <div class="links">
+                <a href="{% url 'forgot_password' %}">Forgot Password?</a>
                 <a href="{% url 'ngo_vol_sel' %}">New User? Register Here</a>
             </div>
         </form>
 
         <div class="public-access">
-            <p>Not a responder?</p>
-            <a href="#">View Public Shelter Maps &rarr;</a>
+            <p>Rapid Response for Every Crisis</p>
         </div>
     </div>
 

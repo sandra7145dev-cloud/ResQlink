@@ -1,0 +1,195 @@
+{% load static %}
+{% include 'admin/header.html' %}
+
+<!-- ============================================================== -->
+<!-- pageheader  -->
+<!-- ============================================================== -->
+<div class="row">
+	<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+		<div class="page-header">
+			<h2 class="pageheader-title">Add Emergency Volunteer</h2>
+			<p class="pageheader-text">Add additional volunteers for emergency response.</p>
+			<div class="page-breadcrumb">
+				<nav aria-label="breadcrumb">
+					<ol class="breadcrumb">
+						<li class="breadcrumb-item"><a href="/admin" class="breadcrumb-link">Dashboard</a></li>
+						<li class="breadcrumb-item"><a href="{% url 'manage_ngo_volunteers' %}" class="breadcrumb-link">Manage NGO Volunteers</a></li>
+						<li class="breadcrumb-item active" aria-current="page">Add Emergency Volunteer</li>
+					</ol>
+				</nav>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- ============================================================== -->
+<!-- end pageheader  -->
+<!-- ============================================================== -->
+
+<div class="row">
+	<div class="col-xl-8 col-lg-8 col-md-12 col-sm-12 col-12 mx-auto">
+		<!-- Messages -->
+		{% if messages %}
+		<div style="position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 520px; max-width: calc(100% - 32px);">
+			{% for message in messages %}
+			<div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert" style="box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2); border-radius: 8px; font-size: 16px; padding: 14px 16px; {% if message.tags == 'error' %}border: 2px solid #dc3545; background: #fff5f5;{% elif message.tags == 'success' %}border: 2px solid #28a745; background: #f3fff6;{% else %}border: 2px solid #17a2b8; background: #f3fbff;{% endif %}">
+				<strong style="font-size: 17px;">{% if message.tags == 'success' %}✓ Success!{% elif message.tags == 'error' %}✗ Error!{% else %}ℹ Info{% endif %}</strong> {{ message }}
+				<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			{% endfor %}
+		</div>
+		<script>
+			document.querySelectorAll('.alert-success').forEach(function(alert) {
+				setTimeout(function() {
+					alert.remove();
+				}, 3000);
+			});
+		</script>
+		{% endif %}
+
+		<!-- NGO Details Card -->
+		<div class="card mb-4">
+			<div class="card-header bg-primary text-white">
+				<h5 class="mb-0"><i class="fas fa-building mr-2"></i>NGO Details</h5>
+			</div>
+			<div class="card-body">
+				<div class="row">
+					<div class="col-md-6 mb-3">
+						<small class="text-muted d-block">NGO Name</small>
+						<h6 class="font-weight-bold">{{ ngo.NGOname }}</h6>
+					</div>
+					<div class="col-md-6 mb-3">
+						<small class="text-muted d-block">Registration Number</small>
+						<h6 class="font-weight-bold">{{ ngo.RegNumber }}</h6>
+					</div>
+					<div class="col-md-6 mb-3">
+						<small class="text-muted d-block">Email</small>
+						<h6>{{ ngo.Email }}</h6>
+					</div>
+					<div class="col-md-6 mb-3">
+						<small class="text-muted d-block">Contact Number</small>
+						<h6>{{ ngo.ContactNumber1 }}</h6>
+					</div>
+					<div class="col-md-6 mb-3">
+						<small class="text-muted d-block">Location</small>
+						<h6>{{ ngo.LocalbodyID.LocalbodyName }}, {{ ngo.TalukID.TalukName }}</h6>
+					</div>
+					<div class="col-md-6 mb-3">
+						<small class="text-muted d-block">Address</small>
+						<h6>{{ ngo.Address }}</h6>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Current Assignments -->
+		<div class="row mb-4">
+			<!-- Primary Volunteer -->
+			{% if permanent_volunteer %}
+			<div class="col-md-6">
+				<div class="card border-success">
+					<div class="card-header bg-success text-white">
+						<h5 class="mb-0"><i class="fas fa-star mr-2"></i>Primary Volunteer</h5>
+					</div>
+					<div class="card-body">
+						<h6 class="font-weight-bold">{{ permanent_volunteer.VolunteerID.Name }}</h6>
+						<small class="d-block mb-2">
+							<i class="fas fa-phone mr-1"></i>{{ permanent_volunteer.VolunteerID.ContactNumber1 }}
+						</small>
+						<small class="d-block mb-2">
+							<i class="fas fa-envelope mr-1"></i>{{ permanent_volunteer.VolunteerID.Email }}
+						</small>
+						<small class="d-block">
+							<i class="fas fa-briefcase mr-1"></i>Skills: {{ permanent_volunteer.VolunteerID.skills }}
+						</small>
+					</div>
+				</div>
+			</div>
+			{% else %}
+			<div class="col-md-6">
+				<div class="card border-warning">
+					<div class="card-header bg-warning text-white">
+						<h5 class="mb-0"><i class="fas fa-exclamation-circle mr-2"></i>No Primary Volunteer</h5>
+					</div>
+					<div class="card-body">
+						<p class="text-muted mb-0">Assign a primary volunteer first from the NGO approval page.</p>
+					</div>
+				</div>
+			</div>
+			{% endif %}
+
+			<!-- Emergency Volunteers Count -->
+			<div class="col-md-6">
+				<div class="card border-info">
+					<div class="card-header bg-info text-white">
+						<h5 class="mb-0"><i class="fas fa-users mr-2"></i>Emergency Volunteers</h5>
+					</div>
+					<div class="card-body">
+						<h3 class="mb-0">{{ emergency_volunteers|length }}</h3>
+						<small class="text-muted">additional volunteers for emergency response</small>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Add Emergency Volunteer Form -->
+		<div class="card">
+			<div class="card-header bg-warning text-white">
+				<h5 class="mb-0"><i class="fas fa-user-plus mr-2"></i>Select Emergency Volunteer to Add</h5>
+			</div>
+			<div class="card-body">
+				{% if available_volunteers %}
+				<form method="post">
+					{% csrf_token %}
+					<div class="form-group">
+						<label for="volunteer_id" class="font-weight-bold">Available Volunteers from {{ ngo.LocalbodyID.LocalbodyName }}</label>
+						<select class="form-control form-control-lg" id="volunteer_id" name="volunteer_id" required>
+							<option value="">-- Select a Volunteer --</option>
+							{% for volunteer in available_volunteers %}
+							<option value="{{ volunteer.VolunteerId }}">
+								{{ volunteer.Name }} | Contact: {{ volunteer.ContactNumber1 }} | Skills: {{ volunteer.skills }}
+							</option>
+							{% endfor %}
+						</select>
+						<small class="form-text text-muted mt-2">
+							<i class="fas fa-info-circle mr-1"></i>Only available volunteers from the same location are shown. Each volunteer can be assigned to only one NGO.
+						</small>
+					</div>
+
+					<div class="form-group mt-4">
+						<button type="submit" class="btn btn-warning btn-lg btn-block">
+							<i class="fas fa-check mr-2"></i>Add as Emergency Volunteer
+						</button>
+					</div>
+				</form>
+				{% else %}
+				<div class="alert alert-danger" role="alert">
+					<h5 class="alert-heading"><i class="fas fa-exclamation-circle mr-2"></i>No Volunteers Available</h5>
+					<p>
+						There are no available volunteers in <strong>{{ ngo.LocalbodyID.LocalbodyName }}</strong> to add to this NGO.
+					</p>
+					<hr>
+					<p class="mb-0">
+						<small>Available volunteers must be:</small>
+						<ul>
+							<li>Approved by admin</li>
+							<li>In the same LocalBody as this NGO</li>
+							<li>Not already assigned to another NGO</li>
+						</ul>
+					</p>
+				</div>
+				{% endif %}
+			</div>
+		</div>
+
+		<!-- Action Buttons -->
+		<div class="mt-4 text-center">
+			<a href="{% url 'manage_ngo_volunteers' %}" class="btn btn-secondary btn-lg">
+				<i class="fas fa-arrow-left mr-2"></i>Back to Volunteer Management
+			</a>
+		</div>
+	</div>
+</div>
+
+{% include 'admin/footer.html' %}

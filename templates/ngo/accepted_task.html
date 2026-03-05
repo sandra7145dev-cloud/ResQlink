@@ -1,106 +1,201 @@
 {% load static %}
 {% include 'ngo/header.html' %}
 
+<style>
+  /* 1. Force the Navbar Background to be visible with ResQlink Gradient */
+  nav.ftco-navbar-light, 
+  .navbar-dark.bg-dark,
+  .ftco_navbar {
+    background: linear-gradient(135deg, #0f8b8d 0%, #ff6f61 100%) !important;
+    top: 0 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    position: sticky !important;
+  }
+
+  /* 2. Fix the link colors so they aren't invisible */
+  .ftco-navbar-light .navbar-nav > .nav-item > .nav-link {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    opacity: 1 !important;
+  }
+
+  /* 3. Brand Visibility */
+  .navbar-brand {
+    color: #ffffff !important;
+  }
+
+  /* 4. Fix for scrolling */
+  .ftco-navbar-light.scrolled {
+    background: linear-gradient(135deg, #0f8b8d 0%, #ff6f61 100%) !important;
+  }
+
+  /* Table Customization */
+  .task-card-container {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border-left: 5px solid #0f8b8d;
+    overflow: hidden;
+  }
+
+  .badge-success { background-color: #28a745 !important; }
+  .badge-warning { background-color: #ffc107 !important; color: #000; }
+  .badge-info { background-color: #17a2b8 !important; }
+</style>
+
 <section class="ftco-section bg-light">
   <div class="container">
     <div class="row justify-content-center mb-5">
       <div class="col-md-8 heading-section ftco-animate text-center">
-        <h2 class="mb-4">Our Active Tasks</h2>
-        <p>Manage and track the individual requests your NGO is currently fulfilling.</p>
+        <h2 class="mb-4">NGO Relief Operations</h2>
+        <p class="text-muted">Tracking individual and community requests fulfilled by <strong>{{ request.session.ngo_name }}</strong>.</p>
       </div>
     </div>
 
     <div class="row">
       <div class="col-md-12">
-        <div class="bg-white p-4 shadow-sm" style="border-radius:12px; border-left:4px solid #28a745;">
+        <div class="task-card-container p-4">
           <div class="table-responsive">
-            <table class="table">
-              <thead>
+            <table class="table table-hover">
+              <thead class="thead-light">
                 <tr style="font-size:14px; color:#444;">
                   <th>Request ID</th>
-                  <th>Victim Details</th>
-                  <th>Required Service</th>
+                  <th>Victim / Community Details</th>
+                  <th>Service Required</th>
                   <th>Assigned Volunteer</th>
-                  <th>Status</th>
+                  <th class="text-center">Current Status</th>
                 </tr>
               </thead>
               <tbody>
                 {% for task in accepted_list %}
                 <tr>
-                  <td>#{{ task.request_serviceID.requestID.request_id }}</td>
+                  <td class="align-middle"><strong>#{{ task.request_serviceID.requestID.request_id }}</strong></td>
                   
-                  <td>
-                    <strong>{{ task.request_serviceID.requestID.affectedID.name }}</strong><br>
-                    <small>{{ task.request_serviceID.requestID.affectedID.contact_number }}</small>
+                  <td class="align-middle">
+                    {% if task.request_serviceID.requestID.affectedID %}
+                      <span class="text-dark font-weight-bold">{{ task.request_serviceID.requestID.affectedID.name }}</span><br>
+                      <small><i class="fa fa-map-marker text-danger"></i> {{ task.request_serviceID.requestID.affectedID.address }}</small>
+                    {% elif task.request_serviceID.requestID.campID %}
+                      <span class="text-success font-weight-bold">{{ task.request_serviceID.requestID.campID.community_name }}</span><br>
+                      <small class="badge badge-info">Community Relief</small>
+                    {% endif %}
                   </td>
 
-                  <td>{{ task.request_serviceID.serviceID.serviceName }}</td>
+                  <td class="align-middle">
+                    {% if task.request_serviceID.subCategoryID %}
+                      <span class="text-dark">{{ task.request_serviceID.subCategoryID.SubCategoryname }}</span>
+                    {% else %}
+                      <span class="text-primary">{{ task.request_serviceID.serviceID.serviceName }}</span>
+                    {% endif %}
+                    <br><small class="text-muted">
+                      Qty: 
+                      {% if task.assigned_quntity %}
+                        {{ task.assigned_quntity }} units
+                      {% elif task.request_serviceID and task.request_serviceID.quantity %}
+                        {{ task.request_serviceID.quantity }} units
+                      {% else %}
+                        N/A
+                      {% endif %}
+                    </small>
+                  </td>
 
-                  <td>
-                    {% if task.volunteerID %}
-                      <a href="#" data-toggle="modal" data-target="#volModal{{ task.volunteerID.VolunteerId }}" class="text-success" style="font-weight: 600; text-decoration: underline;">
-                        {{ task.volunteerID.Name }}
+                  <td class="align-middle">
+                    {% if task.assignment_status == 'Waiting Admin Approval' %}
+                      <span class="text-warning font-weight-bold">
+                        <i class="fa fa-clock-o"></i> Volunteer Not Available (Waiting)
+                      </span>
+                    {% elif task.volunteerID %}
+                      <a href="#" data-toggle="modal" data-target="#volModal{{ task.volunteerID.VolunteerId }}" class="text-success font-weight-bold">
+                        <i class="fa fa-user"></i> {{ task.volunteerID.Name }}
                       </a><br>
                       <small>Mob: {{ task.volunteerID.ContactNumber1 }}</small>
 
-                      <div class="modal fade" id="volModal{{ task.volunteerID.VolunteerId }}" tabindex="-1" role="dialog" aria-hidden="true">
+                      <div class="modal fade" id="volModal{{ task.volunteerID.VolunteerId }}" tabindex="-1" role="dialog">
                         <div class="modal-dialog modal-dialog-centered" role="document">
-                          <div class="modal-content">
-                            <div class="modal-header">
-                              <h5 class="modal-title">Volunteer Profile</h5>
-                              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                              </button>
+                          <div class="modal-content border-0 shadow">
+                            <div class="modal-header bg-light">
+                              <h5 class="modal-title">Volunteer Information</h5>
+                              <button type="button" class="close" data-dismiss="modal">&times;</button>
                             </div>
                             <div class="modal-body text-center">
                               {% if task.volunteerID.vol_image %}
-                                <img src="{{ task.volunteerID.vol_image.url }}" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover; border: 2px solid #28a745;">
+                                <img src="{{ task.volunteerID.vol_image.url }}" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #0f8b8d;">
                               {% endif %}
                               <h4>{{ task.volunteerID.Name }}</h4>
-                              <p class="badge badge-info">{{ task.volunteerID.skills }}</p>
+                              <p class="text-muted">{{ task.volunteerID.skills }}</p>
                               <hr>
-                              <div class="text-left px-3">
-                                <p><strong>Age:</strong> {{ task.volunteerID.age }}</p>
-                                <p><strong>Email:</strong> {{ task.volunteerID.Email }}</p>
-                                <p><strong>Address:</strong> {{ task.volunteerID.Address }}</p>
+                              <div class="text-left px-4">
+                                <p><i class="fa fa-envelope text-primary mr-2"></i> {{ task.volunteerID.Email }}</p>
+                                <p><i class="fa fa-map-marker text-primary mr-2"></i> {{ task.volunteerID.Address }}</p>
                               </div>
-                            </div>
-                            <div class="modal-footer">
-                              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                             </div>
                           </div>
                         </div>
                       </div>
-
+                    {% elif task.NGOID.hasVolunteers|lower == 'yes' %}
+                      <span class="text-muted italic">Self-Delivered (NGO)</span>
                     {% else %}
-                      <span class="text-muted italic">NGO Internal Staff</span>
+                      <span class="text-warning font-weight-bold">Volunteer Not Available (Waiting)</span>
                     {% endif %}
                   </td>
 
-               <td>
-  {% if task.assignment_status == 'Completed' %}
-    <span class="badge badge-success px-3 py-2" style="background-color: #28a745 !important;">
-      <i class="fa fa-check-circle"></i> Completed
-    </span>
-  {% else %}
-    {% if not task.volunteerID %}
-      <form action="{% url 'ngo_complete_task' task.assignmentID %}" method="POST">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-sm btn-success" style="font-size: 12px;">
-          Mark as Finished
-        </button>
-      </form>
-    {% else %}
-      <span class="badge badge-warning px-3 py-2" style="background-color: #ffc107 !important; color: #000;">
-        <i class="fa fa-clock-o"></i> In Progress
-      </span>
-    {% endif %}
-  {% endif %}
-</td>
+                  <td class="align-middle text-center">
+                    {% if task.assignment_status == 'Waiting Admin Approval' %}
+                      {% if task.can_assign_waiting_volunteer %}
+                        <form action="{% url 'ngo_assign_waiting_volunteer' task.assignmentID %}" method="POST">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-sm btn-primary btn-block" onclick="return confirm('Assign newly available volunteer now?')">
+                            <i class="fa fa-user-plus"></i> Assign Volunteer
+                          </button>
+                        </form>
+                      {% else %}
+                        <span class="badge badge-warning px-3 py-2">
+                          <i class="fa fa-hourglass-half"></i> Waiting
+                        </span>
+                      {% endif %}
+                    {% elif task.assignment_status == 'Completed' %}
+                      <span class="badge badge-success px-4 py-2">
+                        <i class="fa fa-check-circle"></i> Fully Completed
+                      </span>
+                    
+                    {% elif task.assignment_status == 'Delivered' %}
+                      <div class="alert alert-info p-2 mb-2" style="font-size: 11px;">
+                        <i class="fa fa-bell"></i> Volunteer marked as Delivered
+                      </div>
+                      <form action="{% url 'ngo_complete_task' task.assignmentID %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-primary btn-block" onclick="return confirm('Verify this delivery?')">
+                          <i class="fa fa-check"></i> Finalize Task
+                        </button>
+                      </form>
+
+                    {% else %}
+                      {% if not task.volunteerID and task.NGOID.hasVolunteers|lower == 'yes' %}
+                        <form action="{% url 'ngo_complete_task' task.assignmentID %}" method="POST">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-sm btn-success btn-block">
+                            <i class="fa fa-check"></i> Complete Task
+                          </button>
+                        </form>
+                      {% elif not task.volunteerID %}
+                        <span class="badge badge-warning px-3 py-2">
+                          <i class="fa fa-hourglass-half"></i> Waiting
+                        </span>
+                      {% else %}
+                        <span class="badge badge-warning px-3 py-2">
+                          <i class="fa fa-truck"></i> In Transit
+                        </span>
+                      {% endif %}
+                    {% endif %}
+                  </td>
                 </tr>
                 {% empty %}
                 <tr>
-                  <td colspan="5" class="text-center py-4 text-muted">No active tasks at the moment.</td>
+                  <td colspan="5" class="text-center py-5">
+                    <i class="fa fa-folder-open-o fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No accepted tasks in your history.</p>
+                  </td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -110,8 +205,10 @@
       </div>
     </div>
     
-    <div class="text-center mt-4">
-        <a href="{% url 'ngohome' %}" class="btn btn-primary px-4">Back to Dashboard</a>
+    <div class="text-center mt-5">
+        <a href="{% url 'ngohome' %}" class="btn btn-outline-secondary px-4">
+          <i class="fa fa-arrow-left"></i> Back to Dashboard
+        </a>
     </div>
   </div>
 </section>

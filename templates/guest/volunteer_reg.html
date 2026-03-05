@@ -21,7 +21,7 @@
         <div class="row justify-content-center">
             <div class="col-12 text-center mb-4">
                 <h2 class="contact-title">Join Our Disaster Relief Network</h2>
-                <p class="text-muted" style="font-size: 16px;">Be part of the change. Register your NGO and help save lives together.</p>
+                <p class="text-muted" style="font-size: 16px;">Be part of the change. Register as a and help save lives together.</p>
             </div>
             <div class="col-lg-9">
                 <div style="background: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.08);">
@@ -37,23 +37,28 @@
                         <div class="row">
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Volunteer Name</label>
-                                    <input class="form-control" name="name" type="text" placeholder="Enter your name" required 
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Volunteer Name <span class="text-danger">*</span></label>
+                                    <input class="form-control" name="name" id="vol_name" type="text" placeholder="Enter your name" required 
+                                           pattern="[A-Za-z\s]+" title="Name should contain only letters and spaces"
                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                    <small class="text-danger" id="name_error" style="display:none;">Name should contain only letters and spaces</small>
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Date of Birth</label>
-                                    <input class="form-control" name="date_of_birth" type="date" placeholder="Enter your date of birth" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Date of Birth <span class="text-danger">*</span></label>
+                                    <input class="form-control" name="date_of_birth" id="dob" type="date" placeholder="Enter your date of birth" required
                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                    <small class="text-danger" id="dob_error" style="display:none;">You must be at least 18 years old</small>
                                 </div>
                             </div>
                              <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Age</label>
-                                    <input class="form-control" name="age" type="number" placeholder="Enter your age" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Age <span class="text-danger">*</span></label>
+                                    <input class="form-control" name="age" id="vol_age" type="number" placeholder="Enter your age" required
+                                           min="18" max="65"
                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                    <small class="text-danger" id="age_error" style="display:none;">Age must be between 18 and 65</small>
                                 </div>
                             </div>
                         </div>
@@ -68,17 +73,20 @@
                         <div class="row">
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Phone Number</label>
-                                    <input class="form-control" name="phone" type="tel" placeholder="+91 XXXXX XXXXX" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Phone Number <span class="text-danger">*</span></label>
+                                    <input class="form-control" name="phone" id="vol_phone" type="tel" placeholder="10-digit mobile number" required
+                                           pattern="[0-9]{10}" maxlength="10"
                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                    <small class="text-danger" id="phone_error" style="display:none;">Phone number must be exactly 10 digits</small>
                                 </div>
                             </div>
                           
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Email Address</label>
-                                    <input class="form-control" name="email" type="email" placeholder="official@ngo.org" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Email Address <span class="text-danger">*</span></label>
+                                    <input class="form-control" name="email" id="vol_email" type="email" placeholder="your.email@example.com" required
                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                    <small class="text-danger" id="email_error" style="display:none;">Please enter a valid email address</small>
                                 </div>
                             </div>
                         </div>
@@ -93,33 +101,34 @@
                            
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Taluk</label>
-                                    <select class="form-control" name="taluk" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Taluk <span class="text-danger">*</span></label>
+                                    <select class="form-control" name="taluk" id="vol_taluk" required
                                             style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
                                         <option value="">-- Select Place --</option>
                                         {% for t in taluks %}
                                         <option value="{{ t.TalukID }}">{{ t.TalukName }}</option>
                                         {% endfor %}
                                     </select>
+                                    <small class="text-danger" id="taluk_error" style="display:none;">Please select a taluk</small>
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Local body</label>
-                                    <select class="form-control" name="localbody" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Local body <span class="text-danger">*</span></label>
+                                    <select class="form-control" name="localbody" id="vol_localbody" required
                                             style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
                                         <option value="">-- Select Local Body --</option>
-                                        {% for lb in localbodies %}
-                                        <option value="{{ lb.LocalbodyID }}">{{ lb.LocalbodyName }}</option>
-                                        {% endfor %}
                                     </select>
+                                    <small class="text-danger" id="localbody_error" style="display:none;">Please select a local body</small>
                                 </div>
                             </div>
                              <div class="col-12">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Address</label>
-                                    <textarea class="form-control w-100" name="address" rows="3" placeholder="Complete address with landmarks" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Address <span class="text-danger">*</span></label>
+                                    <textarea class="form-control w-100" name="address" id="vol_address" rows="3" placeholder="Complete address with landmarks" required
+                                              minlength="20"
                                               style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;"></textarea>
+                                    <small class="text-danger" id="address_error" style="display:none;">Address must be at least 20 characters</small>
                                 </div>
                             </div>
                         </div>
@@ -133,9 +142,11 @@
                         <div class="row">
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Skills</label>
-                                    <textarea class="form-control" name="skills" rows="2" placeholder="List your skills (e.g., First Aid, Communication, etc.)" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Skills <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" name="skills" id="vol_skills" rows="2" placeholder="List your skills (e.g., First Aid, Communication, etc.)" required
+                                              minlength="10"
                                               style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;"></textarea>
+                                    <small class="text-danger" id="skills_error" style="display:none;">Please mention at least 10 characters describing your skills</small>
                                 </div>
                             </div>
                           
@@ -150,18 +161,20 @@
                         <div class="row">
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Volunteer Photo</label>
-                                    <input class="form-control" name="photo" type="file" accept="image/*" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Volunteer Photo <span class="text-danger">*</span></label>
+                                    <input class="form-control" name="photo" id="vol_photo" type="file" accept="image/jpeg,image/jpg,image/png" required
                                            style="padding: 10px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
-                                    <small class="form-text text-muted">Upload a clear passport-size photo (JPG, PNG)</small>
+                                    <small class="form-text text-muted">Upload a clear passport-size photo (JPG, PNG, max 2MB)</small>
+                                    <small class="text-danger" id="photo_error" style="display:none;">Please upload a valid image (max 2MB)</small>
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Identity Proof</label>
-                                    <input class="form-control" name="id_proof" type="file" accept="image/*,application/pdf" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Identity Proof <span class="text-danger">*</span></label>
+                                    <input class="form-control" name="id_proof" id="vol_id_proof" type="file" accept="image/jpeg,image/jpg,image/png,application/pdf" required
                                            style="padding: 10px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
-                                    <small class="form-text text-muted">Upload ID proof (Aadhaar, Passport, etc. - JPG, PNG, PDF)</small>
+                                    <small class="form-text text-muted">Upload ID proof (Aadhaar, Passport, etc. - JPG, PNG, PDF, max 5MB)</small>
+                                    <small class="text-danger" id="id_proof_error" style="display:none;">Please upload a valid document (max 5MB)</small>
                                 </div>
                             </div>
                         </div>
@@ -175,22 +188,27 @@
                         <div class="row">
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Username</label>
-                                    <input class="form-control" name="username" type="text" placeholder="Choose a username" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Username <span class="text-danger">*</span></label>
+                                    <input class="form-control" name="username" id="vol_username" type="text" placeholder="Choose a username" required
+                                           pattern="[A-Za-z0-9_]{4,20}" minlength="4" maxlength="20"
                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                    <small class="text-danger" id="username_error" style="display:none;">Username must be 4-20 characters (letters, numbers, underscore only)</small>
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Password</label>
-                                    <input class="form-control" name="password" type="password" placeholder="Create a strong password" required
+                                    <label style="font-weight: 600; color: #555; margin-bottom: 8px;">Password <span class="text-danger">*</span></label>
+                                    <input class="form-control" name="password" id="vol_password" type="password" placeholder="Create a strong password" required
+                                           minlength="6"
                                            style="padding: 12px 15px; border: 2px solid #e8e8e8; border-radius: 5px;">
+                                    <small class="text-danger" id="password_error" style="display:none;">Password must be at least 6
+                                         characters with letters and numbers</small>
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group mt-4 text-center">
-                            <button type="submit" class="button button-contactForm boxed-btn" 
+                            <button type="submit" id="submit_btn" class="button button-contactForm boxed-btn" 
                                     style="padding: 15px 60px; font-size: 16px; font-weight: 600; border-radius: 50px; 
                                            background: linear-gradient(135deg, #000000 0%, #333333 100%); border: none;
                                            box-shadow: 0 4px 15px rgba(245, 56, 93, 0.3); transition: all 0.3s;">
@@ -200,7 +218,7 @@
                     </form>
                     <div class="text-center mt-4" style="padding-top: 20px; border-top: 2px solid #f0f0f0;">
                         <p style="font-size: 15px; color: #666;">
-                            Already registered? <a href="{% url 'login' %}" style="color: #00000; font-weight: 600; text-decoration: none;">
+                            Already registered? <a href="{% url 'login' %}" style="color: #000000; font-weight: 600; text-decoration: none;">
                                 <i class="fa fa-sign-in"></i> Login here
                             </a>
                         </p>
@@ -211,5 +229,388 @@
     </div>
 </section>
 <!-- contact_area_end -->
+
+<script>
+function clearValidationErrors() {
+    document.querySelectorAll('.text-danger[id$="_error"]').forEach(el => {
+        el.style.display = 'none';
+    });
+    document.querySelectorAll('.form-control').forEach(el => {
+        el.classList.remove('is-invalid');
+        el.style.borderColor = '#e8e8e8';
+    });
+}
+
+function showError(fieldId, errorId, message) {
+    const field = document.getElementById(fieldId);
+    const error = document.getElementById(errorId);
+    if (field && error) {
+        field.classList.add('is-invalid');
+        field.style.borderColor = '#dc3545';
+        error.textContent = message;
+        error.style.display = 'block';
+    }
+}
+
+function clearError(fieldId, errorId) {
+    const field = document.getElementById(fieldId);
+    const error = document.getElementById(errorId);
+    if (field && error) {
+        field.classList.remove('is-invalid');
+        field.style.borderColor = '#e8e8e8';
+        error.style.display = 'none';
+    }
+}
+
+function validateVolunteerForm() {
+    let isValid = true;
+    clearValidationErrors();
+
+    // Validate Name
+    const name = document.getElementById('vol_name');
+    const namePattern = /^[A-Za-z\s]+$/;
+    if (!name.value.trim()) {
+        showError('vol_name', 'name_error', 'Name is required');
+        isValid = false;
+    } else if (!namePattern.test(name.value.trim())) {
+        showError('vol_name', 'name_error', 'Name should contain only letters and spaces');
+        isValid = false;
+    }
+
+    // Validate Date of Birth and Age
+    const dob = document.getElementById('dob');
+    const age = document.getElementById('vol_age');
+    if (dob.value) {
+        const birthDate = new Date(dob.value);
+        const today = new Date();
+        const calculatedAge = Math.floor((today - birthDate) / (365.25 * 24 * 60 * 60 * 1000));
+        
+        if (calculatedAge < 18) {
+            showError('dob', 'dob_error', 'You must be at least 18 years old');
+            isValid = false;
+        } else if (calculatedAge > 65) {
+            showError('dob', 'dob_error', 'Age must be 65 or below');
+            isValid = false;
+        }
+    }
+
+    // Validate Age field
+    const ageValue = parseInt(age.value);
+    if (!age.value) {
+        showError('vol_age', 'age_error', 'Age is required');
+        isValid = false;
+    } else if (ageValue < 18 || ageValue > 65) {
+        showError('vol_age', 'age_error', 'Age must be between 18 and 65');
+        isValid = false;
+    }
+
+    // Validate Phone
+    const phone = document.getElementById('vol_phone');
+    const phonePattern = /^[0-9]{10}$/;
+    if (!phone.value.trim()) {
+        showError('vol_phone', 'phone_error', 'Phone number is required');
+        isValid = false;
+    } else if (!phonePattern.test(phone.value.trim())) {
+        showError('vol_phone', 'phone_error', 'Phone number must be exactly 10 digits');
+        isValid = false;
+    }
+
+    // Validate Email
+    const email = document.getElementById('vol_email');
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.value.trim()) {
+        showError('vol_email', 'email_error', 'Email is required');
+        isValid = false;
+    } else if (!emailPattern.test(email.value.trim())) {
+        showError('vol_email', 'email_error', 'Please enter a valid email address');
+        isValid = false;
+    }
+
+    // Validate Taluk
+    const taluk = document.getElementById('vol_taluk');
+    if (!taluk.value) {
+        showError('vol_taluk', 'taluk_error', 'Please select a taluk');
+        isValid = false;
+    }
+
+    // Validate Local Body
+    const localbody = document.getElementById('vol_localbody');
+    if (!localbody.value) {
+        showError('vol_localbody', 'localbody_error', 'Please select a local body');
+        isValid = false;
+    }
+
+    // Validate Address
+    const address = document.getElementById('vol_address');
+    if (!address.value.trim()) {
+        showError('vol_address', 'address_error', 'Address is required');
+        isValid = false;
+    } else if (address.value.trim().length < 20) {
+        showError('vol_address', 'address_error', 'Address must be at least 20 characters');
+        isValid = false;
+    }
+
+    // Validate Skills
+    const skills = document.getElementById('vol_skills');
+    if (!skills.value.trim()) {
+        showError('vol_skills', 'skills_error', 'Skills are required');
+        isValid = false;
+    } else if (skills.value.trim().length < 10) {
+        showError('vol_skills', 'skills_error', 'Please mention at least 10 characters describing your skills');
+        isValid = false;
+    }
+
+    // Validate Photo
+    const photo = document.getElementById('vol_photo');
+    if (photo.files.length > 0) {
+        const file = photo.files[0];
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        const maxSize = 2 * 1024 * 1024; // 2MB
+        
+        if (!validTypes.includes(file.type)) {
+            showError('vol_photo', 'photo_error', 'Please upload a valid image (JPG or PNG)');
+            isValid = false;
+        } else if (file.size > maxSize) {
+            showError('vol_photo', 'photo_error', 'Image size must not exceed 2MB');
+            isValid = false;
+        }
+    } else {
+        showError('vol_photo', 'photo_error', 'Please upload your photo');
+        isValid = false;
+    }
+
+    // Validate ID Proof
+    const idProof = document.getElementById('vol_id_proof');
+    if (idProof.files.length > 0) {
+        const file = idProof.files[0];
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        
+        if (!validTypes.includes(file.type)) {
+            showError('vol_id_proof', 'id_proof_error', 'Please upload a valid document (JPG, PNG, or PDF)');
+            isValid = false;
+        } else if (file.size > maxSize) {
+            showError('vol_id_proof', 'id_proof_error', 'Document size must not exceed 5MB');
+            isValid = false;
+        }
+    } else {
+        showError('vol_id_proof', 'id_proof_error', 'Please upload your identity proof');
+        isValid = false;
+    }
+
+    // Validate Username
+    const username = document.getElementById('vol_username');
+    const usernamePattern = /^[A-Za-z0-9_]{4,20}$/;
+    if (!username.value.trim()) {
+        showError('vol_username', 'username_error', 'Username is required');
+        isValid = false;
+    } else if (!usernamePattern.test(username.value.trim())) {
+        showError('vol_username', 'username_error', 'Username must be 4-20 characters (letters, numbers, underscore only)');
+        isValid = false;
+    }
+
+    // Validate Password
+    const password = document.getElementById('vol_password');
+    if (!password.value) {
+        showError('vol_password', 'password_error', 'Password is required');
+        isValid = false;
+    } else if (password.value.length < 8) {
+        showError('vol_password', 'password_error', 'Password must be at least 8 characters');
+        isValid = false;
+    } else if (!/[A-Za-z]/.test(password.value) || !/[0-9]/.test(password.value)) {
+        showError('vol_password', 'password_error', 'Password must contain both letters and numbers');
+        isValid = false;
+    }
+
+    if (!isValid) {
+        // Scroll to first error
+        const firstError = document.querySelector('.is-invalid');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstError.focus();
+        }
+    }
+
+    return isValid;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('.form-contact');
+    
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            if (!validateVolunteerForm()) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    }
+
+    // Handle Taluk change to filter LocalBodies
+    const talukSelect = document.getElementById('vol_taluk');
+    const localbodySelect = document.getElementById('vol_localbody');
+    
+    if (talukSelect) {
+        talukSelect.addEventListener('change', function() {
+            const talukId = this.value;
+            
+            // Reset localbody dropdown
+            localbodySelect.innerHTML = '<option value="">-- Select Local Body --</option>';
+            
+            if (talukId) {
+                // Fetch localbodies for selected taluk
+                fetch(`/api/localbodies/${talukId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(localbody => {
+                            const option = document.createElement('option');
+                            option.value = localbody.LocalbodyID;
+                            option.textContent = localbody.LocalbodyName;
+                            localbodySelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching localbodies:', error));
+            }
+        });
+    }
+
+    // Real-time validation
+    const nameField = document.getElementById('vol_name');
+    if (nameField) {
+        nameField.addEventListener('input', function() {
+            const namePattern = /^[A-Za-z\s]+$/;
+            if (this.value && !namePattern.test(this.value)) {
+                showError('vol_name', 'name_error', 'Name should contain only letters and spaces');
+            } else {
+                clearError('vol_name', 'name_error');
+            }
+        });
+    }
+
+    const phoneField = document.getElementById('vol_phone');
+    if (phoneField) {
+        phoneField.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            const phonePattern = /^[0-9]{10}$/;
+            if (this.value && !phonePattern.test(this.value)) {
+                showError('vol_phone', 'phone_error', 'Phone number must be exactly 10 digits');
+            } else if (this.value.length === 10) {
+                clearError('vol_phone', 'phone_error');
+            }
+        });
+    }
+
+    const ageField = document.getElementById('vol_age');
+    if (ageField) {
+        ageField.addEventListener('input', function() {
+            const ageValue = parseInt(this.value);
+            if (this.value && (ageValue < 18 || ageValue > 65)) {
+                showError('vol_age', 'age_error', 'Age must be between 18 and 65');
+            } else {
+                clearError('vol_age', 'age_error');
+            }
+        });
+    }
+
+    const dobField = document.getElementById('dob');
+    if (dobField) {
+        dobField.addEventListener('change', function() {
+            if (this.value) {
+                const birthDate = new Date(this.value);
+                const today = new Date();
+                const calculatedAge = Math.floor((today - birthDate) / (365.25 * 24 * 60 * 60 * 1000));
+                
+                const ageInput = document.getElementById('vol_age');
+                if (ageInput) {
+                    ageInput.value = calculatedAge;
+                }
+                
+                if (calculatedAge < 18) {
+                    showError('dob', 'dob_error', 'You must be at least 18 years old');
+                } else if (calculatedAge > 65) {
+                    showError('dob', 'dob_error', 'Age must be 65 or below');
+                } else {
+                    clearError('dob', 'dob_error');
+                }
+            }
+        });
+    }
+
+    const emailField = document.getElementById('vol_email');
+    if (emailField) {
+        emailField.addEventListener('blur', function() {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (this.value && !emailPattern.test(this.value)) {
+                showError('vol_email', 'email_error', 'Please enter a valid email address');
+            } else {
+                clearError('vol_email', 'email_error');
+            }
+        });
+    }
+
+    const usernameField = document.getElementById('vol_username');
+    if (usernameField) {
+        usernameField.addEventListener('input', function() {
+            const usernamePattern = /^[A-Za-z0-9_]{4,20}$/;
+            if (this.value && !usernamePattern.test(this.value)) {
+                showError('vol_username', 'username_error', 'Username must be 4-20 characters (letters, numbers, underscore only)');
+            } else {
+                clearError('vol_username', 'username_error');
+            }
+        });
+    }
+
+    const passwordField = document.getElementById('vol_password');
+    if (passwordField) {
+        passwordField.addEventListener('input', function() {
+            if (this.value.length < 8) {
+                showError('vol_password', 'password_error', 'Password must be at least 8 characters');
+            } else if (!/[A-Za-z]/.test(this.value) || !/[0-9]/.test(this.value)) {
+                showError('vol_password', 'password_error', 'Password must contain both letters and numbers');
+            } else {
+                clearError('vol_password', 'password_error');
+            }
+        });
+    }
+
+    const photoField = document.getElementById('vol_photo');
+    if (photoField) {
+        photoField.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                const maxSize = 2 * 1024 * 1024;
+                
+                if (!validTypes.includes(file.type)) {
+                    showError('vol_photo', 'photo_error', 'Please upload a valid image (JPG or PNG)');
+                } else if (file.size > maxSize) {
+                    showError('vol_photo', 'photo_error', 'Image size must not exceed 2MB');
+                } else {
+                    clearError('vol_photo', 'photo_error');
+                }
+            }
+        });
+    }
+
+    const idProofField = document.getElementById('vol_id_proof');
+    if (idProofField) {
+        idProofField.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                const maxSize = 5 * 1024 * 1024;
+                
+                if (!validTypes.includes(file.type)) {
+                    showError('vol_id_proof', 'id_proof_error', 'Please upload a valid document (JPG, PNG, or PDF)');
+                } else if (file.size > maxSize) {
+                    showError('vol_id_proof', 'id_proof_error', 'Document size must not exceed 5MB');
+                } else {
+                    clearError('vol_id_proof', 'id_proof_error');
+                }
+            }
+        });
+    }
+});
+</script>
 
 {% include 'guest/footer.html' %}  

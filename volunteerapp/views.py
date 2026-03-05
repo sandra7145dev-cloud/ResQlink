@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.contrib.auth import logout
 from guestapp.models import tbl_request_assignment, tbl_volunteer_reg
 # Create your views here.
 
@@ -17,20 +18,30 @@ def volunteer_dashboard(request):
 
     return render(request, 'volunteer/index.html', {'task': current_task})
 
-def update_work_status(request, assignment_id):
+def update_work_status(request, aid):
     if request.method == "POST":
-        # 1. Update the Assignment Status
-        assignment = tbl_request_assignment.objects.get(assignmentID=assignment_id)
-        assignment.assignment_status = 'Completed'
-        assignment.save()
-
-        # 2. Update the Volunteer Availability
-        volunteer = assignment.volunteerID
-        volunteer.availability_status = 'Available'
-        volunteer.save()
-
-        # 3. Update the Parent Request Status (Optional: if all services for that request are done)
-        # For now, we'll just mark this specific assignment as finished
+        assignment = tbl_request_assignment.objects.get(assignmentID=aid)
         
-        messages.success(request, "Great job! Task marked as completed. You are now available for new assignments.")
-        return redirect('volunteer_dashboard')
+        # 1. Update status to 'Delivered' instead of 'Completed'
+        assignment.assignment_status = 'Delivered'
+        assignment.save()
+        
+        messages.success(request, "Delivery reported! Waiting for NGO to confirm.")
+    return redirect('volunteer_dashboard')
+
+# Volunteer Logout view
+def volunteer_logout(request):
+    logout(request)
+    request.session.flush()  # Clear all session data
+    messages.success(request, 'You have been logged out successfully!')
+    return redirect('login')
+
+# Volunteer Profile view
+def volunteer_profile(request):
+    vol_id = request.session.get('vol_id')
+    if not vol_id:
+        messages.error(request, 'Please login to view your profile.')
+        return redirect('login')
+    
+    volunteer = tbl_volunteer_reg.objects.select_related('TalukID', 'LocalbodyID', 'LoginId').get(VolunteerId=vol_id)
+    return render(request, 'volunteer/profile.html', {'volunteer': volunteer})

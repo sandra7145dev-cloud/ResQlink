@@ -1,0 +1,254 @@
+{% load static %}
+{% include 'volunteer/header.html' %}
+<style>
+  :root {
+    --rq-ink: #101820;
+    --rq-slate: #2b3a44;
+    --rq-sand: #f3efe7;
+    --rq-amber: #f4b400;
+    --rq-teal: #0f8b8d;
+    --rq-coral: #ff6f61;
+    --rq-white: #ffffff;
+  }
+  body {
+    background: radial-gradient(circle at 10% 10%, #fff7e6 0%, #ffffff 35%, #f7fbff 100%);
+    padding-bottom: 50px;
+  }
+  .profile-container {
+    max-width: 900px;
+    margin: 40px auto;
+    background: var(--rq-white);
+    border-radius: 18px;
+    box-shadow: 0 20px 50px rgba(16, 24, 32, 0.15);
+    overflow: hidden;
+  }
+  .profile-header {
+    background: linear-gradient(135deg, var(--rq-teal) 0%, var(--rq-coral) 100%);
+    padding: 40px 30px;
+    text-align: center;
+    color: var(--rq-white);
+  }
+  .profile-avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 5px solid var(--rq-white);
+    object-fit: cover;
+    margin: 0 auto 20px;
+    display: block;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  }
+  .profile-name {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+  .profile-status {
+    display: inline-block;
+    padding: 8px 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  .profile-status.available {
+    background: rgba(144, 238, 144, 0.3);
+  }
+  .profile-status.busy {
+    background: rgba(255, 193, 7, 0.3);
+  }
+  .profile-body {
+    padding: 40px 30px;
+  }
+  .info-section {
+    margin-bottom: 35px;
+  }
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--rq-teal);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--rq-amber);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title i {
+    color: var(--rq-coral);
+  }
+  .info-row {
+    display: flex;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(16, 24, 32, 0.08);
+  }
+  .info-row:last-child {
+    border-bottom: none;
+  }
+  .info-label {
+    flex: 0 0 180px;
+    font-weight: 600;
+    color: var(--rq-slate);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .info-label i {
+    color: var(--rq-teal);
+    width: 20px;
+  }
+  .info-value {
+    flex: 1;
+    color: var(--rq-ink);
+  }
+  .btn-back {
+    display: inline-block;
+    margin: 20px 0;
+    padding: 12px 30px;
+    background: linear-gradient(135deg, var(--rq-teal) 0%, var(--rq-coral) 100%);
+    color: var(--rq-white);
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 8px 20px rgba(15, 139, 141, 0.3);
+  }
+  .btn-back:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(15, 139, 141, 0.4);
+    color: var(--rq-white);
+    text-decoration: none;
+  }
+  .document-link {
+    color: var(--rq-teal);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .document-link:hover {
+    text-decoration: underline;
+  }
+
+  
+</style>
+
+<div class="container">
+  <a href="{% url 'volunteer_dashboard' %}" class="btn-back">
+    <i class="fa fa-arrow-left"></i> Back to Dashboard
+  </a>
+
+  <div class="profile-container">
+    <div class="profile-header">
+      {% if volunteer.vol_image %}
+        <img src="{{ volunteer.vol_image.url }}" alt="{{ volunteer.Name }}" class="profile-avatar">
+      {% else %}
+        <img src="{% static 'volunteer/img/default-avatar.png' %}" alt="Default Avatar" class="profile-avatar" 
+             onerror="this.src='https://via.placeholder.com/150/0f8b8d/ffffff?text={{ volunteer.Name|slice:':1' }}'">
+      {% endif %}
+      
+      <h1 class="profile-name">{{ volunteer.Name }}</h1>
+      <span class="profile-status {% if volunteer.availability_status == 'Available' %}available{% else %}busy{% endif %}">
+        <i class="fa fa-circle"></i> {{ volunteer.availability_status }}
+      </span>
+    </div>
+
+    <div class="profile-body">
+      <!-- Personal Information -->
+      <div class="info-section">
+        <h2 class="section-title">
+          <i class="fa fa-user-circle"></i> Personal Information
+        </h2>
+        <div class="info-row">
+          <div class="info-label">
+            <i class="fa fa-birthday-cake"></i> Date of Birth
+          </div>
+          <div class="info-value">{{ volunteer.DateofBirth|date:"F d, Y" }}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">
+            <i class="fa fa-hashtag"></i> Age
+          </div>
+          <div class="info-value">{{ volunteer.age }} years</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">
+            <i class="fa fa-star"></i> Skills
+          </div>
+          <div class="info-value">{{ volunteer.skills }}</div>
+        </div>
+      </div>
+
+      <!-- Contact Information -->
+      <div class="info-section">
+        <h2 class="section-title">
+          <i class="fa fa-address-book"></i> Contact Information
+        </h2>
+        <div class="info-row">
+          <div class="info-label">
+            <i class="fa fa-phone"></i> Phone Number
+          </div>
+          <div class="info-value">{{ volunteer.ContactNumber1 }}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">
+            <i class="fa fa-envelope"></i> Email
+          </div>
+          <div class="info-value">{{ volunteer.Email }}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">
+            <i class="fa fa-home"></i> Address
+          </div>
+          <div class="info-value">{{ volunteer.Address }}</div>
+        </div>
+      </div>
+
+      <!-- Location Information -->
+      <div class="info-section">
+        <h2 class="section-title">
+          <i class="fa fa-map-marker"></i> Location Details
+        </h2>
+        <div class="info-row">
+          <div class="info-label">
+            <i class="fa fa-map"></i> Taluk
+          </div>
+          <div class="info-value">{{ volunteer.TalukID.TalukName }}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">
+            <i class="fa fa-building"></i> Local Body
+          </div>
+          <div class="info-value">{{ volunteer.LocalbodyID.localbodyname }}</div>
+        </div>
+      </div>
+
+      <!-- Account Information -->
+      <div class="info-section">
+        <h2 class="section-title">
+          <i class="fa fa-id-card"></i> Account & Documents
+        </h2>
+        <div class="info-row">
+          <div class="info-label">
+            <i class="fa fa-user"></i> Username
+          </div>
+          <div class="info-value">{{ volunteer.LoginId.username }}</div>
+        </div>
+        {% if volunteer.identity_proof %}
+        <div class="info-row">
+          <div class="info-label">
+            <i class="fa fa-file"></i> Identity Proof
+          </div>
+          <div class="info-value">
+            <a href="{{ volunteer.identity_proof.url }}" target="_blank" class="document-link">
+              <i class="fa fa-download"></i> View Document
+            </a>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include 'volunteer/footer.html' %}

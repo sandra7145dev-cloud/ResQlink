@@ -1,0 +1,191 @@
+{% load static %}
+{% include 'admin/header.html' %}
+
+<!-- ============================================================== -->
+<!-- pageheader  -->
+<!-- ============================================================== -->
+<div class="row">
+	<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+		<div class="page-header">
+			<h2 class="pageheader-title">Manage NGO Volunteers</h2>
+			<p class="pageheader-text">Assign and manage volunteers for approved NGOs. Add emergency volunteers as needed.</p>
+			<div class="page-breadcrumb">
+				<nav aria-label="breadcrumb">
+					<ol class="breadcrumb">
+						<li class="breadcrumb-item"><a href="/admin" class="breadcrumb-link">Dashboard</a></li>
+						<li class="breadcrumb-item active" aria-current="page">Manage NGO Volunteers</li>
+					</ol>
+				</nav>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- ============================================================== -->
+<!-- end pageheader  -->
+<!-- ============================================================== -->
+
+<div class="row mb-4">
+	<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+		<div class="card border-3 border-top border-top-primary h-100">
+			<div class="card-body">
+				<h5 class="text-muted">Total Approved NGOs</h5>
+				<div class="metric-value d-inline-block">
+					<h1 class="mb-1">{{ total_ngos|default:"0" }}</h1>
+				</div>
+				<div class="metric-label d-inline-block float-right text-primary font-weight-bold">
+					<span class="icon-circle-small icon-box-xs text-primary bg-primary-light"><i class="fa fa-fw fa-building"></i></span><span class="ml-1">Active NGOs</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-12">
+		<div class="card">
+			<div class="card-header d-flex align-items-center">
+				<div>
+					<h5 class="mb-0">NGO Volunteer Assignments</h5>
+					<small class="text-muted">Manage permanent and emergency volunteers for each NGO.</small>
+				</div>
+				<form class="form-inline ml-auto" method="get">
+					<div class="input-group input-group-sm">
+						<div class="input-group-prepend">
+							<span class="input-group-text bg-white"><i class="fa fa-search"></i></span>
+						</div>
+						<input type="search" class="form-control" name="q" placeholder="Search NGO name or email" value="{{ request.GET.q|default:'' }}">
+					</div>
+				</form>
+			</div>
+			<div class="card-body">
+				{% if messages %}
+				<div style="position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 520px; max-width: calc(100% - 32px);">
+					{% for message in messages %}
+					<div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert" style="box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2); border-radius: 8px; font-size: 16px; padding: 14px 16px; {% if message.tags == 'error' %}border: 2px solid #dc3545; background: #fff5f5;{% elif message.tags == 'success' %}border: 2px solid #28a745; background: #f3fff6;{% else %}border: 2px solid #17a2b8; background: #f3fbff;{% endif %}">
+						<strong style="font-size: 17px;">{% if message.tags == 'success' %}✓ Success!{% elif message.tags == 'error' %}✗ Error!{% else %}ℹ Info{% endif %}</strong> {{ message }}
+						<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					{% endfor %}
+				</div>
+				<script>
+					document.querySelectorAll('.alert-success').forEach(function(alert) {
+						setTimeout(function() {
+							alert.remove();
+						}, 3000);
+					});
+				</script>
+				{% endif %}
+
+				{% for item in ngo_list %}
+				<div class="card mb-3 border">
+					<div class="card-body">
+						<!-- NGO Header -->
+						<div class="row align-items-center mb-3 pb-3 border-bottom">
+							<div class="col-lg-8">
+								<h5 class="mb-1 font-weight-bold">
+									<i class="fas fa-building text-primary mr-2"></i>{{ item.ngo.NGOname }}
+								</h5>
+								<small class="text-muted">
+									<i class="fas fa-map-marker-alt mr-1"></i>{{ item.ngo.LocalbodyID.LocalbodyName }}, {{ item.ngo.TalukID.TalukName }}
+									<span class="mx-2">|</span>
+									<i class="fas fa-email mr-1"></i>{{ item.ngo.Email }}
+								</small>
+							</div>
+							<div class="col-lg-4 text-right">
+								{% if item.ngo.hasVolunteers != 'Yes' %}
+									<a href="{% url 'add_emergency_volunteer' item.ngo.NGOID %}" class="btn btn-success btn-sm">
+										<i class="fas fa-plus mr-1"></i>Add Emergency Volunteer
+									</a>
+								{% endif %}
+							</div>
+						</div>
+
+						<!-- Volunteers Section -->
+						<div class="row">
+							<!-- Permanent Volunteer -->
+							<div class="col-lg-6">
+								<div class="alert alert-info mb-3">
+									<h6 class="alert-heading mb-2">
+										<i class="fas fa-star text-warning mr-2"></i>Primary Volunteer (Permanent)
+									</h6>
+									{% if item.ngo.hasVolunteers == 'Yes' %}
+										<div class="alert alert-success mb-0">
+											<i class="fas fa-check-circle mr-2"></i>This NGO uses internal volunteers. No external assignment needed.
+										</div>
+									{% else %}
+										{% if item.permanent_volunteer %}
+											<div class="mb-2">
+												<strong>{{ item.permanent_volunteer.VolunteerID.Name }}</strong>
+												<br>
+												<small class="text-muted">
+													<i class="fas fa-phone mr-1"></i>{{ item.permanent_volunteer.VolunteerID.ContactNumber1 }}
+													<br>
+													<i class="fas fa-envelope mr-1"></i>{{ item.permanent_volunteer.VolunteerID.Email }}
+													<br>
+													<i class="fas fa-briefcase mr-1"></i>{{ item.permanent_volunteer.VolunteerID.skills }}
+												</small>
+											</div>
+											<a href="{% url 'assign_volunteer' item.ngo.NGOID %}" class="btn btn-sm btn-warning">
+												<i class="fas fa-exchange mr-1"></i>Change Primary Volunteer
+											</a>
+										{% else %}
+											<p class="text-muted mb-2"><i class="fas fa-exclamation-circle mr-1"></i>No primary volunteer assigned</p>
+											<a href="{% url 'assign_volunteer' item.ngo.NGOID %}" class="btn btn-sm btn-primary">
+												<i class="fas fa-user-plus mr-1"></i>Assign Primary Volunteer
+											</a>
+										{% endif %}
+									{% endif %}
+								</div>
+							</div>
+
+							<!-- Emergency Volunteers -->
+							<div class="col-lg-6">
+								<div class="alert alert-warning mb-3">
+									<h6 class="alert-heading mb-2">
+										<i class="fas fa-exclamation-triangle text-danger mr-2"></i>Emergency Volunteers
+										<span class="badge badge-danger ml-2">{{ item.emergency_volunteers|length }}</span>
+									</h6>
+									{% if item.emergency_volunteers %}
+										{% for emergency in item.emergency_volunteers %}
+										<div class="mb-3 pb-3 border-bottom">
+											<div class="d-flex justify-content-between align-items-start">
+												<div>
+													<strong>{{ emergency.VolunteerID.Name }}</strong>
+													<br>
+													<small class="text-muted">
+														<i class="fas fa-phone mr-1"></i>{{ emergency.VolunteerID.ContactNumber1 }}
+														<br>
+														<i class="fas fa-envelope mr-1"></i>{{ emergency.VolunteerID.Email }}
+													</small>
+												</div>
+												<form method="post" action="{% url 'remove_volunteer_assignment' emergency.assignment_id %}" style="display: inline;">
+													{% csrf_token %}
+													<button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Remove this emergency volunteer?');">
+														<i class="fas fa-trash"></i>
+													</button>
+												</form>
+											</div>
+										</div>
+										{% endfor %}
+									{% else %}
+										<p class="text-muted mb-0"><i class="fas fa-info-circle mr-1"></i>No emergency volunteers assigned</p>
+									{% endif %}
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				{% empty %}
+				<div class="text-center text-muted py-5">
+					<i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+					<p class="lead">No approved NGOs found.</p>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+</div>
+
+{% include 'admin/footer.html' %}
