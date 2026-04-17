@@ -59,30 +59,47 @@ def _pick_ngo_external_volunteer(ngo_id, exclude_assignment_id=None):
 
 
 def _find_matching_ngo_for_service(req_service, taluk_id):
-    candidates = tbl_ngo_reg.objects.filter(
-        LoginID__Status='Approved',
-        TalukID_id=taluk_id,
-    )
+    def _pick_best(pool):
+        """Return the best NGO from pool: prefer one with internal volunteers or an available external volunteer."""
+        for ngo in pool:
+            if str(ngo.hasVolunteers or '').strip().lower() == 'yes':
+                return ngo
+            if _pick_ngo_external_volunteer(ngo.NGOID):
+                return ngo
+        return pool.first()
 
+    base_approved = tbl_ngo_reg.objects.filter(LoginID__Status='Approved')
+
+    # --- Pass 1: same taluk + matching service inventory ---
+    candidates = base_approved.filter(TalukID_id=taluk_id)
     if req_service.serviceID_id:
-        candidates = candidates.filter(
+        service_match = candidates.filter(
             tbl_ngo_helptype__serviceID_id=req_service.serviceID_id,
             tbl_ngo_helptype__isActive='Yes',
-        )
+        ).distinct().order_by('NGOID')
+        if service_match.exists():
+            return _pick_best(service_match)
 
-    candidates = candidates.distinct().order_by('NGOID')
-    if not candidates.exists():
-        return None
+    # --- Pass 2: same taluk, any NGO ---
+    same_taluk = candidates.distinct().order_by('NGOID')
+    if same_taluk.exists():
+        return _pick_best(same_taluk)
 
-    for ngo in candidates:
-        has_internal = str(ngo.hasVolunteers or '').strip().lower() == 'yes'
-        if has_internal:
-            return ngo
+    # --- Pass 3: any other taluk + matching service inventory ---
+    if req_service.serviceID_id:
+        other_service_match = base_approved.exclude(TalukID_id=taluk_id).filter(
+            tbl_ngo_helptype__serviceID_id=req_service.serviceID_id,
+            tbl_ngo_helptype__isActive='Yes',
+        ).distinct().order_by('NGOID')
+        if other_service_match.exists():
+            return _pick_best(other_service_match)
 
-        if _pick_ngo_external_volunteer(ngo.NGOID):
-            return ngo
+    # --- Pass 4: any approved NGO anywhere ---
+    all_ngos = base_approved.exclude(TalukID_id=taluk_id).distinct().order_by('NGOID')
+    if all_ngos.exists():
+        return _pick_best(all_ngos)
 
-    return candidates.first()
+    return None
 
 #Taluk registration
 def taluk_reg(request):
@@ -1113,11 +1130,48 @@ def admin_view_ngo_stock(request):
 from django.db.models import Sum
 
 def view_community_requests(request):
-    requests = tbl_request.objects.filter(request_type='community').prefetch_related('tbl_request_service_set')
+    all_requests = tbl_request.objects.filter(request_type='community').prefetch_related('tbl_request_service_set')
 
-    for r in requests:
+    waiting_community_requests = []
+    approved_community_requests = []
+    completed_community_requests = []
+
+    for r in all_requests:
         # Check if any item in this request has a shortage that can now be filled
         r.new_stock_available = False
+        r.broadcast_sent = False
+        r.has_stock_available = True
+
+        # Strict mode: show green indicator only if ALL requested items are fully available.
+        request_items = r.tbl_request_service_set.all()
+        if not request_items:
+            r.has_stock_available = False
+        else:
+            for item in request_items:
+                stock_qs = tbl_ngo_helptype.objects.filter(isActive='Yes')
+                if item.subCategoryID_id:
+                    stock_qs = stock_qs.filter(subCategoryID=item.subCategoryID)
+                elif item.serviceID_id:
+                    stock_qs = stock_qs.filter(serviceID=item.serviceID)
+                else:
+                    r.has_stock_available = False
+                    break
+
+                current_stock = stock_qs.aggregate(total=Sum('quantity'))['total'] or 0
+                try:
+                    available_qty = int(current_stock)
+                except (TypeError, ValueError):
+                    available_qty = 0
+
+                required_qty = item.quantity if item.quantity is not None else 0
+                try:
+                    required_qty = int(required_qty)
+                except (TypeError, ValueError):
+                    required_qty = 0
+
+                if available_qty < required_qty:
+                    r.has_stock_available = False
+                    break
         
         if 'Partially' in r.request_status:
             items_with_shortage = r.tbl_request_service_set.exclude(status='Fully Assigned')
@@ -1136,176 +1190,59 @@ def view_community_requests(request):
                     r.new_stock_available = True
                     break
 
-    return render(request, 'admin/community_request.html', {'requests': requests})
-def approve_community_request(request, reqid):
-    if request.method == "POST":
-        print(f"\n--- DEBUG START: Processing Request #{reqid} ---")
-        try:
-            parent_request = tbl_request.objects.get(request_id=reqid)
-            requested_items = tbl_request_service.objects.filter(requestID=parent_request)
-        except tbl_request.DoesNotExist:
-            messages.error(request, "Request not found.")
-            return redirect('viewrequest')
-
-        # Mark the community request as verified when admin approves it
-        if parent_request.campID:
-            parent_request.campID.is_verified = 'Yes'
-            parent_request.campID.save()
-            print(f"--- Community Request '{parent_request.campID.community_name}' marked as VERIFIED ---")
-            print(f"--- Camp ID: {parent_request.campID.campID}, is_verified: {parent_request.campID.is_verified} ---")
-
-        # This map tracks volunteers picked during THIS specific click session
-        ngo_volunteer_map = {}
-        all_items_fully_satisfied = True 
-        any_allocation_made = False
-
-        for item in requested_items:
-            # 1. Calculate the actual shortage
-            # Shortage = (Total Requested) - (What we already assigned in previous rounds)
-            total_needed = item.quantity if item.quantity else 0
+        # Calculate actual status based on assignments
+        # Get all assignments for this request
+        all_assignments = tbl_request_assignment.objects.filter(
+            request_serviceID__requestID=r
+        )
+        
+        if all_assignments.exists():
+            assignment_statuses = all_assignments.values_list('assignment_status', flat=True)
+            assignment_statuses = list(assignment_statuses)
             
-            # Use getattr in case fulfilled_quantity isn't initialized yet
-            already_fulfilled = getattr(item, 'fulfilled_quantity', 0) 
-            remaining_to_fulfill = total_needed - already_fulfilled
-
-            if remaining_to_fulfill <= 0:
-                print(f"Skipping {item.subCategoryID.SubCategoryname}: Already Fully Satisfied.")
-                continue 
-
-            print(f"\nProcessing Item: {item.subCategoryID.SubCategoryname} | Remaining Needed: {remaining_to_fulfill}")
-
-            # 2. Find NGOs that have stock for this specific subcategory
-            eligible_ngos = tbl_ngo_helptype.objects.filter(
-                subCategoryID=item.subCategoryID,
-                isActive='Yes'
-            ).order_by('-quantity') 
-
-            for stock_record in eligible_ngos:
-                if remaining_to_fulfill <= 0:
-                    break
-                
-                try: 
-                    current_stock = int(stock_record.quantity)
-                except: 
-                    current_stock = 0
-                
-                if current_stock <= 0:
-                    continue
-
-                # Calculate how much this NGO can contribute to the remaining shortage
-                allocation = min(remaining_to_fulfill, current_stock)
-                
-                if allocation > 0:
-                    any_allocation_made = True
-                    # Create the assignment record
-                    assignment = tbl_request_assignment.objects.create(
-                        NGOID=stock_record.NGOID,
-                        request_serviceID=item,
-                        assigned_quntity=allocation,
-                        assignment_status='Accepted'
-                    )
-                    print(f"--- Created Assignment ID: {assignment.assignmentID} for NGO: {stock_record.NGOID.NGOname} (ID: {stock_record.NGOID.NGOID}) ---")
-                    print(f"    Item: {item.subCategoryID.SubCategoryname}, Qty: {allocation}, Status: Accepted ---")
-                    
-                    # Deduct stock from NGO Warehouse
-                    stock_record.quantity = str(current_stock - allocation)
-                    stock_record.save()
-
-                    # Update the fulfilled count on the service record
-                    item.fulfilled_quantity = (item.fulfilled_quantity or 0) + allocation
-                    remaining_to_fulfill -= allocation
-
-                    # --- VOLUNTEER LOGIC ---
-                    if str(stock_record.NGOID.hasVolunteers).strip().lower() == 'no':
-                        ngo_id = stock_record.NGOID.NGOID
-                        
-                        # Reuse volunteer if already picked for this NGO in this session or previous rounds
-                        if ngo_id in ngo_volunteer_map:
-                            assignment.volunteerID = ngo_volunteer_map[ngo_id]
-                        else:
-                            existing_assignment = tbl_request_assignment.objects.filter(
-                                NGOID=stock_record.NGOID,
-                                request_serviceID__requestID=parent_request,
-                                volunteerID__isnull=False
-                            ).first()
-
-                            if existing_assignment:
-                                assignment.volunteerID = existing_assignment.volunteerID
-                                ngo_volunteer_map[ngo_id] = assignment.volunteerID 
-                            else:
-                                # COMMUNITY FLOW WITH FALLBACKS:
-                                # Local Body -> Taluk -> Global Available -> Global Approved (last resort)
-                                vols = tbl_volunteer_reg.objects.filter(
-                                    LocalbodyID=parent_request.campID.localbodyID,
-                                    availability_status='Available',
-                                    LoginId__Status='Approved'
-                                )
-
-                                if not vols.exists():
-                                    vols = tbl_volunteer_reg.objects.filter(
-                                        TalukID=parent_request.campID.talukID,
-                                        availability_status='Available',
-                                        LoginId__Status='Approved'
-                                    )
-
-                                if not vols.exists():
-                                    vols = tbl_volunteer_reg.objects.filter(
-                                        availability_status='Available',
-                                        LoginId__Status='Approved'
-                                    )
-
-                                if not vols.exists():
-                                    vols = tbl_volunteer_reg.objects.filter(
-                                        LoginId__Status='Approved'
-                                    )
-
-                                if vols.exists():
-                                    selected_vol = random.choice(list(vols))
-                                    assignment.volunteerID = selected_vol
-                                    selected_vol.availability_status = 'Busy'
-                                    selected_vol.save()
-                                    ngo_volunteer_map[ngo_id] = selected_vol
-                        
-                        assignment.save()
-
-                    # --- EMAIL NOTIFICATION ---
-                    try:
-                        send_mail(
-                            f"Urgent Resource Allocation: {parent_request.campID.community_name}",
-                            f"Please deliver {allocation} {item.subCategoryID.SubCategoryname} to {parent_request.campID.community_name}.",
-                            'sandra7145dev@gmail.com',
-                            [stock_record.NGOID.Email],
-                            fail_silently=True
-                        )
-                    except: pass
-
-            # 3. Update Item Level Status
-            if item.fulfilled_quantity >= total_needed:
-                item.status = 'Fully Assigned'
-            elif item.fulfilled_quantity > 0:
-                shortage = total_needed - item.fulfilled_quantity
-                item.status = f'Partially Assigned (Shortage: {shortage})'
-                all_items_fully_satisfied = False
+            # Check if all assignments are completed
+            if all(status == 'Completed' for status in assignment_statuses):
+                actual_status = 'Completed'
+            # Check if all non-pending assignments exist (meaning NGOs have accepted)
+            elif all(status in ['Accepted', 'Delivered', 'Completed'] for status in assignment_statuses):
+                actual_status = 'Approved'
             else:
-                item.status = 'Not Assigned (Out of Stock)'
-                all_items_fully_satisfied = False
-            
-            item.save()
-
-        # 4. Update Parent Request Status
-        if all_items_fully_satisfied:
-            parent_request.request_status = 'Approved - Fully Assigned'
+                actual_status = r.request_status or 'Pending'
         else:
-            parent_request.request_status = 'Approved - Partially Assigned'
+            actual_status = r.request_status or 'Pending'
         
-        parent_request.save()
-
-        if any_allocation_made:
-            messages.success(request, f"Allocation processed for Request #{reqid}.")
+        # Categorize requests by calculated status
+        # Keep legacy "Waiting NGO Match" visible in waiting list so admin can retry allocation.
+        if actual_status in ['Pending', 'Waiting NGO Match']:
+            waiting_community_requests.append(r)
+        elif actual_status in ['Pending NGO Approval', 'Approved', 'Partially Assigned', 'Out of Stock']:
+            approved_community_requests.append(r)
+        elif actual_status == 'Completed':
+            completed_community_requests.append(r)
         else:
-            messages.warning(request, "No new allocations possible with current NGO stock.")
+            # For any other statuses
+            approved_community_requests.append(r)
         
-    return redirect('viewrequest')
+        # Store the calculated status in the object for use in template
+        r.display_status = actual_status
+
+        # Mark if this request already triggered broadcast flags for any requested subcategory.
+        request_subcategories = r.tbl_request_service_set.exclude(subCategoryID__isnull=True).select_related('subCategoryID')
+        for req_item in request_subcategories:
+            if req_item.subCategoryID and req_item.subCategoryID.is_broadcasted:
+                r.broadcast_sent = True
+                break
+
+    return render(request, 'admin/community_request.html', {
+        'requests': all_requests,
+        'waiting_community_requests': waiting_community_requests,
+        'approved_community_requests': approved_community_requests,
+        'completed_community_requests': completed_community_requests,
+    })
+
+def approve_community_request(request, reqid):
+    # Legacy route used by community_request.html; keep behavior aligned with new flow.
+    return approve_community_request_flow(request, reqid)
 def export_ngo_stock_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="NGO_Stock_Summary_By_Category.csv"'
@@ -1627,17 +1564,15 @@ def view_completed_individual_requests(request):
 
         for item in req.tbl_request_service_set.all():
             # Fetch fresh assignments directly from DB every time (avoid prefetch cache issues)
-            # Only count assignments that were actually accepted/worked on, NOT initial 'Pending' ones
-            assignments = tbl_request_assignment.objects.filter(
-                request_serviceID=item
-            ).exclude(assignment_status='Pending')
+            # Include Pending assignments so admin can track NGO splits right after approval.
+            assignments = tbl_request_assignment.objects.filter(request_serviceID=item)
 
             if not assignments.exists():
                 all_completed = False
                 break
 
             has_assignment = True
-            # Check if ALL accepted/worked-on assignments are Completed
+            # Request is fully completed only when every assignment is completed.
             if any(a.assignment_status != 'Completed' for a in assignments):
                 all_completed = False
                 break
@@ -1648,15 +1583,14 @@ def view_completed_individual_requests(request):
         elif has_assignment:
             in_progress_requests.append(req)
 
+    # Waiting Individual Requests
     waiting_requests_raw = (
         tbl_request.objects
-        .filter(request_type='individual', request_status='Pending')
+        .filter(request_type='individual', request_status__in=['Pending', 'Waiting NGO Match'])
         .select_related('affectedID', 'affectedID__talukID', 'affectedID__localbodyID', 'disasterID')
         .prefetch_related('tbl_request_service_set', 'tbl_request_service_set__serviceID')
         .order_by('-request_id')
     )
-
-    # No need to check volunteer availability - NGO will handle that
     waiting_requests = list(waiting_requests_raw)
 
     waiting_assignments = (
@@ -1673,8 +1607,7 @@ def view_completed_individual_requests(request):
         .order_by('-assignmentID')
     )
 
-    # Show recently approved requests sent to NGOs
-    # Exclude fully completed ones (they'll appear in Completed section)
+    # Approved Individual Requests
     approved_requests_raw = (
         tbl_request.objects
         .filter(
@@ -1683,12 +1616,88 @@ def view_completed_individual_requests(request):
         )
         .select_related('affectedID', 'affectedID__talukID', 'affectedID__localbodyID', 'NGOID', 'disasterID')
         .prefetch_related('tbl_request_service_set', 'tbl_request_service_set__serviceID')
-        .order_by('-request_id')[:50]  # Get more to filter
+        .order_by('-request_id')[:50]
     )
-
-    # Filter out completed requests from approved list
     completed_request_ids = [r.request_id for r in completed_requests]
     approved_requests = [r for r in approved_requests_raw if r.request_id not in completed_request_ids][:20]
+
+    # Waiting Community Requests (not approved yet)
+    waiting_community_requests = (
+        tbl_request.objects
+        .filter(request_type='community', request_status='Pending')
+        .select_related('campID', 'campID__talukID')
+        .prefetch_related('tbl_request_service_set', 'tbl_request_service_set__serviceID')
+        .order_by('-request_id')
+    )
+
+    # Approved Community Requests (sent to NGOs)
+    approved_community_requests_raw = (
+        tbl_request.objects
+        .filter(
+            request_type='community',
+            request_status__in=['Pending NGO Approval', 'Approved']
+        )
+        .select_related('campID', 'campID__talukID')
+        .prefetch_related('tbl_request_service_set', 'tbl_request_service_set__serviceID')
+        .order_by('-request_id')[:50]
+    )
+
+    # Filter out completed community requests
+    completed_community_ids = []
+    candidate_community = (
+        tbl_request.objects
+        .filter(request_type='community')
+        .prefetch_related('tbl_request_service_set')
+    )
+    
+    for req in candidate_community:
+        all_completed = True
+        has_assignment = False
+        
+        for item in req.tbl_request_service_set.all():
+            assignments = tbl_request_assignment.objects.filter(
+                request_serviceID=item
+            ).exclude(assignment_status='Pending')
+            
+            if not assignments.exists():
+                all_completed = False
+                break
+            
+            has_assignment = True
+            if any(a.assignment_status != 'Completed' for a in assignments):
+                all_completed = False
+                break
+        
+        if all_completed and has_assignment:
+            completed_community_ids.append(req.request_id)
+
+    approved_community_requests = [
+        r for r in approved_community_requests_raw 
+        if r.request_id not in completed_community_ids
+    ][:20]
+
+    # Completed Community Requests
+    completed_community_requests = []
+    for req in candidate_community:
+        all_completed = True
+        has_assignment = False
+        
+        for item in req.tbl_request_service_set.all():
+            assignments = tbl_request_assignment.objects.filter(
+                request_serviceID=item
+            ).exclude(assignment_status='Pending')
+            
+            if not assignments.exists():
+                all_completed = False
+                break
+            
+            has_assignment = True
+            if any(a.assignment_status != 'Completed' for a in assignments):
+                all_completed = False
+                break
+        
+        if all_completed and has_assignment:
+            completed_community_requests.append(req)
 
     return render(request, 'admin/completed_individual_requests.html', {
         'requests': completed_requests,
@@ -1697,6 +1706,9 @@ def view_completed_individual_requests(request):
         'waiting_requests': waiting_requests,
         'waiting_assignments': waiting_assignments,
         'approved_requests': approved_requests,
+        'waiting_community_requests': waiting_community_requests,
+        'approved_community_requests': approved_community_requests,
+        'completed_community_requests': completed_community_requests,
     })
 
 
@@ -1814,6 +1826,267 @@ def approve_waiting_assignment(request, assignment_id):
 
     messages.success(request, f"Volunteer {selected_volunteer.Name} assigned successfully.")
     return redirect('completed_individual_requests')
+
+
+def approve_community_request_flow(request, reqid):
+    """Approve community request and create split PENDING assignments for NGO acceptance.
+    Uses two-tier search: first in the same taluk, then extends to other taluks if items not found."""
+    referer = request.META.get('HTTP_REFERER', '')
+    redirect_target = 'viewrequest' if 'viewrequest' in referer else 'completed_individual_requests'
+
+    if request.method != 'POST':
+        return redirect(redirect_target)
+
+    try:
+        community_req = tbl_request.objects.select_related(
+            'campID',
+            'campID__talukID',
+            'campID__localbodyID',
+        ).get(
+            request_id=reqid,
+            request_type='community',
+        )
+    except tbl_request.DoesNotExist:
+        messages.error(request, 'Community request not found.')
+        return redirect(redirect_target)
+
+    if not community_req.campID:
+        messages.error(request, 'Community details are missing.')
+        return redirect(redirect_target)
+
+    community_req.campID.is_verified = 'Yes'
+    community_req.campID.save(update_fields=['is_verified'])
+
+    req_services = tbl_request_service.objects.filter(requestID=community_req).select_related('subCategoryID', 'serviceID')
+    ngo_assignments = {}
+    created_assignments = 0
+    unmatched_items = 0
+
+    for req_service in req_services:
+        # Avoid duplicate assignment creation on re-approval.
+        if tbl_request_assignment.objects.filter(request_serviceID=req_service).exists():
+            continue
+
+        needed_qty = req_service.quantity or 0
+        try:
+            remaining = int(needed_qty)
+        except (TypeError, ValueError):
+            remaining = 0
+
+        if remaining <= 0:
+            continue
+
+        # TIER 1: Search in the same taluk
+        stock_qs_same_taluk = tbl_ngo_helptype.objects.filter(
+            isActive='Yes',
+            NGOID__LoginID__Status='Approved',
+            NGOID__TalukID_id=community_req.campID.talukID_id,
+        )
+
+        if req_service.subCategoryID_id:
+            stock_qs_same_taluk = stock_qs_same_taluk.filter(subCategoryID_id=req_service.subCategoryID_id)
+        elif req_service.serviceID_id:
+            stock_qs_same_taluk = stock_qs_same_taluk.filter(serviceID_id=req_service.serviceID_id)
+
+        stock_qs_same_taluk = stock_qs_same_taluk.select_related('NGOID').order_by('-quantity', 'NGOID_id')
+
+        # First, try to fulfill from the same taluk
+        for stock in stock_qs_same_taluk:
+            if remaining <= 0:
+                break
+
+            # Parse quantity safely from CharField
+            try:
+                available = int(stock.quantity) if stock.quantity else 0
+            except (TypeError, ValueError):
+                available = 0
+
+            # Skip NGOs with zero or negative stock
+            if available <= 0:
+                continue
+
+            allocation = min(remaining, available)
+            tbl_request_assignment.objects.create(
+                NGOID=stock.NGOID,
+                request_serviceID=req_service,
+                assigned_quntity=allocation,
+                assignment_status='Pending',
+            )
+            created_assignments += 1
+            remaining -= allocation
+
+            if stock.NGOID_id not in ngo_assignments:
+                ngo_assignments[stock.NGOID_id] = stock.NGOID
+
+        # TIER 2: If items still remain, extend search to other taluks
+        if remaining > 0:
+            stock_qs_other_taluks = tbl_ngo_helptype.objects.filter(
+                isActive='Yes',
+                NGOID__LoginID__Status='Approved',
+            ).exclude(
+                NGOID__TalukID_id=community_req.campID.talukID_id,
+            )
+
+            if req_service.subCategoryID_id:
+                stock_qs_other_taluks = stock_qs_other_taluks.filter(subCategoryID_id=req_service.subCategoryID_id)
+            elif req_service.serviceID_id:
+                stock_qs_other_taluks = stock_qs_other_taluks.filter(serviceID_id=req_service.serviceID_id)
+
+            stock_qs_other_taluks = stock_qs_other_taluks.select_related('NGOID').order_by('-quantity', 'NGOID_id')
+
+            # Fulfill remaining quantity from other taluks
+            for stock in stock_qs_other_taluks:
+                if remaining <= 0:
+                    break
+
+                # Parse quantity safely from CharField
+                try:
+                    available = int(stock.quantity) if stock.quantity else 0
+                except (TypeError, ValueError):
+                    available = 0
+
+                # Skip NGOs with zero or negative stock
+                if available <= 0:
+                    continue
+
+                allocation = min(remaining, available)
+                tbl_request_assignment.objects.create(
+                    NGOID=stock.NGOID,
+                    request_serviceID=req_service,
+                    assigned_quntity=allocation,
+                    assignment_status='Pending',
+                )
+                created_assignments += 1
+                remaining -= allocation
+
+                if stock.NGOID_id not in ngo_assignments:
+                    ngo_assignments[stock.NGOID_id] = stock.NGOID
+
+        # If there's still remaining quantity after both tiers, mark as unmatched
+        if remaining > 0:
+            unmatched_items += 1
+
+        # Keep broadcast state in sync with allocation result per requested item.
+        if req_service.subCategoryID:
+            if remaining > 0:
+                if not req_service.subCategoryID.is_broadcasted:
+                    req_service.subCategoryID.is_broadcasted = True
+                    req_service.subCategoryID.save(update_fields=['is_broadcasted'])
+            else:
+                if req_service.subCategoryID.is_broadcasted:
+                    req_service.subCategoryID.is_broadcasted = False
+                    req_service.subCategoryID.save(update_fields=['is_broadcasted'])
+
+    if created_assignments == 0:
+        # Block approval when there is zero stock for all requested items.
+        # Keep request in waiting list and trigger immediate district-wide broadcast.
+        community_req.request_status = 'Pending'
+        community_req.save(update_fields=['request_status'])
+
+        if community_req.campID:
+            community_req.campID.is_verified = 'No'
+            community_req.campID.save(update_fields=['is_verified'])
+
+        requested_items = []
+        for rs in req_services:
+            item_name = 'General Help'
+            if rs.subCategoryID:
+                item_name = rs.subCategoryID.SubCategoryname
+                rs.subCategoryID.is_broadcasted = True
+                rs.subCategoryID.save(update_fields=['is_broadcasted'])
+            elif rs.serviceID:
+                item_name = rs.serviceID.serviceName
+
+            qty = rs.quantity if rs.quantity is not None else 0
+            requested_items.append(f"- {item_name}: {qty} units")
+
+        ngo_emails = list(
+            tbl_ngo_reg.objects.filter(
+                LoginID__Status='Approved'
+            ).exclude(
+                Email__isnull=True
+            ).exclude(
+                Email=''
+            ).values_list('Email', flat=True)
+        )
+
+        if ngo_emails:
+            mail_body = (
+                "URGENT: Community request has no available stock in current network.\n\n"
+                f"Request ID: {community_req.request_id}\n"
+                f"Community: {community_req.campID.community_name if community_req.campID else 'N/A'}\n"
+                f"Location: {community_req.campID.localbodyID.LocalbodyName if community_req.campID and community_req.campID.localbodyID else 'N/A'}, "
+                f"{community_req.campID.talukID.TalukName if community_req.campID and community_req.campID.talukID else 'N/A'}\n\n"
+                "Required items:\n"
+                f"{chr(10).join(requested_items) if requested_items else '- General Help'}\n\n"
+                "Please update stock and accept assignments as soon as possible."
+            )
+            try:
+                send_mail(
+                    subject='Urgent Community Request Broadcast - Stock Needed',
+                    message=mail_body,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=ngo_emails,
+                    fail_silently=False,
+                )
+                messages.error(
+                    request,
+                    f'Approval blocked: all requested items are out of stock. Broadcast sent to {len(ngo_emails)} NGOs. Request moved to waiting list.',
+                )
+            except Exception:
+                messages.error(
+                    request,
+                    'Approval blocked: all requested items are out of stock. Broadcast email failed, but request moved to waiting list.',
+                )
+        else:
+            messages.error(
+                request,
+                'Approval blocked: all requested items are out of stock. No approved NGO emails found, request moved to waiting list.',
+            )
+
+        return redirect(redirect_target)
+
+    community_req.request_status = 'Pending NGO Approval'
+    community_req.save(update_fields=['request_status'])
+
+    for ngo in ngo_assignments.values():
+        # Create notification record for this NGO
+        from guestapp.models import tbl_ngo_request_notification
+        tbl_ngo_request_notification.objects.create(
+            requestID=community_req,
+            NGOID=ngo,
+            response_status='Pending'
+        )
+        
+        if not ngo.Email:
+            continue
+        try:
+            send_mail(
+                subject='ResQLink Community Request Notification',
+                message=(
+                    f"Hello {ngo.NGOname},\n\n"
+                    "A community request is waiting for your acceptance.\n"
+                    f"Community: {community_req.campID.community_name}\n"
+                    f"Location: {community_req.campID.localbodyID.LocalbodyName}, {community_req.campID.talukID.TalukName}\n"
+                    "Please log in and click Accept to start volunteer assignment."
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[ngo.Email],
+                fail_silently=True,
+            )
+        except Exception:
+            pass
+
+    if unmatched_items > 0:
+        messages.warning(
+            request,
+            f'Community request sent to NGOs. Some item quantities are still unmatched ({unmatched_items} item(s)) after searching all taluks.',
+        )
+    else:
+        messages.success(request, 'Community request split and sent to NGOs for acceptance.')
+
+    return redirect(redirect_target)
+
 
 def manage_ngo_volunteers(request):
     """Manage volunteer assignments for approved NGOs"""

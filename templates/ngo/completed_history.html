@@ -13,6 +13,7 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
+                            <th>Request Date</th>
                             <th>Victim</th>
                             <th>Service</th>
                             <th>Volunteer</th>
@@ -22,13 +23,20 @@
                     <tbody>
                         {% for task in volunteer_tasks %}
                         <tr>
+                            <td>
+                                {% if task.request_serviceID.requestID.requested_date %}
+                                    {{ task.request_serviceID.requestID.requested_date|date:"d-M-Y" }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
                             <td>{{ task.request_serviceID.requestID.affectedID.name }}</td>
                             <td>{{ task.request_serviceID.serviceID.serviceName }}</td>
                             <td><span class="text-success font-weight-bold">{{ task.volunteerID.Name }}</span></td>
                             <td>{{ task.volunteerID.ContactNumber1 }}</td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="4" class="text-center">No volunteer-assisted tasks found.</td></tr>
+                        <tr><td colspan="5" class="text-center">No volunteer-assisted tasks found.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -43,6 +51,7 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
+                            <th>Request Date</th>
                             <th>Victim</th>
                             <th>Service</th>
                             <th>Handled By</th>
@@ -52,13 +61,20 @@
                     <tbody>
                         {% for task in internal_tasks %}
                         <tr>
+                            <td>
+                                {% if task.request_serviceID.requestID.requested_date %}
+                                    {{ task.request_serviceID.requestID.requested_date|date:"d-M-Y" }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
                             <td>{{ task.request_serviceID.requestID.affectedID.name }}</td>
                             <td>{{ task.request_serviceID.serviceID.serviceName }}</td>
                             <td><span class="badge badge-primary">NGO Internal Team</span></td>
                             <td><i class="fa fa-check text-success"></i> Verified</td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="4" class="text-center">No internal staff tasks found.</td></tr>
+                        <tr><td colspan="5" class="text-center">No internal staff tasks found.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>

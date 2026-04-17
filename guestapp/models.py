@@ -66,6 +66,7 @@ class tbl_community_request(models.Model):
 
 class tbl_request(models.Model):
     request_id = models.AutoField(primary_key=True)
+    requested_date = models.DateField(null=True, blank=True)
     request_type = models.CharField(max_length=100)
     affectedID = models.ForeignKey(tbl_affected_individual, on_delete=models.CASCADE, null=True, blank=True)
     campID = models.ForeignKey(tbl_community_request, on_delete=models.CASCADE, null=True, blank=True)

@@ -72,8 +72,9 @@
                             <div class="main-menu">
                                 <nav>
                                     <ul id="navigation">
-                                        <li><a href="#">home</a></li>
-                                        <li><a href="#about-resqlink">About</a></li>
+                                        <li><a href="{% url 'guesthome' %}">home</a></li>
+                                        <li><a href="{% url 'guesthome' %}#about-resqlink">About</a></li>
+                                        <li><a href="{% url 'track_request_status' %}">Track Request</a></li>
                                         <li><a href="{% url 'login' %}">login</a></li>
                                     </ul>
                                 </nav>

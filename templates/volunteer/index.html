@@ -203,43 +203,69 @@
 
 <section class="container">
     <div class="row">
-        {% if task %}
+        {% if tasks %}
+        {% for task_group in tasks %}
         <div class="col-md-8 col-md-offset-2">
-          <div class="blok-read-sm rq-card rq-task-card" style="padding: 28px;">
+          <div class="blok-read-sm rq-card rq-task-card" style="padding: 28px; margin-bottom: 20px;">
             <div class="rq-task-badge"><i class="fa fa-bolt"></i> Active Mission</div>
-            <h3 class="rq-task-title" style="margin-top: 12px;"><i class="fa fa-bullhorn"></i> New Mission Assigned</h3>
+            <h3 class="rq-task-title" style="margin-top: 12px;"><i class="fa fa-bullhorn"></i> {{ task_group.assignments|length }} Item{{ task_group.assignments|length|pluralize }} to Deliver</h3>
             <div class="content-block text-left" style="font-size: 16px; line-height: 1.8;">
                     
-                    {% if task.request_serviceID.requestID.affectedID %}
+                    {% if task_group.requestID.affectedID %}
                         <ul class="rq-task-list">
-                          <li><i class="fa fa-user"></i><span><strong>Victim Name:</strong> {{ task.request_serviceID.requestID.affectedID.name|default:"Victim Name Not Provided" }}</span></li>
-                          <li><i class="fa fa-medkit"></i><span><strong>Required Service:</strong> <span class="rq-pill">{{ task.request_serviceID.serviceID.serviceName|default:"General Help" }}</span></span></li>
-                          <li><i class="fa fa-map-marker"></i><span><strong>Address:</strong> {{ task.request_serviceID.requestID.affectedID.address|default:"Refer to Contact for Address" }}</span></li>
-                          <li><i class="fa fa-phone"></i><span><strong>Contact:</strong> <span class="text-primary" style="font-weight:bold;">{{ task.request_serviceID.requestID.affectedID.contact_number }}</span></span></li>
+                          <li><i class="fa fa-user"></i><span><strong>Victim Name:</strong> {{ task_group.requestID.affectedID.name|default:"Victim Name Not Provided" }}</span></li>
+                          <li><i class="fa fa-calendar"></i><span><strong>Request Date:</strong> {% if task_group.requestID.requested_date %}{{ task_group.requestID.requested_date|date:"d-M-Y" }}{% else %}<span class="text-muted">-</span>{% endif %}</span></li>
+                          <li><i class="fa fa-dropbox"></i><span><strong>Items to Deliver:</strong>
+                            <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px;">
+                              {% for assignment in task_group.assignments %}
+                                <span class="rq-pill" style="background: rgba(244, 180, 0, 0.25); color: #9a6b00; display: inline-block;">
+                                  {% if assignment.request_serviceID.subCategoryID %}
+                                    {{ assignment.request_serviceID.subCategoryID.SubCategoryname }}
+                                  {% elif assignment.request_serviceID.serviceID %}
+                                    {{ assignment.request_serviceID.serviceID.serviceName }}
+                                  {% else %}
+                                    General Help
+                                  {% endif %}
+                                </span>
+                              {% endfor %}
+                            </div>
+                          </span></li>
+                          <li><i class="fa fa-map-marker"></i><span><strong>Address:</strong> {{ task_group.requestID.affectedID.address|default:"Refer to Contact for Address" }}</span></li>
+                          <li><i class="fa fa-phone"></i><span><strong>Contact:</strong> <span class="text-primary" style="font-weight:bold;">{{ task_group.requestID.affectedID.contact_number }}</span></span></li>
                         </ul>
-                    {% elif task.request_serviceID.requestID.campID %}
+                    {% elif task_group.requestID.campID %}
                         <ul class="rq-task-list">
-                          <li><i class="fa fa-flag"></i><span><strong>Destination:</strong> {{ task.request_serviceID.requestID.campID.community_name }} (Relief Camp)</span></li>
-                          <li><i class="fa fa-dropbox"></i><span><strong>Item to Deliver:</strong> <span class="rq-pill">{{ task.request_serviceID.subCategoryID.SubCategoryname }}</span></span></li>
-                          <li><i class="fa fa-map-marker"></i><span><strong>Address:</strong> {{ task.request_serviceID.requestID.campID.address }}</span></li>
-                          <li><i class="fa fa-phone"></i><span><strong>Contact:</strong> <span class="text-primary" style="font-weight:bold;">{{ task.request_serviceID.requestID.campID.contact_number }}</span></span></li>
+                          <li><i class="fa fa-flag"></i><span><strong>Destination:</strong> {{ task_group.requestID.campID.community_name }} (Relief Camp)</span></li>
+                          <li><i class="fa fa-calendar"></i><span><strong>Request Date:</strong> {% if task_group.requestID.requested_date %}{{ task_group.requestID.requested_date|date:"d-M-Y" }}{% else %}<span class="text-muted">-</span>{% endif %}</span></li>
+                          <li><i class="fa fa-dropbox"></i><span><strong>Items to Deliver:</strong>
+                            <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px;">
+                              {% for assignment in task_group.assignments %}
+                                <span class="rq-pill" style="background: rgba(244, 180, 0, 0.25); color: #9a6b00; display: inline-block;">
+                                  {{ assignment.request_serviceID.subCategoryID.SubCategoryname }}
+                                </span>
+                              {% endfor %}
+                            </div>
+                          </span></li>
+                          <li><i class="fa fa-map-marker"></i><span><strong>Address:</strong> {{ task_group.requestID.campID.address }}</span></li>
+                          <li><i class="fa fa-phone"></i><span><strong>Contact:</strong> <span class="text-primary" style="font-weight:bold;">{{ task_group.requestID.campID.contact_number }}</span></span></li>
                         </ul>
                     {% else %}
                         <p class="text-danger">Task details are currently unavailable. Please contact Admin.</p>
                     {% endif %}
                     
                     <hr>
-                    <p class="text-muted small">After providing the necessary help, please click the button below to update your status.</p>
+                    <p class="text-muted small">After delivering all items from this request, please click the button below to mark as completed.</p>
                     
-                    <form method="POST" action="{% url 'update_work_status' task.assignmentID %}">
+                    <form method="POST" action="{% url 'update_work_status' task_group.assignments.0.assignmentID %}">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-success btn-lg btn-block rq-cta" onclick="return confirm('Confirm task completion?')">
+                        <button type="submit" class="btn btn-success btn-lg btn-block rq-cta" onclick="return confirm('Confirm all items delivered?')">
                             <i class="fa fa-check-circle"></i> Mark as Completed
                         </button>
                     </form>
                 </div>
             </div>
         </div>
+        {% endfor %}
         {% else %}
         <div class="col-md-12 text-center py-5">
                 <div class="alert alert-info rq-available" style="border-radius: 10px; padding: 40px;">

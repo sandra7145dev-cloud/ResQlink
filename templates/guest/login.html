@@ -163,6 +163,18 @@
             font-size: 0.9rem;
         }
 
+        .quick-home-link {
+            display: inline-block;
+            margin-top: 0.6rem;
+            color: var(--accent-color);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .quick-home-link:hover {
+            text-decoration: underline;
+        }
+
         /* Mobile Adjustments */
         @media (max-width: 480px) {
             .login-container {
@@ -225,6 +237,9 @@
 
         <div class="public-access">
             <p>Rapid Response for Every Crisis</p>
+            <a href="{% url 'guesthome' %}" class="quick-home-link">
+                <i class="fas fa-home"></i>  Home Page
+            </a>
         </div>
     </div>
 

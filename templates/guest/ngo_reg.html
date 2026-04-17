@@ -505,8 +505,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const addressField = document.getElementById('ngo_address');
     if (addressField) {
         addressField.addEventListener('input', function() {
-            if (this.value && this.value.length < 20) {
-                showError('ngo_address', 'address_error', 'Address must be at least 20 characters');
+            if (this.value && this.value.length < 10) {
+                showError('ngo_address', 'address_error', 'Address must be at least 10 characters');
             } else {
                 clearError('ngo_address', 'address_error');
             }

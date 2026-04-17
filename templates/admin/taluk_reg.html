@@ -26,31 +26,33 @@
 </script>
 {% endif %}
 
-<div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
-    <div class="card">
-        <h5 class="card-header">TALUK REGISTRATION</h5>
-        <div class="card-body">
-            <form action="{% url 'talukreg' %}" method="post" id="talukForm">
-                {% csrf_token %}
-                <div class="form-group row">
-                    <label for="talukname" class="col-3 col-lg-2 col-form-label text-right">Taluk Name</label>
-                    <div class="col-9 col-lg-10">
-                        <input id="talukname" type="text" name="talukname" placeholder="Enter Taluk Name"
-                            class="form-control" required minlength="2" maxlength="100" pattern="[A-Za-z\s\-]+">
-                        <small class="form-text text-muted">Only letters, spaces, and hyphens allowed (2-100 characters)</small>
-                        <small class="form-text text-danger" id="talukname_error"></small>
+<div class="row">
+    <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
+        <div class="card">
+            <h5 class="card-header">TALUK REGISTRATION</h5>
+            <div class="card-body">
+                <form action="{% url 'talukreg' %}" method="post" id="talukForm">
+                    {% csrf_token %}
+                    <div class="form-group row">
+                        <label for="talukname" class="col-3 col-lg-2 col-form-label text-right">Taluk Name</label>
+                        <div class="col-9 col-lg-10">
+                            <input id="talukname" type="text" name="talukname" placeholder="Enter Taluk Name"
+                                class="form-control" required minlength="2" maxlength="100" pattern="[A-Za-z\s\-]+">
+                            <small class="form-text text-muted">Only letters, spaces, and hyphens allowed (2-100 characters)</small>
+                            <small class="form-text text-danger" id="talukname_error"></small>
+                        </div>
                     </div>
-                </div>
 
-                <div class="row pt-2 pt-sm-5 mt-1">
-                    <div class="col-sm-6 pl-0">
-                        <p class="text-right">
-                            <button type="submit" class="btn btn-space btn-primary">Submit</button>
-                            <a href="{% url 'adminhome' %}" class="btn btn-space btn-secondary">Cancel</a>
-                        </p>
+                    <div class="row pt-2 pt-sm-5 mt-1">
+                        <div class="col-sm-6 pl-0">
+                            <p class="text-right">
+                                <button type="submit" class="btn btn-space btn-primary">Submit</button>
+                                <a href="{% url 'adminhome' %}" class="btn btn-space btn-secondary">Cancel</a>
+                            </p>
+                        </div>
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </div>

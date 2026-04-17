@@ -62,56 +62,73 @@
                 <tr style="font-size:14px; color:#444;">
                   <th>Request ID</th>
                   <th>Victim / Community Details</th>
+                  <th>Requested Date</th>
                   <th>Service Required</th>
                   <th>Assigned Volunteer</th>
                   <th class="text-center">Current Status</th>
                 </tr>
               </thead>
               <tbody>
-                {% for task in accepted_list %}
+                {% for task_group in accepted_list %}
                 <tr>
-                  <td class="align-middle"><strong>#{{ task.request_serviceID.requestID.request_id }}</strong></td>
+                  <td class="align-middle"><strong>#{{ task_group.requestID.request_id }}</strong></td>
                   
                   <td class="align-middle">
-                    {% if task.request_serviceID.requestID.affectedID %}
-                      <span class="text-dark font-weight-bold">{{ task.request_serviceID.requestID.affectedID.name }}</span><br>
-                      <small><i class="fa fa-map-marker text-danger"></i> {{ task.request_serviceID.requestID.affectedID.address }}</small>
-                    {% elif task.request_serviceID.requestID.campID %}
-                      <span class="text-success font-weight-bold">{{ task.request_serviceID.requestID.campID.community_name }}</span><br>
+                    {% if task_group.requestID.affectedID %}
+                      <span class="text-dark font-weight-bold">{{ task_group.requestID.affectedID.name }}</span><br>
+                      <small><i class="fa fa-map-marker text-danger"></i> {{ task_group.requestID.affectedID.address }}</small>
+                    {% elif task_group.requestID.campID %}
+                      <span class="text-success font-weight-bold">{{ task_group.requestID.campID.community_name }}</span><br>
                       <small class="badge badge-info">Community Relief</small>
                     {% endif %}
                   </td>
 
                   <td class="align-middle">
-                    {% if task.request_serviceID.subCategoryID %}
-                      <span class="text-dark">{{ task.request_serviceID.subCategoryID.SubCategoryname }}</span>
+                    {% if task_group.requestID.requested_date %}
+                      {{ task_group.requestID.requested_date|date:"d-M-Y" }}
                     {% else %}
-                      <span class="text-primary">{{ task.request_serviceID.serviceID.serviceName }}</span>
+                      <span class="text-muted">-</span>
                     {% endif %}
+                  </td>
+
+                  <td class="align-middle">
+                    <div class="text-dark">
+                      {% for assignment in task_group.assignments %}
+                        <span class="badge badge-light" style="display: inline-block; margin: 2px; background: #e9ecef; color: #495057; border: 1px solid #dee2e6;">
+                          {% if assignment.request_serviceID.subCategoryID %}
+                            {{ assignment.request_serviceID.subCategoryID.SubCategoryname }}
+                          {% else %}
+                            {{ assignment.request_serviceID.serviceID.serviceName }}
+                          {% endif %}
+                        </span>
+                      {% endfor %}
+                    </div>
                     <br><small class="text-muted">
                       Qty: 
-                      {% if task.assigned_quntity %}
-                        {{ task.assigned_quntity }} units
-                      {% elif task.request_serviceID and task.request_serviceID.quantity %}
-                        {{ task.request_serviceID.quantity }} units
-                      {% else %}
-                        N/A
-                      {% endif %}
+                      {% with total_qty=0 %}
+                        {% for assignment in task_group.assignments %}
+                          {% with qty=assignment.assigned_quntity|default:assignment.request_serviceID.quantity %}
+                            {{ qty }}
+                          {% endwith %}
+                          {% if not forloop.last %} + {% endif %}
+                        {% endfor %}
+                      {% endwith %}
+                      units
                     </small>
                   </td>
 
                   <td class="align-middle">
-                    {% if task.assignment_status == 'Waiting Admin Approval' %}
+                    {% if task_group.status == 'Waiting Admin Approval' %}
                       <span class="text-warning font-weight-bold">
                         <i class="fa fa-clock-o"></i> Volunteer Not Available (Waiting)
                       </span>
-                    {% elif task.volunteerID %}
-                      <a href="#" data-toggle="modal" data-target="#volModal{{ task.volunteerID.VolunteerId }}" class="text-success font-weight-bold">
-                        <i class="fa fa-user"></i> {{ task.volunteerID.Name }}
+                    {% elif task_group.volunteer %}
+                      <a href="#" data-toggle="modal" data-target="#volModal{{ task_group.volunteer.VolunteerId }}" class="text-success font-weight-bold">
+                        <i class="fa fa-user"></i> {{ task_group.volunteer.Name }}
                       </a><br>
-                      <small>Mob: {{ task.volunteerID.ContactNumber1 }}</small>
+                      <small>Mob: {{ task_group.volunteer.ContactNumber1 }}</small>
 
-                      <div class="modal fade" id="volModal{{ task.volunteerID.VolunteerId }}" tabindex="-1" role="dialog">
+                      <div class="modal fade" id="volModal{{ task_group.volunteer.VolunteerId }}" tabindex="-1" role="dialog">
                         <div class="modal-dialog modal-dialog-centered" role="document">
                           <div class="modal-content border-0 shadow">
                             <div class="modal-header bg-light">
@@ -119,21 +136,21 @@
                               <button type="button" class="close" data-dismiss="modal">&times;</button>
                             </div>
                             <div class="modal-body text-center">
-                              {% if task.volunteerID.vol_image %}
-                                <img src="{{ task.volunteerID.vol_image.url }}" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #0f8b8d;">
+                              {% if task_group.volunteer.vol_image %}
+                                <img src="{{ task_group.volunteer.vol_image.url }}" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #0f8b8d;">
                               {% endif %}
-                              <h4>{{ task.volunteerID.Name }}</h4>
-                              <p class="text-muted">{{ task.volunteerID.skills }}</p>
+                              <h4>{{ task_group.volunteer.Name }}</h4>
+                              <p class="text-muted">{{ task_group.volunteer.skills }}</p>
                               <hr>
                               <div class="text-left px-4">
-                                <p><i class="fa fa-envelope text-primary mr-2"></i> {{ task.volunteerID.Email }}</p>
-                                <p><i class="fa fa-map-marker text-primary mr-2"></i> {{ task.volunteerID.Address }}</p>
+                                <p><i class="fa fa-envelope text-primary mr-2"></i> {{ task_group.volunteer.Email }}</p>
+                                <p><i class="fa fa-map-marker text-primary mr-2"></i> {{ task_group.volunteer.Address }}</p>
                               </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    {% elif task.NGOID.hasVolunteers|lower == 'yes' %}
+                    {% elif request.session.NGO_hasvol|lower == 'yes' %}
                       <span class="text-muted italic">Self-Delivered (NGO)</span>
                     {% else %}
                       <span class="text-warning font-weight-bold">Volunteer Not Available (Waiting)</span>
@@ -141,9 +158,10 @@
                   </td>
 
                   <td class="align-middle text-center">
-                    {% if task.assignment_status == 'Waiting Admin Approval' %}
-                      {% if task.can_assign_waiting_volunteer %}
-                        <form action="{% url 'ngo_assign_waiting_volunteer' task.assignmentID %}" method="POST">
+                    {% with first_assignment=task_group.assignments.0 %}
+                    {% if task_group.status == 'Waiting Admin Approval' %}
+                      {% if task_group.can_assign_waiting_volunteer %}
+                        <form action="{% url 'ngo_assign_waiting_volunteer' first_assignment.assignmentID %}" method="POST">
                           {% csrf_token %}
                           <button type="submit" class="btn btn-sm btn-primary btn-block" onclick="return confirm('Assign newly available volunteer now?')">
                             <i class="fa fa-user-plus"></i> Assign Volunteer
@@ -154,16 +172,16 @@
                           <i class="fa fa-hourglass-half"></i> Waiting
                         </span>
                       {% endif %}
-                    {% elif task.assignment_status == 'Completed' %}
+                    {% elif task_group.status == 'Completed' %}
                       <span class="badge badge-success px-4 py-2">
                         <i class="fa fa-check-circle"></i> Fully Completed
                       </span>
                     
-                    {% elif task.assignment_status == 'Delivered' %}
+                    {% elif task_group.status == 'Delivered' %}
                       <div class="alert alert-info p-2 mb-2" style="font-size: 11px;">
                         <i class="fa fa-bell"></i> Volunteer marked as Delivered
                       </div>
-                      <form action="{% url 'ngo_complete_task' task.assignmentID %}" method="POST">
+                      <form action="{% url 'ngo_complete_task' first_assignment.assignmentID %}" method="POST">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-primary btn-block" onclick="return confirm('Verify this delivery?')">
                           <i class="fa fa-check"></i> Finalize Task
@@ -171,14 +189,14 @@
                       </form>
 
                     {% else %}
-                      {% if not task.volunteerID and task.NGOID.hasVolunteers|lower == 'yes' %}
-                        <form action="{% url 'ngo_complete_task' task.assignmentID %}" method="POST">
+                      {% if not task_group.volunteer and request.session.NGO_hasvol|lower == 'yes' %}
+                        <form action="{% url 'ngo_complete_task' first_assignment.assignmentID %}" method="POST">
                           {% csrf_token %}
                           <button type="submit" class="btn btn-sm btn-success btn-block">
                             <i class="fa fa-check"></i> Complete Task
                           </button>
                         </form>
-                      {% elif not task.volunteerID %}
+                      {% elif not task_group.volunteer %}
                         <span class="badge badge-warning px-3 py-2">
                           <i class="fa fa-hourglass-half"></i> Waiting
                         </span>
@@ -188,6 +206,7 @@
                         </span>
                       {% endif %}
                     {% endif %}
+                    {% endwith %}
                   </td>
                 </tr>
                 {% empty %}

@@ -72,6 +72,7 @@ urlpatterns = [
     path('ad_dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('completed_individual_requests/', views.view_completed_individual_requests, name='completed_individual_requests'),
     path('approve_individual_request/<int:reqid>/', views.approve_individual_request, name='approve_individual_request'),
+    path('approve_community_request_flow/<int:reqid>/', views.approve_community_request_flow, name='approve_community_request_flow'),
     path('approve_waiting_assignment/<int:assignment_id>/', views.approve_waiting_assignment, name='approve_waiting_assignment'),
 
 ]

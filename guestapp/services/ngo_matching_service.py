@@ -39,6 +39,16 @@ def find_and_notify_ngos(request_obj):
                 NGOID__TalukID=location_taluk,
                 NGOID__LoginID__Status='Approved'
             ).select_related('NGOID')
+        
+        # STEP 3: If no one in Taluk and it's an individual request, search outside taluk
+        if not ngos.exists() and request_obj.request_type == 'individual':
+            ngos = tbl_ngo_helptype.objects.filter(
+                serviceID=rs.serviceID,
+                isActive='Yes',
+                NGOID__LoginID__Status='Approved'
+            ).exclude(
+                NGOID__TalukID=location_taluk
+            ).select_related('NGOID')
 
         # Collect unique NGOs and their emails
         for ngo_stock in ngos:

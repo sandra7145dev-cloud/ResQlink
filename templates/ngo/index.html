@@ -6,9 +6,7 @@
         <div class="row no-gutters slider-text align-items-center justify-content-center" data-scrollax-parent="true">
           <div class="col-md-7 ftco-animate text-center" data-scrollax=" properties: { translateY: '70%' }">
             <h1 class="mb-4" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">Doing Nothing is Not An Option of Our Life</h1>
-            <p class="mb-5" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">Created by <a href="#">Colorlib.com</a></p>
 
-            <p data-scrollax="properties: { translateY: '30%', opacity: 1.6 }"><a href="https://vimeo.com/45830194" class="btn btn-white btn-outline-white px-4 py-3 popup-vimeo"><span class="icon-play mr-2"></span>Watch Video</a></p>
           </div>
         </div>
       </div>
@@ -267,7 +265,7 @@
     <div class="row justify-content-center mb-5">
       <div class="col-md-8 heading-section ftco-animate text-center">
         <h2 class="mb-4">Emergency Help Requests</h2>
-        <p>Immediate individual assistance requests in your area.</p>
+        <p>Pending individual and community requests assigned to your NGO.</p>
       </div>
     </div>
 
@@ -281,42 +279,93 @@
               <thead>
                 <tr style="font-size:14px; color:#444;">
                   <th>ID</th>
-                  <th>Requester Name</th>
+                  <th>Type</th>
+                  <th>Requester / Community</th>
+                  <th>Requested Date</th>
                   <th>Required Service</th>
-                  <th>Location (Ward)</th>
+                  <th>Location</th>
                   <th>Contact</th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody>
-                {% for assignment in pending_assignments %}
+                {% for grouping in pending_assignments %}
                 <tr>
-                  <td>#{{ assignment.requestID.request_id }}</td>
+                  <td>#{{ grouping.requestID.request_id }}</td>
+
+                  <td>
+                    {% if grouping.request_type == 'community' %}
+                      <span class="badge badge-success">Community</span>
+                    {% else %}
+                      <span class="badge badge-info">Individual</span>
+                    {% endif %}
+                  </td>
 
                   <td style="font-weight: 600;">
-                    {{ assignment.requestID.affectedID.name|title }}
+                    {% if grouping.request_type == 'community' %}
+                      {{ grouping.requestID.campID.community_name|title }}
+                    {% else %}
+                      {{ grouping.requestID.affectedID.name|title }}
+                    {% endif %}
                   </td>
 
                   <td>
-                    <span class="text-primary" style="font-weight: bold;">
-                      {{ assignment.serviceID.serviceName }}
-                    </span>
+                    {% if grouping.requestID.requested_date %}
+                      {{ grouping.requestID.requested_date|date:"d-M-Y" }}
+                    {% else %}
+                      <span class="text-muted">-</span>
+                    {% endif %}
                   </td>
 
                   <td>
-                    {{ assignment.requestID.affectedID.localbodyID.LocalbodyName }},<br>
-                    <small class="text-muted">Ward: {{ assignment.requestID.affectedID.wardID.WardNumber }}</small>
+                    <div class="text-primary" style="font-weight: bold;">
+                      {% for service in grouping.services %}
+                        <span class="badge badge-light" style="display: inline-block; margin: 2px; background: #e9ecef; color: #495057; border: 1px solid #dee2e6;">
+                          {% if service.subCategoryID %}
+                            {{ service.subCategoryID.SubCategoryname }}
+                          {% elif service.serviceID %}
+                            {{ service.serviceID.serviceName }}
+                          {% else %}
+                            General Help
+                          {% endif %}
+                        </span>
+                        {% if not forloop.last %}<br>{% endif %}
+                      {% endfor %}
+                    </div>
                   </td>
 
-                  <td>{{ assignment.requestID.affectedID.contact_number }}</td>
+                  <td>
+                    {% if grouping.request_type == 'community' %}
+                      {{ grouping.requestID.campID.localbodyID.LocalbodyName }},<br>
+                      <small class="text-muted">{{ grouping.requestID.campID.talukID.TalukName }}</small>
+                    {% else %}
+                      {{ grouping.requestID.affectedID.localbodyID.LocalbodyName }},<br>
+                      <small class="text-muted">Ward: {{ grouping.requestID.affectedID.wardID.WardNumber }}</small>
+                    {% endif %}
+                  </td>
+
+                  <td>
+                    {% if grouping.request_type == 'community' %}
+                      <span class="text-muted">Camp Request</span>
+                    {% else %}
+                      {{ grouping.requestID.affectedID.contact_number }}
+                    {% endif %}
+                  </td>
 
                   <td>
                     <form method="POST" action="{% url 'ngo_accept_reject_request' %}" class="mb-0">
                       {% csrf_token %}
-                      <input type="hidden" name="assignment_id" value="{{ assignment.request_service_id }}">
+                      {% if grouping.request_type == 'community' %}
+                        {# For community requests, pass all service IDs #}
+                        <input type="hidden" name="service_ids" value="{% for service in grouping.services %}{{ service.request_service_id }}{% if not forloop.last %},{% endif %}{% endfor %}">
+                        <input type="hidden" name="is_community" value="true">
+                      {% else %}
+                        {# For individual requests, pass single service ID #}
+                        <input type="hidden" name="assignment_id" value="{{ grouping.services.0.request_service_id }}">
+                        <input type="hidden" name="is_community" value="false">
+                      {% endif %}
                       <div class="btn-group btn-group-sm" role="group">
                         <button name="action" value="accept" class="btn btn-success px-3">Accept</button>
-                        <button name="action" value="reject" class="btn btn-outline-danger px-3">Reject</button>
                       </div>
                     </form>
                   </td>
@@ -333,7 +382,7 @@
     <div class="row justify-content-center">
       <div class="col-md-8 text-center ftco-animate">
         <div class="alert alert-info py-4">
-          <i class="icon-info-circle mr-2"></i> No individual help requests pending for your NGO right now.
+          <i class="icon-info-circle mr-2"></i> No pending requests for your NGO right now.
         </div>
       </div>
     </div>
@@ -358,6 +407,7 @@
               <thead>
                 <tr style="font-size:14px; color:#444;">
                   <th>Destination (Camp)</th>
+                  <th>Requested Date</th>
                   <th>Item Requested</th>
                   <th>Your Allocated Qty</th>
                   <th>Helper (Volunteer)</th>
@@ -373,6 +423,13 @@
                       <i class="icon-eye ml-1" style="font-size: 12px; color: #6c757d;"></i>
                     </a><br>
                     <small class="text-muted">{{ task.request_serviceID.requestID.campID.address }}</small>
+                  </td>
+                  <td>
+                    {% if task.request_serviceID.requestID.requested_date %}
+                      {{ task.request_serviceID.requestID.requested_date|date:"d-M-Y" }}
+                    {% else %}
+                      <span class="text-muted">-</span>
+                    {% endif %}
                   </td>
                   <td>{{ task.request_serviceID.subCategoryID.SubCategoryname }}</td>
                   <td><span class="badge badge-warning" style="font-size: 14px;">{{ task.assigned_quntity|default:"N/A" }} units</span></td>

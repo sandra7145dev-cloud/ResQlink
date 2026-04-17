@@ -3,7 +3,11 @@ from django.http import HttpResponse, JsonResponse
 from django.core.mail import send_mail
 from django.conf import settings
 from django.urls import reverse
+from django.contrib.messages import get_messages
 from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
+from django.utils.dateparse import parse_date
+from django.utils import timezone
+import secrets
 from adminapp.models import tbl_taluk, tbl_localbody, tbl_disaster, tbl_ward, tbl_service_type, tbl_category, tbl_subcategory
 from .models import (
     tbl_login,
@@ -13,9 +17,29 @@ from .models import (
     tbl_community_request,
     tbl_request,
     tbl_request_service,
+    tbl_request_assignment,
 )
 # Create your views here.# Add the second function name here so the Chef (view) can find the tool (function)
 from .services.ngo_matching_service import find_and_notify_ngos, assign_request_to_ngos
+
+
+def _format_request_reference(request_id):
+    return f"RQ-{int(request_id):06d}"
+
+
+def _parse_request_reference(reference_text):
+    raw = (reference_text or '').strip().upper()
+    if raw.startswith('RQ-'):
+        raw = raw[3:]
+    if not raw.isdigit():
+        return None
+    return int(raw)
+
+
+def _clear_pending_messages(request):
+    # Drain queued flash messages so they don't leak across role dashboards.
+    for _ in get_messages(request):
+        pass
 
 def guesthome(request):
     taluks = tbl_taluk.objects.all()
@@ -26,150 +50,207 @@ def guesthome(request):
     categories = tbl_category.objects.all()
     subcategories = tbl_subcategory.objects.all()
 
-    success = None
+    success = request.session.pop('guesthome_success', None)
     error = None
+    request_reference = request.session.pop('guesthome_request_reference', None)
+
+    submission_token = request.session.get('guesthome_submission_token')
+    if not submission_token:
+        submission_token = secrets.token_urlsafe(24)
+        request.session['guesthome_submission_token'] = submission_token
 
     if request.method == 'POST':
-        try:
-            request_type = request.POST.get('request_type', 'individual')
-            contact_number = request.POST.get('contact_number')
-            address = request.POST.get('address')
-            taluk_id = request.POST.get('taluk')
-            localbody_id = request.POST.get('localbody')
-            ward_id = request.POST.get('ward')
+        posted_token = request.POST.get('submission_token')
+        if not posted_token or posted_token != request.session.get('guesthome_submission_token'):
+            error = 'Duplicate or invalid submission detected. Please submit the form again.'
+        else:
+            try:
+                request_type = request.POST.get('request_type', 'individual')
+                requested_date_raw = request.POST.get('requested_date')
+                contact_number = request.POST.get('contact_number')
+                address = request.POST.get('address')
+                taluk_id = request.POST.get('taluk')
+                localbody_id = request.POST.get('localbody')
+                ward_id = request.POST.get('ward')
 
-            # Get Taluk, Local Body, and Ward objects
-            taluk = tbl_taluk.objects.get(TalukID=taluk_id)
-            localbody = tbl_localbody.objects.get(LocalbodyID=localbody_id)
-            ward = tbl_ward.objects.get(WardID=ward_id)
-            
-            # Get disaster and service type
-            disaster_type_id = request.POST.get('disaster_type')
-            service_type_id = request.POST.get('service_type')
-            disaster = tbl_disaster.objects.get(DisasterID=disaster_type_id) if disaster_type_id else None
-            service_type = tbl_service_type.objects.get(serviceID=service_type_id) if service_type_id else None
+                requested_date = parse_date(requested_date_raw) if requested_date_raw else None
+                if not requested_date:
+                    requested_date = timezone.localdate()
 
-            if request_type == 'individual':
-                # Handle individual request
-                name = request.POST.get('name')
-                age = request.POST.get('age')
-                gender = request.POST.get('gender')
+                taluk = tbl_taluk.objects.get(TalukID=taluk_id)
+                localbody = tbl_localbody.objects.get(LocalbodyID=localbody_id)
+                ward = tbl_ward.objects.get(WardID=ward_id)
 
-                if not all([name, age, gender, contact_number, address, taluk_id, localbody_id, ward_id, disaster_type_id, service_type_id]):
-                    error = 'Please fill in all required fields.'
-                else:
-                    # Create affected individual record
-                    affected_individual = tbl_affected_individual.objects.create(
-                        name=name,
-                        age=age,
-                        gender=gender,
-                        contact_number=contact_number,
-                        address=address,
-                        talukID=taluk,
-                        localbodyID=localbody,
-                        wardID=ward,
-                    )
-                    
-                    # Create request record
-                    help_request = tbl_request.objects.create(
-                        request_type='individual',
-                        affectedID=affected_individual,
-                        disasterID=disaster,
-                        request_status='Pending'
-                    )
-                    
-                    # Create request service record
-                    tbl_request_service.objects.create(
-                        requestID=help_request,
-                        serviceID=service_type,
-                        quantity=None,
-                        status='Pending'
-                    )
+                disaster_type_id = request.POST.get('disaster_type')
+                service_type_id = request.POST.get('service_type')
+                disaster = tbl_disaster.objects.get(DisasterID=disaster_type_id) if disaster_type_id else None
+                service_type = tbl_service_type.objects.get(serviceID=service_type_id) if service_type_id else None
 
-                    # Individual requests are routed by admin approval workflow.
-                    success = 'Request submitted successfully. It is now in admin review queue.'
+                if request_type == 'individual':
+                    name = request.POST.get('name')
+                    age = request.POST.get('age')
+                    gender = request.POST.get('gender')
 
-            elif request_type == 'community':
-                # Handle community request
-                community_name = request.POST.get('community_name')
-                coordinator_name = request.POST.get('coordinator_name')
-                estimated_people = request.POST.get('estimated_people')
-                categories = request.POST.getlist('category')
-                subcategories = request.POST.getlist('subcategory')
-                quantities_raw = request.POST.getlist('quantity')
+                    if not all([name, age, gender, contact_number, address, taluk_id, localbody_id, ward_id, disaster_type_id, service_type_id]):
+                        error = 'Please fill in all required fields.'
+                    else:
+                        affected_individual = tbl_affected_individual.objects.create(
+                            name=name,
+                            age=age,
+                            gender=gender,
+                            contact_number=contact_number,
+                            address=address,
+                            talukID=taluk,
+                            localbodyID=localbody,
+                            wardID=ward,
+                        )
 
-                if not all([community_name, coordinator_name, estimated_people, contact_number, address, taluk_id, localbody_id, ward_id]):
-                    error = 'Please fill in all required fields for community request.'
-                elif not (len(categories) == len(subcategories) == len(quantities_raw)):
-                    error = 'Each item must include a category, subcategory, and quantity.'
-                else:
-                    items = []
-                    for category_id, subcategory_id, quantity in zip(categories, subcategories, quantities_raw):
-                        if not all([category_id, subcategory_id, quantity]):
-                            error = 'Each item must include a category, subcategory, and quantity.'
-                            break
-                        items.append((category_id, subcategory_id, quantity))
+                        help_request = tbl_request.objects.create(
+                            requested_date=requested_date,
+                            request_type='individual',
+                            affectedID=affected_individual,
+                            disasterID=disaster,
+                            request_status='Pending'
+                        )
 
-                    if not error:
-                        if len(items) == 0:
-                            error = 'Please add at least one item for community request.'
-                        elif len(items) > 4:
-                            error = 'You can add up to 4 items per community request.'
-                        else:
-                            parsed_quantities = []
-                            try:
-                                for _, _, quantity in items:
-                                    qty_int = int(quantity)
-                                    if qty_int <= 0:
-                                        raise ValueError
-                                    parsed_quantities.append(qty_int)
-                            except ValueError:
-                                error = 'Quantities must be whole numbers above zero.'
+                        tbl_request_service.objects.create(
+                            requestID=help_request,
+                            serviceID=service_type,
+                            quantity=None,
+                            status='Pending'
+                        )
+
+                        reference_code = _format_request_reference(help_request.request_id)
+                        success = (
+                            'Request submitted successfully. It is now in admin review queue. '
+                            f'Your tracking reference is {reference_code}.'
+                        )
+                        request.session['guesthome_success'] = success
+                        request.session['guesthome_request_reference'] = reference_code
+                        request.session['guesthome_submission_token'] = secrets.token_urlsafe(24)
+                        return redirect('guesthome')
+
+                elif request_type == 'community':
+                    community_name = request.POST.get('community_name')
+                    coordinator_name = request.POST.get('coordinator_name')
+                    estimated_people = request.POST.get('estimated_people')
+                    category_ids = request.POST.getlist('category')
+                    subcategory_ids = request.POST.getlist('subcategory')
+                    quantities_raw = request.POST.getlist('quantity')
+
+                    if not all([community_name, coordinator_name, estimated_people, contact_number, address, taluk_id, localbody_id, ward_id]):
+                        error = 'Please fill in all required fields for community request.'
+                    elif not (len(category_ids) == len(subcategory_ids) == len(quantities_raw)):
+                        error = 'Each item must include a category, subcategory, and quantity.'
+                    else:
+                        items = []
+                        for category_id, subcategory_id, quantity in zip(category_ids, subcategory_ids, quantities_raw):
+                            if not all([category_id, subcategory_id, quantity]):
+                                error = 'Each item must include a category, subcategory, and quantity.'
+                                break
+                            items.append((category_id, subcategory_id, quantity))
 
                         if not error:
-                            community_req = tbl_community_request.objects.create(
-                                community_name=community_name,
-                                coordinator_name=coordinator_name,
-                                estimated_people=int(estimated_people),
-                                contact_number=contact_number,
-                                address=address,
-                                talukID=taluk,
-                                localbodyID=localbody,
-                                wardID=ward,
-                                is_verified='No',
-                            )
+                            if len(items) == 0:
+                                error = 'Please add at least one item for community request.'
+                            elif len(items) > 4:
+                                error = 'You can add up to 4 items per community request.'
+                            else:
+                                parsed_quantities = []
+                                try:
+                                    for _, _, quantity in items:
+                                        qty_int = int(quantity)
+                                        if qty_int <= 0:
+                                            raise ValueError
+                                        parsed_quantities.append(qty_int)
+                                except ValueError:
+                                    error = 'Quantities must be whole numbers above zero.'
 
-                            help_request = tbl_request.objects.create(
-                                request_type='community',
-                                campID=community_req,
-                                disasterID=None,
-                                request_status='Pending'
-                            )
-
-                            for (category_id, subcategory_id, _), quantity in zip(items, parsed_quantities):
-                                category = tbl_category.objects.get(CategoryID=category_id)
-                                subcategory = tbl_subcategory.objects.get(subCategoryId=subcategory_id)
-                                tbl_request_service.objects.create(
-                                    requestID=help_request,
-                                    serviceID=None,
-                                    categoryID=category,
-                                    subCategoryID=subcategory,
-                                    quantity=quantity,
-                                    status='Pending'
+                            if not error:
+                                community_req = tbl_community_request.objects.create(
+                                    community_name=community_name,
+                                    coordinator_name=coordinator_name,
+                                    estimated_people=int(estimated_people),
+                                    contact_number=contact_number,
+                                    address=address,
+                                    talukID=taluk,
+                                    localbodyID=localbody,
+                                    wardID=ward,
+                                    is_verified='No',
                                 )
 
-                            # Don't notify NGOs for community requests - admin will handle verification and assignment
-                            # eligible_ngos = find_and_notify_ngos(help_request)
-                            # assign_request_to_ngos(help_request, eligible_ngos)
+                                help_request = tbl_request.objects.create(
+                                    requested_date=requested_date,
+                                    request_type='community',
+                                    campID=community_req,
+                                    disasterID=None,
+                                    request_status='Pending'
+                                )
 
-                            success = 'Community request submitted successfully. It will be reviewed by admin for verification.'
+                                for (category_id, subcategory_id, _), quantity in zip(items, parsed_quantities):
+                                    category = tbl_category.objects.get(CategoryID=category_id)
+                                    subcategory = tbl_subcategory.objects.get(subCategoryId=subcategory_id)
+                                    tbl_request_service.objects.create(
+                                        requestID=help_request,
+                                        serviceID=None,
+                                        categoryID=category,
+                                        subCategoryID=subcategory,
+                                        quantity=quantity,
+                                        status='Pending'
+                                    )
 
-        except (tbl_taluk.DoesNotExist, tbl_localbody.DoesNotExist, tbl_ward.DoesNotExist, tbl_category.DoesNotExist, tbl_subcategory.DoesNotExist):
-            error = 'Selected location, category, or subcategory was not found.'
-        except ValueError:
-            error = 'Invalid data format. Please check your inputs.'
-        except Exception as exc:
-            error = f'Unable to submit request: {exc}'
+                                reference_code = _format_request_reference(help_request.request_id)
+                                success = (
+                                    'Community request submitted successfully. It will be reviewed by admin for verification. '
+                                    f'Your tracking reference is {reference_code}.'
+                                )
+                                request.session['guesthome_success'] = success
+                                request.session['guesthome_request_reference'] = reference_code
+                                request.session['guesthome_submission_token'] = secrets.token_urlsafe(24)
+                                return redirect('guesthome')
+
+            except (tbl_taluk.DoesNotExist, tbl_localbody.DoesNotExist, tbl_ward.DoesNotExist, tbl_category.DoesNotExist, tbl_subcategory.DoesNotExist):
+                error = 'Selected location, category, or subcategory was not found.'
+            except ValueError:
+                error = 'Invalid data format. Please check your inputs.'
+            except Exception as exc:
+                error = f'Unable to submit request: {exc}'
+
+    # Gather NGO summary data
+    completed_assignments = tbl_request_assignment.objects.filter(
+        assignment_status='Completed'
+    ).select_related(
+        'NGOID',
+        'request_serviceID__requestID',
+        'request_serviceID__requestID__affectedID',
+        'request_serviceID__requestID__campID',
+    )
+    
+    # Build NGO summary
+    ngo_summary = {}
+    for assignment in completed_assignments:
+        ngo_id = assignment.NGOID_id
+        ngo_name = assignment.NGOID.NGOname
+        request_obj = assignment.request_serviceID.requestID
+        request_type = request_obj.request_type
+        
+        if ngo_id not in ngo_summary:
+            ngo_summary[ngo_id] = {
+                'name': ngo_name,
+                'individual_count': 0,
+                'community_count': 0,
+                'total_count': 0,
+            }
+        
+        if request_type == 'individual':
+            ngo_summary[ngo_id]['individual_count'] += 1
+        elif request_type == 'community':
+            ngo_summary[ngo_id]['community_count'] += 1
+        
+        ngo_summary[ngo_id]['total_count'] += 1
+    
+    # Sort by total count descending
+    sorted_ngo_summary = sorted(ngo_summary.values(), key=lambda x: x['total_count'], reverse=True)
 
     return render(
         request,
@@ -184,6 +265,10 @@ def guesthome(request):
             'subcategories': subcategories,
             'success': success,
             'error': error,
+            'request_reference': request_reference,
+            'submission_token': submission_token,
+            'ngo_summary': sorted_ngo_summary,
+            'total_completed_assignments': completed_assignments.count(),
         },
     )
 
@@ -292,6 +377,8 @@ def login(request):
             request.session['LoginID'] = log.LoginID
             role = log.Role
             status = log.Status
+
+            _clear_pending_messages(request)
             
             if role == 'ADMIN':
                 return redirect('/adminapp/adminhome/')
@@ -556,6 +643,129 @@ def helpreq(request):
         'disasters': disasters,
         'service_types': service_types,
     })
+
+
+def track_request_status(request):
+    context = {
+        'status_result': None,
+        'error': None,
+        'reference_input': '',
+        'contact_input': '',
+    }
+
+    if request.method == 'POST':
+        reference_input = request.POST.get('request_reference', '').strip()
+        contact_input = request.POST.get('contact_number', '').strip()
+        context['reference_input'] = reference_input
+        context['contact_input'] = contact_input
+
+        request_id = _parse_request_reference(reference_input)
+        if not request_id:
+            context['error'] = 'Enter a valid tracking reference (example: RQ-000123).'
+            return render(request, 'guest/track_request_status.html', context)
+
+        if not contact_input:
+            context['error'] = 'Please enter the contact number used while submitting the request.'
+            return render(request, 'guest/track_request_status.html', context)
+
+        target_request = (
+            tbl_request.objects
+            .select_related('affectedID', 'campID', 'disasterID')
+            .filter(request_id=request_id)
+            .first()
+        )
+
+        if not target_request:
+            context['error'] = 'No request found for the given tracking reference.'
+            return render(request, 'guest/track_request_status.html', context)
+
+        owner_contact = None
+        requester_name = None
+        if target_request.request_type == 'individual' and target_request.affectedID:
+            owner_contact = (target_request.affectedID.contact_number or '').strip()
+            requester_name = target_request.affectedID.name
+        elif target_request.request_type == 'community' and target_request.campID:
+            owner_contact = (target_request.campID.contact_number or '').strip()
+            requester_name = target_request.campID.community_name or target_request.campID.coordinator_name
+
+        if owner_contact != contact_input:
+            context['error'] = 'Tracking reference and contact number do not match.'
+            return render(request, 'guest/track_request_status.html', context)
+
+        service_items = (
+            tbl_request_service.objects
+            .filter(requestID=target_request)
+            .select_related('serviceID', 'categoryID', 'subCategoryID')
+            .order_by('request_service_id')
+        )
+
+        assignment_states = list(
+            tbl_request_assignment.objects
+            .filter(request_serviceID__requestID=target_request)
+            .values_list('assignment_status', flat=True)
+        )
+
+        display_request_status = target_request.request_status
+        if assignment_states and all(state == 'Completed' for state in assignment_states):
+            display_request_status = 'Completed'
+        elif any(state in ['Accepted', 'Delivered', 'Pending', 'Waiting Admin Approval'] for state in assignment_states):
+            display_request_status = 'In Progress'
+
+        status_result = {
+            'reference': _format_request_reference(target_request.request_id),
+            'request_type': target_request.request_type,
+            'request_status': display_request_status,
+            'requested_date': target_request.requested_date,
+            'requester_name': requester_name,
+            'disaster_name': target_request.disasterID.DisasterName if target_request.disasterID else None,
+            'services': [],
+        }
+
+        for item in service_items:
+            if item.serviceID:
+                item_name = item.serviceID.serviceName
+            elif item.subCategoryID:
+                item_name = item.subCategoryID.SubCategoryname
+            elif item.categoryID:
+                item_name = item.categoryID.CategoryName
+            else:
+                item_name = 'General Help'
+
+            item_assignment_states = list(
+                tbl_request_assignment.objects
+                .filter(request_serviceID=item)
+                .values_list('assignment_status', flat=True)
+            )
+
+            completed_item_qty = 0
+            for qty in (
+                tbl_request_assignment.objects
+                .filter(request_serviceID=item, assignment_status='Completed')
+                .values_list('assigned_quntity', flat=True)
+            ):
+                try:
+                    completed_item_qty += int(qty or 0)
+                except (TypeError, ValueError):
+                    continue
+
+            display_item_status = item.status
+            if item_assignment_states and all(state == 'Completed' for state in item_assignment_states):
+                display_item_status = 'Completed'
+            elif any(state in ['Accepted', 'Delivered', 'Pending', 'Waiting Admin Approval'] for state in item_assignment_states):
+                display_item_status = 'In Progress'
+            elif any(state == 'Rejected by NGO' for state in item_assignment_states):
+                display_item_status = 'Rejected by NGO'
+
+            status_result['services'].append({
+                'name': item_name,
+                'status': display_item_status,
+                'requested_qty': item.quantity,
+                'fulfilled_qty': completed_item_qty if completed_item_qty > 0 else item.fulfilled_quantity,
+            })
+
+        context['status_result'] = status_result
+
+    return render(request, 'guest/track_request_status.html', context)
 
 
 def get_localbodies_by_taluk(request, taluk_id):

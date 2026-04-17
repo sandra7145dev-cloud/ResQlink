@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('', views.guesthome, name='guesthome'),
+    path('track-request/', views.track_request_status, name='track_request_status'),
     path('ngo_reg/', views.ngo_reg, name='ngo_reg'),
     path('login/', views.login, name='login'),
     path('forgot-password/', views.forgot_password, name='forgot_password'),

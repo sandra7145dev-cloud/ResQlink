@@ -88,11 +88,20 @@
                     <p>Please share your details so we can reach you quickly.</p>
                 </div>
                 {% if success %}
-                <div class="alert alert-success" role="alert">{{ success }}</div>
+                <div id="submission_success_alert" class="alert alert-success" role="alert">{{ success }}</div>
+                {% endif %}
+                {% if request_reference %}
+                <div id="submission_reference_alert" class="alert alert-primary" role="alert" style="font-size: 16px;">
+                    <strong>Tracking Reference:</strong> {{ request_reference }}
+                </div>
                 {% endif %}
                 {% if error %}
                 <div class="alert alert-danger" role="alert">{{ error }}</div>
                 {% endif %}
+                <div class="alert alert-info" role="alert" style="margin-top: 12px;">
+                    Already submitted a request? Track status using your reference and contact number.
+                    <a href="{% url 'track_request_status' %}" style="font-weight: 600;">Track Request</a>
+                </div>
             </div>
         </div>
 
@@ -100,16 +109,17 @@
             <div class="col-lg-8">
                 <form action="{% url 'guesthome' %}" method="post" class="donation_form" style="background:#fff;padding:30px;border-radius:8px;box-shadow:0 5px 20px rgba(0,0,0,0.06);">
                     {% csrf_token %}
+                    <input type="hidden" name="submission_token" value="{{ submission_token }}">
 
                     <div class="row mb-4">
                         <div class="col-12 text-center">
                             <label class="mr-3"><strong>Requesting for:</strong></label>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="request_type" id="type_individual" value="individual" checked onchange="toggleFormType()">
+                                <input class="form-check-input" type="radio" name="request_type" id="type_individual" value="individual" checked onchange="toggleFormType(true)">
                                 <label class="form-check-label" for="type_individual">Individual</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="request_type" id="type_community" value="community" onchange="toggleFormType()">
+                                <input class="form-check-input" type="radio" name="request_type" id="type_community" value="community" onchange="toggleFormType(true)">
                                 <label class="form-check-label" for="type_community">Community/Group</label>
                             </div>
                         </div>
@@ -302,6 +312,13 @@
                     <div class="row mt-3">
                         <div class="col-md-6">
                             <div class="single_amount">
+                                <label>Requested Date <span class="text-danger">*</span></label>
+                                <input type="date" name="requested_date" id="requested_date" class="form-control" required>
+                                <small class="text-danger" id="requested_date_error" style="display:none;">Please select a requested date</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="single_amount">
                                 <label>Contact Number <span class="text-danger">*</span></label>
                                 <input type="text" name="contact_number" id="contact_number" class="form-control" placeholder="Phone number" pattern="[0-9]{10}" maxlength="10" required>
                                 <small class="text-danger" id="contact_error" style="display:none;">Contact number must be exactly 10 digits</small>
@@ -360,11 +377,40 @@
     </div>
 </div>
 
+{% if request_reference %}
+<div id="tracking_popup_overlay" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 2000; display: none;">
+    <div style="max-width: 500px; margin: 12vh auto 0; background: #fff; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); padding: 24px;">
+        <h4 style="margin-bottom: 10px;">Tracking Reference Generated</h4>
+        <p style="margin-bottom: 12px; color: #444;">Please copy and save this tracking reference before continuing.</p>
+        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 16px;">
+            <input id="tracking_reference_popup_input" type="text" value="{{ request_reference }}" readonly style="flex: 1; font-weight: 600; border: 1px solid #ced4da; border-radius: 4px; padding: 8px 10px;">
+            <button id="tracking_reference_copy_btn" type="button" class="btn btn-primary">Copy</button>
+        </div>
+        <div id="tracking_reference_copy_msg" style="display:none; color: #198754; margin-bottom: 12px;">Copied to clipboard.</div>
+        <div id="tracking_reference_copy_required_msg" style="color: #856404; margin-bottom: 12px;">Please copy the tracking reference to enable Close.</div>
+        <div style="text-align: right;">
+            <button id="tracking_reference_close_btn" type="button" class="btn btn-secondary" disabled>Close</button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <script>
 const maxCommunityItems = 4;
 let subcategoryOptionsCache = [];
 
-function toggleFormType() {
+function clearSubmissionAlerts() {
+    const successAlert = document.getElementById('submission_success_alert');
+    const referenceAlert = document.getElementById('submission_reference_alert');
+    if (successAlert) {
+        successAlert.style.display = 'none';
+    }
+    if (referenceAlert) {
+        referenceAlert.style.display = 'none';
+    }
+}
+
+function toggleFormType(clearAlerts = false) {
     const isIndividual = document.getElementById('type_individual').checked;
     const individualDiv = document.getElementById('individual_fields');
     const communityDiv = document.getElementById('community_fields');
@@ -378,12 +424,18 @@ function toggleFormType() {
         individualInputs.forEach(el => el.setAttribute('required', 'true'));
         communityInputs.forEach(el => el.removeAttribute('required'));
         clearValidationErrors();
+        if (clearAlerts) {
+            clearSubmissionAlerts();
+        }
     } else {
         individualDiv.style.display = 'none';
         communityDiv.style.display = 'block';
         communityInputs.forEach(el => el.setAttribute('required', 'true'));
         individualInputs.forEach(el => el.removeAttribute('required'));
         clearValidationErrors();
+        if (clearAlerts) {
+            clearSubmissionAlerts();
+        }
     }
 }
 
@@ -451,6 +503,14 @@ function validateIndividualForm() {
     if (!service.value) {
         document.getElementById('service_error').style.display = 'block';
         service.classList.add('is-invalid');
+        isValid = false;
+    }
+
+    // Validate Contact Number
+    const requestedDate = document.getElementById('requested_date');
+    if (!requestedDate.value) {
+        document.getElementById('requested_date_error').style.display = 'block';
+        requestedDate.classList.add('is-invalid');
         isValid = false;
     }
 
@@ -593,6 +653,14 @@ function validateCommunityForm() {
             isValid = false;
         }
     });
+
+    // Validate Contact Number (shared field)
+    const requestedDate = document.getElementById('requested_date');
+    if (!requestedDate.value) {
+        document.getElementById('requested_date_error').style.display = 'block';
+        requestedDate.classList.add('is-invalid');
+        isValid = false;
+    }
 
     // Validate Contact Number (shared field)
     const contact = document.getElementById('contact_number');
@@ -757,9 +825,76 @@ function setupCommunityItems() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    toggleFormType();
+    toggleFormType(false);
     cacheSubcategoryOptions();
     setupCommunityItems();
+
+    const trackingPopup = document.getElementById('tracking_popup_overlay');
+    if (trackingPopup) {
+        const trackingInput = document.getElementById('tracking_reference_popup_input');
+        const copyBtn = document.getElementById('tracking_reference_copy_btn');
+        const closeBtn = document.getElementById('tracking_reference_close_btn');
+        const copyMsg = document.getElementById('tracking_reference_copy_msg');
+        const copyRequiredMsg = document.getElementById('tracking_reference_copy_required_msg');
+        let hasCopiedTrackingReference = false;
+
+        trackingPopup.style.display = 'block';
+
+        if (trackingInput) {
+            trackingInput.focus();
+            trackingInput.select();
+        }
+
+        if (copyBtn && trackingInput) {
+            copyBtn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(trackingInput.value);
+                    if (copyMsg) {
+                        copyMsg.style.display = 'block';
+                    }
+                    if (copyRequiredMsg) {
+                        copyRequiredMsg.style.display = 'none';
+                    }
+                    hasCopiedTrackingReference = true;
+                    if (closeBtn) {
+                        closeBtn.disabled = false;
+                    }
+                } catch (error) {
+                    trackingInput.select();
+                    document.execCommand('copy');
+                    if (copyMsg) {
+                        copyMsg.style.display = 'block';
+                    }
+                    if (copyRequiredMsg) {
+                        copyRequiredMsg.style.display = 'none';
+                    }
+                    hasCopiedTrackingReference = true;
+                    if (closeBtn) {
+                        closeBtn.disabled = false;
+                    }
+                }
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                if (!hasCopiedTrackingReference) {
+                    return;
+                }
+                trackingPopup.style.display = 'none';
+            });
+        }
+    }
+
+    // Default Requested Date to today's local date for quick submission.
+    const requestedDateField = document.getElementById('requested_date');
+    if (requestedDateField && !requestedDateField.value) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        requestedDateField.value = `${year}-${month}-${day}`;
+    }
 
     // Form submission validation
     const form = document.querySelector('.donation_form');
@@ -776,6 +911,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     e.preventDefault();
                     return false;
                 }
+            }
+
+            const submitBtn = document.getElementById('submit_btn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
             }
         });
     }
@@ -943,4 +1084,85 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 </script>
+
+<!-- NGO Relief Summary Section -->
+{% if ngo_summary %}
+<div class="reson_area section_padding" style="background: linear-gradient(135deg, #f0f8f4 0%, #ffffff 100%);">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="section_title text-center mb-55">
+                    <h3><span>Relief Requests Handled by NGOs</span></h3>
+                    <p style="font-size: 16px; color: #666;">Our partner NGOs have successfully completed <strong style="color: #00bcd4; font-size: 18px;">{{ total_completed_assignments }}</strong> relief operations</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            {% for ngo in ngo_summary %}
+            <div class="col-lg-6 col-md-12 mb-4">
+                <div class="card shadow-sm" style="border-left: 5px solid #00bcd4; border-radius: 8px; overflow: hidden; transition: transform 0.2s ease;">
+                    <div class="card-body p-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 style="color: #333; margin-bottom: 12px; font-weight: 700;">{{ ngo.name }}</h5>
+                                <div class="ngo-stats" style="display: flex; gap: 20px; flex-wrap: wrap;">
+                                    <div>
+                                        <div style="font-size: 24px; font-weight: 700; color: #00bcd4;">{{ ngo.individual_count }}</div>
+                                        <small style="color: #666; display: block; margin-top: 4px;">Individual Requests</small>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 24px; font-weight: 700; color: #ff6f61;">{{ ngo.community_count }}</div>
+                                        <small style="color: #666; display: block; margin-top: 4px;">Community Requests</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-right">
+                                <div style="background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%); color: white; padding: 15px 20px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 32px; font-weight: 700;">{{ ngo.total_count }}</div>
+                                    <small style="display: block; margin-top: 6px; opacity: 0.9;">Total Completed</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div style="margin-top: 16px;">
+                            <div style="background: #e0e0e0; height: 6px; border-radius: 3px; overflow: hidden;">
+                                <div style="background: linear-gradient(90deg, #00bcd4 0%, #ff6f61 100%); height: 100%; border-radius: 3px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Overall Statistics -->
+        <div class="row mt-5">
+            <div class="col-lg-4 col-md-6">
+                <div class="stat-box text-center p-4" style="background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+                    <i class="fa fa-handshake-o" style="font-size: 40px; color: #00bcd4; display: block; margin-bottom: 12px;"></i>
+                    <div style="font-size: 28px; font-weight: 700; color: #333;">{{ ngo_summary|length }}</div>
+                    <small style="color: #666; display: block; margin-top: 8px;">Active NGO Partners</small>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="stat-box text-center p-4" style="background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+                    <i class="fa fa-check-circle" style="font-size: 40px; color: #4caf50; display: block; margin-bottom: 12px;"></i>
+                    <div style="font-size: 28px; font-weight: 700; color: #333;">{{ total_completed_assignments }}</div>
+                    <small style="color: #666; display: block; margin-top: 8px;">Requests Completed</small>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="stat-box text-center p-4" style="background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+                    <i class="fa fa-heart" style="font-size: 40px; color: #ff6f61; display: block; margin-bottom: 12px;"></i>
+                    <div style="font-size: 28px; font-weight: 700; color: #333;">100%</div>
+                    <small style="color: #666; display: block; margin-top: 8px;">Success Rate</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 {% include 'guest/footer.html' %}

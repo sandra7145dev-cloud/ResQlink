@@ -345,8 +345,8 @@ function validateVolunteerForm() {
     if (!address.value.trim()) {
         showError('vol_address', 'address_error', 'Address is required');
         isValid = false;
-    } else if (address.value.trim().length < 20) {
-        showError('vol_address', 'address_error', 'Address must be at least 20 characters');
+    } else if (address.value.trim().length < 10) {
+        showError('vol_address', 'address_error', 'Address must be at least 10 characters');
         isValid = false;
     }
 

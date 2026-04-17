@@ -25,8 +25,10 @@
                                     <tr>
                                         <th>Request ID</th>
                                         <th>Requester</th>
+                                        <th>Requested Date</th>
                                         <th>Location</th>
                                         <th>Requested Service</th>
+                                        <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -39,6 +41,13 @@
                                             <small>{{ r.affectedID.contact_number }}</small>
                                         </td>
                                         <td>
+                                            {% if r.requested_date %}
+                                                {{ r.requested_date|date:"d-M-Y" }}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
                                             {{ r.affectedID.localbodyID.LocalbodyName }}, {{ r.affectedID.talukID.TalukName }}
                                         </td>
                                         <td>
@@ -47,15 +56,26 @@
                                             {% endfor %}
                                         </td>
                                         <td>
+                                            {% if r.request_status == 'Waiting NGO Match' %}
+                                                <span class="badge badge-danger">No NGO Found</span>
+                                            {% else %}
+                                                <span class="badge badge-warning">New</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
                                             <form method="post" action="{% url 'approve_individual_request' r.request_id %}">
                                                 {% csrf_token %}
-                                                <button type="submit" class="btn btn-sm btn-primary">Approve & Send to NGO</button>
+                                                {% if r.request_status == 'Waiting NGO Match' %}
+                                                    <button type="submit" class="btn btn-sm btn-warning">Retry NGO Match</button>
+                                                {% else %}
+                                                    <button type="submit" class="btn btn-sm btn-primary">Approve &amp; Send to NGO</button>
+                                                {% endif %}
                                             </form>
                                         </td>
                                     </tr>
                                     {% empty %}
                                     <tr>
-                                        <td colspan="5" class="text-center text-muted p-4">No new pending individual requests.</td>
+                                        <td colspan="7" class="text-center text-muted p-4">No new pending individual requests.</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -74,6 +94,7 @@
                                         <th>Request ID</th>
                                         <th>NGO</th>
                                         <th>Requester</th>
+                                        <th>Requested Date</th>
                                         <th>Location</th>
                                         <th>Service</th>
                                         <th>Status</th>
@@ -86,6 +107,13 @@
                                         <td>{{ wa.NGOID.NGOname }}</td>
                                         <td>{{ wa.request_serviceID.requestID.affectedID.name }}</td>
                                         <td>
+                                            {% if wa.request_serviceID.requestID.requested_date %}
+                                                {{ wa.request_serviceID.requestID.requested_date|date:"d-M-Y" }}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
                                             {{ wa.request_serviceID.requestID.affectedID.localbodyID.LocalbodyName }},
                                             {{ wa.request_serviceID.requestID.affectedID.talukID.TalukName }}
                                         </td>
@@ -94,7 +122,7 @@
                                     </tr>
                                     {% empty %}
                                     <tr>
-                                        <td colspan="6" class="text-center text-muted p-4">No assignments are waiting for volunteer availability.</td>
+                                        <td colspan="7" class="text-center text-muted p-4">No assignments are waiting for volunteer availability.</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -116,6 +144,7 @@
                                     <tr>
                                         <th>Request ID</th>
                                         <th>Requester</th>
+                                        <th>Requested Date</th>
                                         <th>Location</th>
                                         <th>Requested Service</th>
                                         <th>Assigned NGO</th>
@@ -129,6 +158,13 @@
                                         <td>
                                             <strong>{{ r.affectedID.name }}</strong><br>
                                             <small>{{ r.affectedID.contact_number }}</small>
+                                        </td>
+                                        <td>
+                                            {% if r.requested_date %}
+                                                {{ r.requested_date|date:"d-M-Y" }}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
                                         </td>
                                         <td>
                                             {{ r.affectedID.localbodyID.LocalbodyName }}, {{ r.affectedID.talukID.TalukName }}
@@ -157,12 +193,30 @@
                                     </tr>
                                     {% empty %}
                                     <tr>
-                                        <td colspan="6" class="text-center text-muted p-4">No approved requests yet.</td>
+                                        <td colspan="7" class="text-center text-muted p-4">No approved requests yet.</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COMMUNITY RELIEF REQUEST PAGE LINK -->
+        <div class="row">
+            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                <div class="card shadow-sm mb-4 border-left border-primary border-lg">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-3">
+                            <i class="fas fa-people-carry fa-3x text-primary"></i>
+                        </div>
+                        <h4 class="mb-2">Community Relief Requests</h4>
+                        <p class="text-muted mb-4">Manage all community relief requests, verify camps, and track deliveries from a dedicated page.</p>
+                        <a href="{% url 'viewrequest' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-arrow-right"></i> Go to Community Relief Request Page
+                        </a>
                     </div>
                 </div>
             </div>
@@ -178,6 +232,7 @@
                                 <thead class="bg-light">
                                     <tr>
                                         <th>Request ID</th>
+                                        <th>Requested Date</th>
                                         <th>Affected Individual</th>
                                         <th>Contact & Location</th>
                                         <th>Requirements & Item Status</th>
@@ -192,6 +247,14 @@
                                             <strong class="text-primary">#{{ r.request_id }}</strong>
                                             {% if r.disasterID %}
                                             <br><span class="badge badge-danger">{{ r.disasterID.DisasterName }}</span>
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <td>
+                                            {% if r.requested_date %}
+                                                {{ r.requested_date|date:"d-M-Y" }}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
                                             {% endif %}
                                         </td>
                                         
@@ -230,7 +293,6 @@
                                             <ul class="list-unstyled mb-0" style="font-size: 12px;">
                                                 {% for service in r.tbl_request_service_set.all %}
                                                     {% for assignment in service.tbl_request_assignment_set.all %}
-                                                    {% if assignment.assignment_status != 'Pending' %}
                                                     <li class="border-bottom mb-2 pb-1">
                                                         <i class="fas fa-building text-success"></i> <strong>{{ assignment.NGOID.NGOname }}</strong> 
                                                         <br>
@@ -242,8 +304,9 @@
                                                         {% else %}
                                                             <span class="text-muted italic">NGO Internal Staff</span>
                                                         {% endif %}
+                                                        <br>
+                                                        <span class="badge badge-secondary">{{ assignment.assignment_status }}</span>
                                                     </li>
-                                                    {% endif %}
                                                     {% endfor %}
                                                 {% empty %}
                                                     <span class="text-muted italic">No allocations found</span>
@@ -264,17 +327,17 @@
                                             <br><br>
                                             {% for service in r.tbl_request_service_set.all %}
                                                 {% for assignment in service.tbl_request_assignment_set.all %}
-                                                    {% if assignment.assignment_status != 'Pending' %}
                                                     <div class="text-left small mb-1">
                                                         {% if assignment.assignment_status == 'Completed' %}
                                                             <span class="text-success">✓ {{ service.subCategoryID.SubCategoryname }}: Delivered</span>
                                                         {% elif assignment.assignment_status == 'Delivered' %}
                                                             <span class="text-info">→ {{ service.subCategoryID.SubCategoryname }}: Waiting Confirmation</span>
+                                                        {% elif assignment.assignment_status == 'Pending NGO Approval' or assignment.assignment_status == 'Pending' %}
+                                                            <span class="text-secondary">... {{ service.subCategoryID.SubCategoryname }}: Waiting NGO Acceptance</span>
                                                         {% else %}
                                                             <span class="text-warning">⊙ {{ service.subCategoryID.SubCategoryname }}: In Progress</span>
                                                         {% endif %}
                                                     </div>
-                                                    {% endif %}
                                                 {% endfor %}
                                             {% endfor %}
                                         </td>
@@ -344,7 +407,6 @@
                                             <ul class="list-unstyled mb-0" style="font-size: 12px;">
                                                 {% for service in r.tbl_request_service_set.all %}
                                                     {% for assignment in service.tbl_request_assignment_set.all %}
-                                                    {% if assignment.assignment_status != 'Pending' %}
                                                     <li class="border-bottom mb-2 pb-1">
                                                         <i class="fas fa-building text-success"></i> <strong>{{ assignment.NGOID.NGOname }}</strong>
                                                         <br>
@@ -356,8 +418,9 @@
                                                         {% else %}
                                                             <span class="text-muted italic">NGO Internal Staff</span>
                                                         {% endif %}
+                                                        <br>
+                                                        <span class="badge badge-secondary">{{ assignment.assignment_status }}</span>
                                                     </li>
-                                                    {% endif %}
                                                     {% endfor %}
                                                 {% empty %}
                                                     <span class="text-muted italic">No allocations found</span>
@@ -372,17 +435,17 @@
                                             <br><br>
                                             {% for service in r.tbl_request_service_set.all %}
                                                 {% for assignment in service.tbl_request_assignment_set.all %}
-                                                    {% if assignment.assignment_status != 'Pending' %}
                                                     <div class="text-left small mb-1">
                                                         {% if assignment.assignment_status == 'Completed' %}
                                                             <span class="text-success">✓ {{ service.subCategoryID.SubCategoryname }}: Delivered</span>
                                                         {% elif assignment.assignment_status == 'Delivered' %}
                                                             <span class="text-info">→ {{ service.subCategoryID.SubCategoryname }}: Waiting Confirmation</span>
+                                                        {% elif assignment.assignment_status == 'Pending NGO Approval' or assignment.assignment_status == 'Pending' %}
+                                                            <span class="text-secondary">... {{ service.subCategoryID.SubCategoryname }}: Waiting NGO Acceptance</span>
                                                         {% else %}
                                                             <span class="text-warning">⊙ {{ service.subCategoryID.SubCategoryname }}: In Progress</span>
                                                         {% endif %}
                                                     </div>
-                                                    {% endif %}
                                                 {% endfor %}
                                             {% endfor %}
                                         </td>

@@ -1,0 +1,184 @@
+{% load static %}
+{% include 'guest/header.html' %}
+
+<style>
+    .track-page-wrap {
+        background: linear-gradient(180deg, #f3fcf8 0%, #f7fbfd 100%);
+        min-height: 70vh;
+    }
+
+    .track-form-card,
+    .track-result-card {
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+        border-top: 4px solid #00bcd4;
+    }
+
+    .track-form-card {
+        padding: 30px;
+    }
+
+    .track-result-card {
+        padding: 28px;
+    }
+
+    .track-meta-row {
+        padding: 12px 0;
+        border-bottom: 1px dashed #e7eef2;
+    }
+
+    .track-meta-row:last-child {
+        border-bottom: none;
+    }
+
+    .track-label {
+        color: #4f5b66;
+        font-weight: 600;
+        margin-right: 6px;
+    }
+
+    .track-status-pill {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        background: rgba(0, 188, 212, 0.12);
+        color: #008ba3;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    .track-table thead th {
+        background: #effbfe;
+        color: #334;
+        border-color: #d6eef4;
+        font-weight: 700;
+    }
+
+    .track-table tbody td {
+        vertical-align: middle;
+    }
+
+    .track-badge-soft {
+        font-weight: 600;
+        color: #006f81;
+        background: rgba(0, 188, 212, 0.1);
+        border-radius: 6px;
+        padding: 5px 10px;
+        display: inline-block;
+    }
+
+    @media (max-width: 767px) {
+        .track-form-card,
+        .track-result-card {
+            padding: 20px;
+        }
+    }
+</style>
+
+<div class="reson_area section_padding track-page-wrap">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="section_title text-center mb-30">
+                    <h3><span>Track Help Request</span></h3>
+                    <p>Use your request reference and contact number to view current progress.</p>
+                </div>
+
+                {% if error %}
+                <div class="alert alert-danger" role="alert">{{ error }}</div>
+                {% endif %}
+
+                <div class="track-form-card">
+                <form action="{% url 'track_request_status' %}" method="post" class="donation_form">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="single_amount">
+                                <label>Tracking Reference <span class="text-danger">*</span></label>
+                                <input
+                                    type="text"
+                                    name="request_reference"
+                                    class="form-control"
+                                    placeholder="Example: RQ-000123"
+                                    value="{{ reference_input }}"
+                                    required
+                                >
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="single_amount">
+                                <label>Contact Number <span class="text-danger">*</span></label>
+                                <input
+                                    type="text"
+                                    name="contact_number"
+                                    class="form-control"
+                                    placeholder="Enter submitted contact number"
+                                    pattern="[0-9]{10}"
+                                    maxlength="10"
+                                    value="{{ contact_input }}"
+                                    required
+                                >
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button type="submit" class="boxed-btn3 w-100">Check Status</button>
+                        </div>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+
+        {% if status_result %}
+        <div class="row justify-content-center mt-5">
+            <div class="col-lg-10">
+                <div class="track-result-card">
+                        <h4 style="margin-bottom: 16px; color: #1f2c3a;">Request Status</h4>
+
+                        <div class="row track-meta-row">
+                            <div class="col-md-6"><span class="track-label">Reference:</span> {{ status_result.reference }}</div>
+                            <div class="col-md-6"><span class="track-label">Type:</span> {{ status_result.request_type|title }}</div>
+                        </div>
+                        <div class="row track-meta-row">
+                            <div class="col-md-6"><span class="track-label">Requester:</span> {{ status_result.requester_name }}</div>
+                            <div class="col-md-6"><span class="track-label">Overall Status:</span> <span class="track-status-pill">{{ status_result.request_status }}</span></div>
+                        </div>
+                        <div class="row track-meta-row" style="margin-bottom: 18px;">
+                            <div class="col-md-6"><span class="track-label">Requested Date:</span> {{ status_result.requested_date }}</div>
+                            <div class="col-md-6"><span class="track-label">Disaster:</span> {{ status_result.disaster_name|default:'N/A' }}</div>
+                        </div>
+
+                        <h5 style="margin-bottom: 12px; color: #1f2c3a;">Requested Items / Services</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered track-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item / Service</th>
+                                        <th>Status</th>
+                                        <th>Requested Qty</th>
+                                        <th>Fulfilled Qty</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in status_result.services %}
+                                    <tr>
+                                        <td>{{ item.name }}</td>
+                                        <td><span class="track-badge-soft">{{ item.status }}</span></td>
+                                        <td>{{ item.requested_qty|default:'N/A' }}</td>
+                                        <td>{{ item.fulfilled_qty|default:0 }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% include 'guest/footer.html' %}
